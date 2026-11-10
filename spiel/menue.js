@@ -2,7 +2,8 @@
    MENÜ TEIL A — oben links auf Kampagnenkarte, allen Szenen und Sidequests.
    Wird von spielstand.js nachgeladen (zusammen mit spickzettel.js), die Seiten selbst
    müssen dafür nicht angepasst werden. Gleiche Einträge wie in Teil B, ohne Spielanleitung:
-   Spielstand speichern · Neu starten · SQL-Spickzettel · Zum Startbildschirm
+   Spielstand als Datei sichern · Neu starten · SQL-Spickzettel · Zum Startbildschirm
+   (Im Browser speichert spielstand.js automatisch; der Menüpunkt ist nur für die Datei.)
    ============================================================ */
 (function(){
   var datei = location.pathname.split('/').pop();
@@ -54,7 +55,7 @@
     '<button type="button" aria-haspopup="true" aria-expanded="false">☰ Menü</button>' +
     '<ul hidden>' +
       (aufKarte ? '' : '<li><button type="button" data-aktion="karte">Zur Kampagnenkarte</button></li>') +
-      '<li><button type="button" data-aktion="speichern">💾 Spielstand speichern</button></li>' +
+      '<li><button type="button" data-aktion="speichern">💾 Spielstand als Datei sichern</button></li>' +
       '<li><button type="button" data-aktion="neustart">Neu starten</button></li>' +
       '<li><button type="button" data-aktion="spick">📇 SQL-Spickzettel</button></li>' +
       '<li><button type="button" data-aktion="start">Zum Startbildschirm</button></li>' +
@@ -109,13 +110,14 @@
   var aktionen = {
     speichern: function(){
       var r = Spiel.sichern();
-      melde('<b>✓ Spielstand gespeichert.</b><br>' +
-        (r.imBrowser ? 'Auf diesem Gerät geht es beim nächsten Start von Teil A hier weiter. ' : '') +
-        'Die Datei <b>' + r.datei + '</b> liegt in deinem Download-Ordner — damit kannst du auch auf einem anderen Gerät weiterspielen.');
+      melde('<b>✓ Spielstand als Datei gesichert.</b><br>' +
+        'Die Datei <b>' + r.datei + '</b> liegt in deinem Download-Ordner. Damit kannst du auf einem anderen Gerät ' +
+        'oder nach einer längeren Pause weiterspielen: auf der Startseite „Spielstand-Datei laden“.' +
+        (r.imBrowser ? '<br>In diesem Browser speichert das Spiel ohnehin automatisch.' : ''));
     },
     neustart: function(){
       if (aufKarte) {
-        if (confirm('Teil A ganz von vorne beginnen?\nNicht gespeicherter Fortschritt geht verloren.')) location.href = 'kampagnenkarte.html#c=' + Spiel.charakter();   // Fortschritt weg, gewählter Charakter bleibt
+        if (confirm('Teil A ganz von vorne beginnen?\nDer bisherige Fortschritt geht verloren (ausser du hast ihn als Datei gesichert).')) location.href = 'kampagnenkarte.html#c=' + Spiel.charakter();   // Fortschritt weg, gewählter Charakter bleibt
       } else if (confirm(szene ? 'Diese Szene von vorne beginnen?' : 'Von vorne beginnen?')) {
         location.reload();                // die Adresse trägt den Zustand → Szene startet neu, Energie bleibt
       }

@@ -5,8 +5,9 @@
      s = erledigte Sidequests ("2.1" = Szene 2, Sidequest 1)
      c = gewählter Charakter (1 = kurze Haare, 2 = lange Haare; Auswahl in charakterwahl.html)
    Während des Spiels reist der Zustand in der Adresse (#e=3&f=2&s=1.1) mit — alle Seiten greifen nur über
-   das Objekt `Spiel` darauf zu. Über das Menü „Spielstand speichern“ wird er zusätzlich dauerhaft gesichert
-   (siehe SPIELSTAND SICHERN unten); die Startseite bietet ihn dann zum Weiterspielen an.
+   das Objekt `Spiel` darauf zu. Zusätzlich wird er bei jeder Änderung automatisch im Browser gesichert;
+   über das Menü „Spielstand als Datei sichern“ lässt er sich herunterladen (siehe SPIELSTAND SICHERN unten).
+   Die Startseite bietet den gesicherten Stand zum Weiterspielen an.
    ============================================================ */
 var Spiel = (function(){
   var MAX = 3, SQ_PRO_SZENE = 3;
@@ -34,6 +35,7 @@ var Spiel = (function(){
   }
   function speichern(){                   // hält die Adresse aktuell (damit Neuladen nichts verliert)
     try { history.replaceState(null, '', '#' + params()); } catch (err) {}
+    autoSichern();                        // und sichert den Stand still im Browser (siehe unten)
   }
   laden();
 
@@ -106,8 +108,10 @@ var Spiel = (function(){
 
   /* ============================================================
      SPIELSTAND SICHERN — über Sitzungen hinweg, ohne Server.
-     Doppelt: im Browser (localStorage → die Startseite bietet „Weiterspielen“ an)
-     und als heruntergeladene Datei (lässt sich auf jedem Gerät über die Startseite laden).
+     Automatisch im Browser (localStorage → die Startseite bietet „Weiterspielen“ an): beim Öffnen jeder
+     Spielseite und bei jeder Änderung (Energie, Sidequest, geschaffte Szene). Nur auf diesem Gerät und
+     in diesem Browser. Auf Wunsch zusätzlich als heruntergeladene Datei (Menü; lässt sich auf jedem
+     Gerät über die Startseite laden).
      Gesichert werden Ort (Szene oder Karte), Energie, Fortschritt, Sidequests und der gewählte Charakter.
      Weitergespielt wird am Anfang der gesicherten Szene.
      ============================================================ */
@@ -140,16 +144,25 @@ var Spiel = (function(){
     return name;
   }
 
-  // Menü „Spielstand speichern“: sichert den Stand hier und jetzt
-  api.sichern = function(){
+  function standJetzt(){                  // der Stand hier und jetzt (Szene → deren Anfang, sonst die Karte)
     var datei = location.pathname.split('/').pop();
     var szene = /^szene_[a-z0-9_]+\.html$/.test(datei);
-    var st = pruefen({
+    return pruefen({
       spiel: 'HBI', teil: 'A', gespeichert: new Date().toISOString(),
       ort: szene ? datei : 'kampagnenkarte.html',
       titel: szene ? document.title.replace(/^HBI\s*—\s*/, '') : 'Kampagnenkarte',
       e: z.e, f: z.f, s: z.s, c: z.c
     });
+  }
+  // Automatisch: nur auf Spielseiten, die ihren Zustand in der Adresse tragen.
+  // Nicht auf der Startseite und nicht auf einer ohne Zustand geöffneten Seite (z. B. charakterwahl.html) —
+  // sonst würde ein bestehender Spielstand überschrieben, bevor das neue Spiel wirklich begonnen hat.
+  var AUTO = !!(SKRIPT && !SKRIPT.hasAttribute('data-startseite') && location.hash.length > 1);
+  function autoSichern(){ if (AUTO) imBrowser(standJetzt()); }
+
+  // Menü „Spielstand als Datei sichern“: lädt den Stand als Datei herunter (und sichert ihn auch im Browser)
+  api.sichern = function(){
+    var st = standJetzt();
     return { imBrowser: imBrowser(st), datei: herunterladen(st) };
   };
   // Startseite: zuletzt im Browser gesicherter Stand (oder null)
@@ -163,6 +176,8 @@ var Spiel = (function(){
     return st;
   };
   api.adresseVon = function(st){ return BASIS + st.ort + '#' + params({}, st); };
+
+  autoSichern();                          // beim Öffnen einer Spielseite: Stand sofort sichern
 
   // Menü oben links (Teil A) samt SQL-Spickzettel nachladen — nicht auf der Startseite
   if (SKRIPT && !SKRIPT.hasAttribute('data-startseite')) {
