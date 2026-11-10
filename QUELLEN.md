@@ -5,7 +5,8 @@ Herkunft und Lizenz aller verwendeten Medien und Daten.
 
 | Datei | Beschreibung | Urheber\*in / Quelle | Lizenz |
 |---|---|---|---|
-| *(Beispiel)* `media/stempel.mp3` | Stempelgeräusch | eigene Aufnahme | CC BY-SA 4.0 |
+| `media/cutszene_honolulu.mp4`, `media/cutszene_louvre.mp4`, `media/cutszene_china.mp4`, `media/cutszene_stockholm.mp4`, `media/cutszene_zentrale.mp4` | Cutszenen zwischen den Stationen | KI-generiert mit Google Gemini 3.6 Flash; Drehbuch und Prompts: Dominik Mühlebach & Andrin Sjardijn | frei verwendbar (KI-generiert) |
+| `media/Bilder/Archiv.jfif`, `media/Bilder/Honolulu.jfif`, `media/Bilder/Louvre.jfif`, `media/Bilder/China_Erster Kaiser.png`, `media/Bilder/Stockholm.png`, `media/Bilder/Zentrale_für Cutszene nach Stockholm.png` | Hintergrundbilder der Szenen | Standbilder aus den KI-generierten Cutszenen (Gemini 3.6 Flash), mit Claude Opus 5.5 entnommen | frei verwendbar (KI-generiert) |
 
 ## Daten
 
