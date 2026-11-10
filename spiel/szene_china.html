@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Szene 4: Der erste Kaiser (China, vor Christus)</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  /* Die Bühne hat immer 16:9 und skaliert mit dem Fenster — alles ist Vektor/Text, bleibt also scharf */
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:var(--bg1);
+  }
+  #szene{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* Klickbare Gegenstände in der Szene */
+  .hs{cursor:default;outline:none;}
+  .hs .glanz{fill:none;stroke:var(--gold);stroke-width:4;opacity:0;}
+  .hs.aktiv{cursor:pointer;}
+  .hs.aktiv .glanz{animation:puls 1.8s ease-in-out infinite;}
+  .hs.aktiv:hover .glanz, .hs.aktiv:focus-visible .glanz{animation:none;opacity:1;}
+  @keyframes puls{0%,100%{opacity:.1}50%{opacity:.8}}
+
+  /* Auftragszettel */
+  #auftrag{
+    position:absolute;top:4%;left:2.5%;width:27%;padding:1.1cqw 1.3cqw;
+    background:var(--papier);color:var(--tinte);transform:rotate(-1.5deg);
+    box-shadow:0 .4cqw 1.2cqw rgba(0,0,0,.5);font-size:max(11px,1.15cqw);line-height:1.4;
+  }
+  #auftrag b{display:block;letter-spacing:.2em;font-size:.8em;color:#8b2e1f;margin-bottom:.3em;}
+  #auftrag small{display:block;margin-top:.5em;opacity:.7;font-style:italic;}
+
+  #ton{
+    position:absolute;top:3%;right:2%;z-index:5;font-family:var(--serif);font-size:max(11px,1cqw);
+    background:rgba(10,15,36,.8);color:var(--gold);border:1px solid var(--gold-dim);
+    padding:.4cqw .9cqw;cursor:pointer;
+  }
+
+  /* Dialogbox */
+  #dialog{
+    position:absolute;left:2.5%;right:2.5%;bottom:3.5%;height:25%;display:flex;gap:1.6cqw;
+    padding:1.2cqw 1.6cqw;background:rgba(10,15,36,.94);border:1px solid var(--gold-dim);
+    box-shadow:0 0 2cqw rgba(0,0,0,.6);cursor:pointer;z-index:3;
+  }
+  #dialog .portrait{height:100%;aspect-ratio:1;flex:none;border-radius:50%;border:2px solid var(--gold-dim);
+    background:var(--bg2);overflow:hidden;}
+  #dialog .portrait svg{width:100%;height:100%;display:block;}
+  #dialog .rede{flex:1;display:flex;flex-direction:column;min-width:0;}
+  #dialog .name{color:var(--gold);font-weight:bold;font-size:max(12px,1.35cqw);letter-spacing:.05em;margin-bottom:.4em;}
+  #dialog .text{margin:0;font-size:max(13px,1.7cqw);line-height:1.45;flex:1;}
+  #dialog.gedanke .text{font-style:italic;color:#c9c4b4;}
+  #dialog .weiter{align-self:flex-end;color:var(--gold);font-size:max(11px,1cqw);animation:puls 1.2s infinite;}
+
+  /* Modale Fenster (Terminal, Zahlenschloss) */
+  .fenster{position:absolute;z-index:4;background:#0b1020;border:2px solid var(--gold-dim);
+    box-shadow:0 0 0 100vmax rgba(0,0,0,.55),0 0 3cqw rgba(212,175,55,.2);}
+
+  #terminal{inset:4% 4%;display:flex;flex-direction:column;font-family:var(--mono);font-size:max(11px,1.1cqw);}
+  #terminal header{display:flex;justify-content:space-between;align-items:center;padding:.7cqw 1.2cqw;
+    border-bottom:1px solid var(--gold-dim);color:var(--gold);letter-spacing:.08em;}
+  #terminal header button{font:inherit;background:none;border:1px solid var(--gold-dim);color:var(--gold);cursor:pointer;padding:.2cqw .8cqw;}
+  /* Aufbau: oben fest (Anleitung | Auftrag, Eingabe, Meldung), unten scrollt nur die Trefferliste */
+  #terminal .innen{flex:1;display:flex;flex-direction:column;gap:.8cqw;padding-top:1cqw;min-height:0;}
+  #terminal .innen > *{flex:none;margin:0 1.2cqw;}
+  #terminal .oben{display:grid;grid-template-columns:1fr 31%;gap:1cqw;align-items:start;}
+  #terminal .eingabe-zeile{display:grid;grid-template-columns:1fr auto;gap:.8cqw;align-items:stretch;}
+  #terminal .rechts{flex:1 1 0;min-height:0;overflow:auto;margin:.2cqw 0 0;padding:1.1cqw 1.2cqw;border-top:1px solid rgba(143,122,63,.4);}
+  .schema{color:#b9b6ad;line-height:1.7;}
+  #eingabe{width:100%;min-height:4.6em;resize:none;background:#050810;color:var(--gruen);border:1px solid #2c3a2c;
+    font:inherit;font-size:1.15em;padding:.6em;caret-color:var(--gruen);}
+  #eingabe:focus{outline:1px solid var(--gruen);}
+  .knoepfe{display:flex;flex-direction:column;gap:.6cqw;justify-content:flex-start;}
+  .knoepfe button{font:inherit;cursor:pointer;padding:.45cqw 1cqw;border:1px solid var(--gold);white-space:nowrap;}
+  #los{background:var(--gold);color:#0b1020;font-weight:bold;}
+  #hilfe{background:none;color:var(--gold);}
+  #meldung{min-height:1.4em;line-height:1.4;}
+  #meldung.fehler{color:var(--rot);}
+  #meldung.ok{color:var(--gruen);}
+  #hinweis{color:#e8dcc0;border-left:3px solid var(--gold);padding-left:.8em;line-height:1.45;}
+  .treffer{color:var(--gold);margin-bottom:.8cqw;letter-spacing:.05em;}
+  .karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(120px,13cqw),1fr));gap:.8cqw;}
+  .karte{background:var(--papier);color:var(--tinte);padding:.6cqw .8cqw;font-family:var(--serif);
+    border-top:.35cqw solid #8b2e1f;box-shadow:0 .2cqw .5cqw rgba(0,0,0,.4);animation:rein .25s ease-out both;}
+  .karte strong{display:block;font-size:1.05em;margin-bottom:.2em;}
+  .karte span{display:block;font-size:.85em;opacity:.8;}
+  @keyframes rein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .leer{color:#b9b6ad;font-style:italic;}
+
+  #schloss{top:14%;right:5%;width:24%;padding:1.2cqw;text-align:center;font-family:var(--mono);}
+  #schloss .titel{color:var(--gold);letter-spacing:.15em;font-size:max(11px,1cqw);margin-bottom:.8cqw;}
+  #anzeige{background:#050810;color:var(--gruen);font-size:max(20px,3cqw);letter-spacing:.3em;padding:.4cqw;margin-bottom:1cqw;min-height:1.4em;}
+  #anzeige.falsch{color:var(--rot);animation:wackeln .35s;}
+  @keyframes wackeln{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .tasten{display:grid;grid-template-columns:repeat(3,1fr);gap:.5cqw;}
+  .tasten button{font:inherit;font-size:max(14px,1.6cqw);padding:.5cqw 0;background:#1a2138;color:var(--fg);border:1px solid var(--gold-dim);cursor:pointer;}
+  .tasten button:hover{background:#26305a;}
+  .tasten .ok{background:var(--gold);color:#0b1020;font-weight:bold;}
+  #schloss .zu{margin-top:.8cqw;font:inherit;font-size:max(11px,.9cqw);background:none;border:none;color:var(--gold-dim);cursor:pointer;}
+
+  /* Figuren: die sprechende bekommt einen goldenen Schein */
+  .figur .kontur{transition:stroke .2s ease;}
+  .figur.spricht{filter:drop-shadow(0 0 10px rgba(212,175,55,.55));}
+  .figur.spricht .kontur{stroke:var(--gold);}
+  /* Gewählter Charakter (charakterwahl.html): #buehne bekommt c1 oder c2, die andere Variante wird ausgeblendet */
+  #buehne.c1 .nur-c2, #buehne.c2 .nur-c1{display:none;}
+
+  /* Auftrag bleibt auch in der SQL-Maske sichtbar (Kopie des Auftragszettels) */
+  #term-auftrag{background:var(--papier);color:var(--tinte);padding:.8cqw 1cqw;font-family:var(--serif);
+    font-size:max(11px,1.05cqw);line-height:1.4;box-shadow:0 .2cqw .6cqw rgba(0,0,0,.4);border-left:.35cqw solid #8b2e1f;}
+  #term-auftrag b{display:block;letter-spacing:.2em;font-size:.8em;color:#8b2e1f;margin-bottom:.3em;}
+
+  /* Geführte Anleitung in der SQL-Maske */
+  #anleitung{min-height:10em;border:1px solid var(--gruen);border-left-width:.35cqw;background:rgba(159,229,159,.06);padding:.8cqw 1cqw;line-height:1.45;}
+  #anleitung .a-kopf{color:var(--gruen);letter-spacing:.12em;font-size:.85em;margin-bottom:.4em;}
+  #anleitung .a-text{color:#e8dcc0;}
+  #anleitung .a-code{display:block;margin:.6em 0 .5em;padding:.5em .7em;background:#050810;color:var(--gruen);
+    border:1px dashed #2c3a2c;font:inherit;font-size:1.15em;letter-spacing:.02em;}
+  #anleitung .a-code:empty{display:none;}
+  #anleitung .a-notiz{margin-top:.6em;font:inherit;font-size:.9em;color:var(--gold);background:none;border:1px solid var(--gold-dim);padding:.25em .9em;cursor:pointer;}
+  #anleitung .a-notiz:hover{background:rgba(212,175,55,.12);}
+  #anleitung.geschafft{border-color:var(--gold);background:rgba(212,175,55,.08);}
+  #anleitung.geschafft .a-kopf{color:var(--gold);}
+
+  /* Denkblase am Kopf der Figur */
+  #denkblase{
+    position:absolute;left:55.5%;top:43.7%;width:auto;z-index:2;padding:1.1cqw 1.4cqw;
+    background:rgba(10,15,36,.94);border:1px solid var(--gold-dim);box-shadow:0 0 2cqw rgba(0,0,0,.6);
+    opacity:0;transform:translateY(.6cqw);pointer-events:none;transition:opacity .18s ease,transform .18s ease;
+  }
+  #denkblase.sichtbar{opacity:1;transform:none;}
+  #denkblase::after{content:"";position:absolute;left:-.65cqw;top:50%;margin-top:-.55cqw;width:1.1cqw;height:1.1cqw;
+    background:rgba(10,15,36,.94);border-left:1px solid var(--gold-dim);border-bottom:1px solid var(--gold-dim);transform:rotate(45deg);}
+  #denkblase .klick{color:var(--gold);font-weight:bold;font-size:max(12px,1.35cqw);letter-spacing:.05em;margin-bottom:.4em;}
+  #denkblase p{margin:0;font-style:italic;color:#c9c4b4;font-size:max(12px,1.45cqw);line-height:1.45;}
+
+  /* Stempel */
+  #stempel{position:absolute;left:50%;top:38%;z-index:6;pointer-events:none;
+    font-family:var(--mono);font-weight:bold;font-size:5cqw;color:#c0392b;letter-spacing:.1em;
+    border:.5cqw solid #c0392b;padding:.3cqw 1.6cqw;opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(3);}
+  #stempel.zeigen{animation:stempeln .45s cubic-bezier(.2,1.6,.4,1) forwards;}
+  @keyframes stempeln{to{opacity:.9;transform:translate(-50%,-50%) rotate(-8deg) scale(1);}}
+
+  /* Film / Übergang */
+  #film{position:absolute;inset:0;z-index:7;background:#000;display:flex;align-items:center;justify-content:center;}
+  #film video{width:100%;height:100%;object-fit:cover;}
+  #film .ersatz{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2cqw;}
+  #film .wirbel{width:28cqw;aspect-ratio:1;border-radius:50%;
+    background:repeating-conic-gradient(from 0deg,#d4af37 0 6deg,transparent 6deg 24deg);
+    -webkit-mask:radial-gradient(circle,transparent 18%,#000 19%,#000 70%,transparent 71%);
+            mask:radial-gradient(circle,transparent 18%,#000 19%,#000 70%,transparent 71%);
+    animation:drehen 1.2s linear infinite;}
+  @keyframes drehen{to{transform:rotate(360deg) scale(1.15)}}
+  #film .ersatz p{margin:0;color:var(--gold-dim);font-family:var(--mono);font-size:max(11px,1cqw);text-align:center;}
+
+  /* Start- und Endbildschirm */
+  .vollbild{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);cursor:pointer;gap:1.2cqw;}
+  .vollbild .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  .vollbild h1{margin:0;color:var(--gold);font-size:4.2cqw;text-shadow:0 0 18px rgba(212,175,55,.3);}
+  .vollbild p{margin:0;color:#b9b6ad;font-size:max(13px,1.5cqw);}
+  .vollbild .klick{color:var(--gold);font-size:max(12px,1.2cqw);animation:puls 1.6s infinite;margin-top:1.5cqw;}
+  .titelkarte{cursor:default;transition:opacity .8s ease;}
+  .titelkarte.weg{opacity:0;}
+  .vollbild button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:1cqw;}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;} #denkblase{transition:none;} }
+
+  /* ===== Szene 3: Louvre, Notizbuch ===== */
+  #leere-stelle{transition:opacity 1s ease;}
+  #blende{position:absolute;inset:0;z-index:9;background:#000;opacity:0;pointer-events:none;transition:opacity .7s ease;}
+  #blende.zu{opacity:1;}
+  #anleitung.nur-notiz{min-height:0;border:none;background:none;padding:0;}
+  #anleitung.nur-notiz > :not(.a-notiz){display:none;}
+
+  /* Notizbuch: Knopf in der Szene + Seite (auch in der SQL-Maske erreichbar) */
+  #notiz-knopf{position:absolute;left:1.6%;bottom:3%;z-index:2;display:flex;align-items:center;gap:.6cqw;
+    font-family:var(--serif);font-size:max(11px,1.1cqw);color:var(--gold);background:#3a2418;border:1px solid var(--gold-dim);
+    padding:.5cqw 1.1cqw .5cqw .8cqw;cursor:pointer;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.5);}
+  #notiz-knopf:hover,#notiz-knopf:focus-visible{border-color:var(--gold);background:#4a2e1f;outline:none;}
+  #notiz-knopf svg{width:1.9cqw;height:1.9cqw;}
+  #notiz-knopf.neu::after,#a-notiz.neu::after{content:"NEU";margin-left:.6em;padding:0 .4em;font-size:.8em;background:var(--gold);color:#0b1020;font-family:var(--mono);}
+  /* Notizbuch-Seite mit Zeilenraster: --zeile ist zugleich Linienabstand und Zeilenhöhe jeder Textzeile.
+     Alle Abstände sind ganze Zeilen, damit die Schrift auf den Linien steht. Die Linie liegt bei --linie
+     (Anteil der Zeile, knapp unter der Grundlinie). local = Linien scrollen mit, content-box = Raster beginnt beim Text. */
+  #notizbuch{--zeile:max(18px,1.9cqw);--linie:.80;position:absolute;left:2%;bottom:11%;width:36%;max-height:74%;overflow:auto;z-index:6;padding:1.2cqw 1.6cqw 1.4cqw 2cqw;
+    background:var(--papier);color:var(--tinte);font-family:var(--serif);border-left:.8cqw solid #6b3a26;line-height:var(--zeile);
+    box-shadow:0 .5cqw 2.4cqw rgba(0,0,0,.7);
+    background-image:repeating-linear-gradient(transparent 0 calc(var(--zeile)*var(--linie)),rgba(43,29,20,.16) calc(var(--zeile)*var(--linie)) calc(var(--zeile)*var(--linie) + 1px),transparent calc(var(--zeile)*var(--linie) + 1px) var(--zeile));
+    background-origin:content-box;background-attachment:local;}
+  #notizbuch header{display:flex;justify-content:space-between;align-items:center;height:var(--zeile);margin-bottom:var(--zeile);}
+  #notizbuch h2{margin:0;font-size:max(13px,1.5cqw);line-height:var(--zeile);position:relative;top:calc(var(--zeile)*-.08);letter-spacing:.25em;color:#8b2e1f;}
+  #notizbuch header button{font:inherit;font-size:max(11px,1cqw);line-height:1.2;cursor:pointer;background:none;border:1px solid var(--tinte);color:var(--tinte);padding:.1cqw .7cqw;}
+  #notizbuch .eintrag{margin:0 0 var(--zeile);font-size:max(11px,1.15cqw);}
+  #notizbuch .eintrag b{font-family:var(--mono);color:#1f4d2a;font-size:1.1em;line-height:1;letter-spacing:.03em;}
+  #notizbuch .eintrag code{display:block;margin:0;font-family:var(--mono);font-size:.9em;color:#5a3d27;}
+  #notizbuch .eintrag .neu{margin-left:.6em;padding:0 .4em;font-size:.75em;line-height:1;background:#8b2e1f;color:var(--papier);font-family:var(--mono);}
+
+  /* ===== Szene 4: Thronsaal in Xianyang ===== */
+  #denkblase{left:33.5%;}
+  .kand .kontur{transition:stroke .2s ease;}
+  .krone{opacity:0;}
+  .krone.faellt{animation:kroneFaellt .9s cubic-bezier(.3,1.4,.5,1) forwards;}
+  @keyframes kroneFaellt{from{opacity:0;transform:translateY(-110px)}to{opacity:1;transform:none}}
+  .kand.gekroent{filter:drop-shadow(0 0 14px rgba(212,175,55,.85));}
+  .flamme{transform-box:fill-box;transform-origin:center bottom;animation:flackern 1.4s ease-in-out infinite;}
+  @keyframes flackern{0%,100%{transform:scale(1,1)}50%{transform:scale(.88,1.14)}}
+  #zeit-gruppe{opacity:0;pointer-events:none;transition:opacity 1.2s ease;}
+  #zeit-gruppe.da{opacity:1;pointer-events:auto;}
+  #zeit-ring{transform-box:fill-box;transform-origin:center;animation:kreisen 9s linear infinite;}
+  @keyframes kreisen{to{transform:rotate(360deg)}}
+  #zeit-anzeige{font-family:Consolas,"Courier New",monospace;font-weight:bold;}
+
+  /* ===== Eingabefeld, Grundbausteine und Spalten-Buttons (Farben wie in „Wer bin ich?“: Gelb = Grundgerüst, Blau = Spalten) ===== */
+  #eingabe::placeholder{color:#5f7d5f;font-style:italic;opacity:1;}
+  .bausteine-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:.7cqw;}
+  .bausteine-zeile .b-label{color:#b9b6ad;}
+  .baustein,.schema .chip{border:none;border-radius:.5cqw;padding:.25cqw .9cqw;cursor:pointer;font:inherit;font-weight:bold;color:#0b1020;
+    box-shadow:0 .15cqw 0 rgba(0,0,0,.45), inset 0 -.15cqw 0 rgba(0,0,0,.18);}
+  .baustein{background:#d4af37;}
+  .schema .chip{background:#5fa8e8;margin:.1em .15em;padding:.1cqw .65cqw;font-size:.92em;}
+  .baustein:hover,.baustein:focus-visible,.schema .chip:hover,.schema .chip:focus-visible{filter:brightness(1.15);outline:none;background-clip:padding-box;}
+  .schema .chip:hover{background:#5fa8e8;}
+  .baustein:active,.schema .chip:active{transform:translateY(1px);}
+</style>
+</head>
+<body>
+<div id="buehne">
+
+    <!-- ===== SZENE: Thronsaal in Xianyang, China, 221 v. Chr. (reine Vektorgrafik, später durch ein Bild ersetzbar) ===== -->
+  <svg id="szene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="false">
+    <defs>
+      <linearGradient id="wand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a2424"/><stop offset="1" stop-color="#3b1111"/></linearGradient>
+      <linearGradient id="bodenschatten" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
+      <radialGradient id="licht" cx="0.6" cy="0.35" r="0.65"><stop offset="0" stop-color="#ffe9b8" stop-opacity=".16"/><stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="saeule" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5c1010"/><stop offset=".5" stop-color="#a62b2b"/><stop offset="1" stop-color="#5c1010"/></linearGradient>
+      <linearGradient id="schirm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2020"/><stop offset="1" stop-color="#561212"/></linearGradient>
+      <radialGradient id="portal" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6c8" stop-opacity=".95"/><stop offset=".5" stop-color="#6fe0ff" stop-opacity=".7"/><stop offset="1" stop-color="#1a3a8a" stop-opacity="0"/></radialGradient>
+      <pattern id="fliesen" width="100" height="50" patternUnits="userSpaceOnUse"><rect width="100" height="50" fill="#3a2a22"/><path d="M0,0 H100 M0,0 V50" stroke="#1e1410" stroke-width="2"/></pattern>
+      <pattern id="gitter" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0,0 H18 M0,0 V18" stroke="#7a4a1a" stroke-width="3"/></pattern>
+    </defs>
+
+    <!-- Halle: Wand, Balken, Sockel, Boden -->
+    <rect width="1600" height="640" fill="url(#wand)"/>
+    <rect width="1600" height="46" fill="#6b2e1a"/><rect y="46" width="1600" height="8" fill="#d4af37"/>
+    <rect y="640" width="1600" height="80" fill="#2a0f0f"/>
+    <line x1="0" y1="640" x2="1600" y2="640" stroke="#d4af37" stroke-width="4"/>
+    <rect y="720" width="1600" height="180" fill="url(#fliesen)"/>
+    <rect y="720" width="1600" height="180" fill="url(#bodenschatten)"/>
+
+    <!-- Fenster mit Gitter -->
+    <path d="M600,340 V210 a75,70 0 0 1 150,0 V340 Z" fill="#e8a850" stroke="#d4af37" stroke-width="4"/>
+    <path d="M600,340 V210 a75,70 0 0 1 150,0 V340 Z" fill="url(#gitter)" opacity=".7"/>
+
+    <!-- Säulen -->
+    <g id="saeulen">
+      <g transform="translate(70,0)"><rect x="-28" y="54" width="56" height="666" fill="url(#saeule)"/><rect x="-38" y="54" width="76" height="26" fill="#d4af37"/><rect x="-38" y="640" width="76" height="30" fill="#d4af37"/></g>
+      <g transform="translate(520,0)"><rect x="-28" y="54" width="56" height="666" fill="url(#saeule)"/><rect x="-38" y="54" width="76" height="26" fill="#d4af37"/><rect x="-38" y="640" width="76" height="30" fill="#d4af37"/></g>
+      <g transform="translate(790,0)"><rect x="-28" y="54" width="56" height="666" fill="url(#saeule)"/><rect x="-38" y="54" width="76" height="26" fill="#d4af37"/><rect x="-38" y="640" width="76" height="30" fill="#d4af37"/></g>
+    </g>
+
+    <!-- Laternen -->
+    <g transform="translate(880,46)"><line y2="60" stroke="#d4af37" stroke-width="3"/><ellipse cy="92" rx="26" ry="34" fill="#c0392b" stroke="#d4af37" stroke-width="3"/><rect x="-10" y="122" width="20" height="8" fill="#d4af37"/><line y1="130" y2="160" stroke="#d4af37" stroke-width="3"/></g>
+    <g transform="translate(1380,46)"><line y2="60" stroke="#d4af37" stroke-width="3"/><ellipse cy="92" rx="26" ry="34" fill="#c0392b" stroke="#d4af37" stroke-width="3"/><rect x="-10" y="122" width="20" height="8" fill="#d4af37"/><line y1="130" y2="160" stroke="#d4af37" stroke-width="3"/></g>
+
+    <!-- Ehrenwand hinter dem Podest -->
+    <path d="M826,214 Q1120,170 1414,214 L1400,236 Q1120,200 840,236 Z" fill="#b88a3a" stroke="#7a5a1e" stroke-width="3"/>
+    <rect x="860" y="250" width="520" height="404" fill="url(#schirm)" stroke="#d4af37" stroke-width="5"/>
+    <rect x="876" y="266" width="488" height="372" fill="none" stroke="#b88a3a" stroke-width="2"/>
+    <g transform="translate(1120,400)">
+      <circle r="70" fill="#d4af37" opacity=".22"/><circle r="70" fill="none" stroke="#d4af37" stroke-width="4"/><circle r="44" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <g stroke="#d4af37" stroke-width="4" opacity=".55">
+        <line x1="84" x2="116"/><line x1="84" x2="116" transform="rotate(45)"/><line x1="84" x2="116" transform="rotate(90)"/><line x1="84" x2="116" transform="rotate(135)"/>
+        <line x1="84" x2="116" transform="rotate(180)"/><line x1="84" x2="116" transform="rotate(225)"/><line x1="84" x2="116" transform="rotate(270)"/><line x1="84" x2="116" transform="rotate(315)"/>
+      </g>
+    </g>
+
+    <!-- Teppich und Podest -->
+    <path d="M880,720 L1360,720 L1520,900 L720,900 Z" fill="#8a1c1c" opacity=".9"/>
+    <path d="M880,720 L720,900 M1360,720 L1520,900" stroke="#d4af37" stroke-width="5" fill="none"/>
+    <rect x="800" y="700" width="640" height="20" fill="#3a1414" stroke="#8f7a3f" stroke-width="2"/>
+    <rect x="820" y="660" width="600" height="40" fill="#4a1a1a" stroke="#8f7a3f" stroke-width="2"/>
+    <rect x="820" y="652" width="600" height="10" fill="#7a2a2a" stroke="#8f7a3f" stroke-width="2"/>
+
+    <!-- Räucherschalen mit Flamme -->
+    <g transform="translate(850,654)"><path d="M-24,-40 H24 L14,0 H-14 Z" fill="#3a2a1a" stroke="#d4af37" stroke-width="2"/><path class="flamme" d="M0,-42 Q-16,-72 0,-100 Q16,-72 0,-42 Z" fill="#ff9a3c"/><path class="flamme" d="M0,-42 Q-8,-62 0,-80 Q8,-62 0,-42 Z" fill="#ffe08a"/></g>
+    <g transform="translate(1400,654)"><path d="M-24,-40 H24 L14,0 H-14 Z" fill="#3a2a1a" stroke="#d4af37" stroke-width="2"/><path class="flamme" d="M0,-42 Q-16,-72 0,-100 Q16,-72 0,-42 Z" fill="#ff9a3c"/><path class="flamme" d="M0,-42 Q-8,-62 0,-80 Q8,-62 0,-42 Z" fill="#ffe08a"/></g>
+
+    <!-- Die drei Personen, die gekrönt werden wollen (werden im Skript gezeichnet und gemischt) -->
+    <g id="kandidaten"></g>
+
+    <!-- Zeitmaschine: erscheint erst in Teil 2 -->
+    <g id="zeit-gruppe">
+      <g id="hs-zeit" class="hs" role="button" tabindex="-1" aria-label="Zeitmaschine: Jahr eintragen" transform="translate(1500,0)">
+        <rect x="-80" y="410" width="160" height="312" fill="transparent"/>
+        <rect class="glanz" x="-84" y="406" width="168" height="320" rx="14"/>
+        <rect x="-36" y="640" width="72" height="80" fill="#2a1a1a" stroke="#8f7a3f" stroke-width="2"/>
+        <path d="M-58,640 L-44,596 L44,596 L58,640 Z" fill="#3a2a2a" stroke="#8f7a3f" stroke-width="2"/>
+        <rect x="-38" y="604" width="76" height="26" fill="#050810" stroke="#2c3a2c" stroke-width="2"/>
+        <text id="zeit-anzeige" x="0" y="624" text-anchor="middle" font-size="20" fill="#9fe59f">????</text>
+        <circle cx="0" cy="500" r="62" fill="#08122a" stroke="#d4af37" stroke-width="6"/>
+        <circle id="zeit-ring" cx="0" cy="500" r="48" fill="none" stroke="#9fe59f" stroke-width="3" stroke-dasharray="7 9" opacity=".85"/>
+        <circle cx="0" cy="500" r="34" fill="url(#portal)"/>
+      </g>
+    </g>
+
+    <!-- ===== Figuren (Platzhalter, später durch Zeichnungen/Fotos ersetzen) ===== -->
+    <!-- Direktorin Vogt: Haarknoten, Brille, Blazer mit Bluse und goldener HBI-Nadel. -->
+    <g id="fig-vogt" class="figur" transform="translate(260,720) scale(1) translate(0,-720)" pointer-events="none">
+      <path class="kontur" d="M-64,720 L-54,520 Q0,486 54,520 L64,720 Z" fill="#141c3d" stroke="#8f7a3f" stroke-width="2"/>
+      <path d="M-16,498 L0,558 L16,498 Z" fill="#e8dcc0"/>
+      <path d="M-16,498 L-4,566 M16,498 L4,566" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <circle cx="30" cy="566" r="9" fill="#8f7a3f" stroke="#d4af37" stroke-width="2"/>
+      <circle cx="0" cy="376" r="17" fill="#6b2d2d"/>
+      <circle class="kontur" cx="0" cy="430" r="38" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="2"/>
+      <path d="M-40,436 Q-44,388 0,388 Q44,388 40,436 Q30,412 0,410 Q-30,412 -40,436 Z" fill="#6b2d2d"/>
+      <g fill="none" stroke="#d4af37" stroke-width="2"><circle cx="-14" cy="440" r="9"/><circle cx="14" cy="440" r="9"/><line x1="-5" y1="440" x2="5" y2="440"/></g>
+    </g>
+
+    <!-- Dein Avatar: Der Kopf ist klickbar (dein Gehirn ist die SQL-Datenbank). -->
+    <g id="fig-du" class="figur" transform="translate(470,0)">
+      <g class="nur-c2" transform="translate(-100,346)"><path d="M58,84 Q54,36 100,36 Q146,36 142,84 L150,170 Q136,180 124,168 L120,114 L80,114 L76,168 Q64,180 50,170Z" fill="#7a4a2a"/></g>
+      <path class="kontur" d="M-60,720 L-50,522 Q0,490 50,522 L60,720 Z" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="2"/>
+      <path d="M-16,496 L0,534 L16,496" fill="none" stroke="#9fe59f" stroke-width="3"/>
+      <path d="M0,534 L0,720" stroke="#9fe59f" stroke-opacity=".35" stroke-width="2"/>
+      <path class="nur-c1" d="M-44,532 L-26,712" stroke="#2d4a6b" stroke-width="9" stroke-linecap="round"/>
+      <g class="nur-c2" transform="translate(-100,346)"><path d="M54,152 Q60,174 52,206 M146,152 Q140,174 148,206" fill="none" stroke="#7a4a2a" stroke-width="10" stroke-linecap="round"/></g>
+      <g id="hs-kopf" class="hs" role="button" aria-label="Zum Nachdenken klicken: dein Gehirn ist eine SQL-Datenbank" tabindex="-1">
+        <circle cx="0" cy="430" r="56" fill="transparent"/>
+        <circle class="glanz" cx="0" cy="430" r="54"/>
+        <circle class="kontur" cx="0" cy="430" r="40" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="2"/>
+        <g class="nur-c1">
+          <path d="M-41,428 Q-43,386 0,386 Q43,386 41,428 Q34,404 0,401 Q-34,404 -41,428 Z" fill="#3a4a7a"/>
+          <g transform="translate(-100,346)"><path d="M78,76 Q85,72 92,75 M108,75 Q115,72 122,76" fill="none" stroke="#3a4a7a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><path d="M100,90 L98,98 L102,98" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,106 Q100,113 110,106" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g>
+        </g>
+        <g class="nur-c2" transform="translate(-100,346)"><path d="M60,86 Q56,42 100,42 Q144,42 140,86 Q136,62 112,56 Q92,54 80,64 Q68,72 60,86Z" fill="#7a4a2a"/><path d="M78,77 Q85,73 92,76 M108,76 Q115,73 122,77" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><path d="M82,81 L80,79 M118,81 L120,79" stroke="#eae6d8" stroke-width="1.4" stroke-linecap="round"/><path d="M100,91 L98,99 L102,99" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,107 Q100,114 110,107" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g>
+      </g>
+    </g>
+
+    <rect width="1600" height="900" fill="url(#licht)" pointer-events="none"/>
+  </svg>
+
+  <div id="auftrag" hidden>
+    <b>AUFTRAG · DER ERSTE KAISER</b>
+    Eine dieser drei Personen hat China vereint: Ihre <u>Herkunft</u> ist China, ihr <u>Geburtsjahr</u> liegt vor Christus. Finde sie im Archiv und kröne sie.
+    
+  </div>
+
+  <button id="ton" type="button">Ton: an</button>
+
+  <!-- Notizbuch: links unten, seit Szene 3 -->
+  <button id="notiz-knopf" type="button" hidden aria-controls="notizbuch">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5,3 H18 a2,2 0 0 1 2,2 V21 H7 a2,2 0 0 1 -2,-2 Z" fill="#6b3a26" stroke="#d4af37" stroke-width="1.6"/><path d="M8,3 V21" stroke="#d4af37" stroke-width="1.4"/><path d="M11,8 H17 M11,12 H17" stroke="#d4af37" stroke-width="1.4"/></svg>
+    Notizbuch
+  </button>
+  <div id="notizbuch" hidden role="dialog" aria-label="Notizbuch: alle gelernten Befehle">
+    <header><h2>NOTIZBUCH</h2><button type="button" id="notiz-zu">Schliessen ✕</button></header>
+    <div id="notiz-liste"></div>
+  </div>
+
+  <!-- Denkblase: erscheint, wenn man mit der Maus über den Kopf des Avatars fährt -->
+  <div id="denkblase" role="tooltip">
+    <div class="klick">Klicke zum Suchen</div>
+  </div>
+
+  <!-- Dialogbox -->
+  <div id="dialog" hidden role="dialog" aria-live="polite">
+    <div class="portrait">
+      <svg data-wer="vogt" viewBox="0 0 100 100"><rect width="100" height="100" fill="#131c3d"/>
+        <circle cx="50" cy="22" r="8" fill="#6b2d2d"/>
+        <path d="M18,100 L24,72 Q50,58 76,72 L82,100Z" fill="#141c3d" stroke="#d4af37" stroke-width="1.5"/>
+        <path d="M42,64 L50,80 L58,64Z" fill="#e8dcc0"/>
+        <circle cx="50" cy="40" r="18" fill="#0b0f1f" stroke="#d4af37" stroke-width="1.5"/>
+        <path d="M31,44 Q29,22 50,22 Q71,22 69,44 Q65,32 50,31 Q35,32 31,44Z" fill="#6b2d2d"/>
+        <g fill="none" stroke="#d4af37" stroke-width="1.3"><circle cx="43.5" cy="43" r="4.5"/><circle cx="56.5" cy="43" r="4.5"/><line x1="48" y1="43" x2="52" y2="43"/></g>
+        <circle cx="68" cy="82" r="4" fill="#d4af37"/></svg>
+      <svg data-wer="du" viewBox="0 0 100 100" hidden><rect width="100" height="100" fill="#131c3d"/>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M58,84 Q54,36 100,36 Q146,36 142,84 L150,170 Q136,180 124,168 L120,114 L80,114 L76,168 Q64,180 50,170Z" fill="#7a4a2a"/></g>
+        <path d="M20,100 L26,72 Q50,60 74,72 L80,100Z" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="1.5"/>
+        <path d="M42,66 L50,79 L58,66" fill="none" stroke="#9fe59f" stroke-width="2"/>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M54,152 Q60,174 52,206 M146,152 Q140,174 148,206" fill="none" stroke="#7a4a2a" stroke-width="10" stroke-linecap="round"/></g>
+        <circle cx="50" cy="40" r="19" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="1.5"/>
+        <g class="nur-c1"><path d="M30,40 Q29,20 50,20 Q71,20 70,40 Q64,29 50,28 Q36,29 30,40Z" fill="#3a4a7a"/><g transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M78,76 Q85,72 92,75 M108,75 Q115,72 122,76" fill="none" stroke="#3a4a7a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><path d="M100,90 L98,98 L102,98" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,106 Q100,113 110,106" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g></g>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M60,86 Q56,42 100,42 Q144,42 140,86 Q136,62 112,56 Q92,54 80,64 Q68,72 60,86Z" fill="#7a4a2a"/><path d="M78,77 Q85,73 92,76 M108,76 Q115,73 122,77" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><path d="M82,81 L80,79 M118,81 L120,79" stroke="#eae6d8" stroke-width="1.4" stroke-linecap="round"/><path d="M100,91 L98,99 L102,99" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,107 Q100,114 110,107" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g></svg>
+    </div>
+    <div class="rede">
+      <div class="name"></div>
+      <p class="text"></p>
+      <span class="weiter">Weiter ▸</span>
+    </div>
+  </div>
+
+
+  <!-- Terminal -->
+  <div id="terminal" class="fenster" hidden role="dialog" aria-label="Dein Gehirn: SQL-Abfrage">
+    <header>
+      <span>DEIN HIRN</span>
+      <span><span id="energie-anzeige"></span> &nbsp; <button type="button" id="term-zu">Schliessen ✕</button></span>
+    </header>
+    <div class="innen">
+      <!-- Oben: links die Anleitung (nur Teil 1), rechts der Auftrag -->
+      <div class="oben">
+        <div id="anleitung" aria-live="polite">
+          <div class="a-kopf"></div>
+          <div class="a-text"></div>
+          <code class="a-code"></code>
+          <button type="button" id="a-notiz" class="a-notiz">Notizbuch öffnen</button>
+        </div>
+        <div id="term-auftrag"></div>
+      </div>
+      <div id="bausteine" class="bausteine-zeile">
+        <span class="b-label">Grundbausteine:</span>
+        <button type="button" class="baustein" data-text="SELECT * FROM personen">SELECT * FROM personen</button>
+        <button type="button" class="baustein" data-text="SELECT COUNT(*) FROM personen">SELECT COUNT(*) FROM personen</button>
+      </div>
+      <div class="schema" id="spalten-wahl" hidden>Tabelle <b style="color:var(--gold)">personen</b> — Spalten (anklicken zum Einfügen):<br>
+        <span id="chips"></span></div>
+      <div class="eingabe-zeile">
+        <textarea id="eingabe" spellcheck="false" aria-label="SQL-Abfrage" placeholder="SQL Abfrage hier eingeben"></textarea>
+        <div class="knoepfe">
+          <button type="button" id="los">▶ Ausführen</button>
+          <button type="button" id="hilfe">Hinweis (−1 Energie)</button>
+        </div>
+      </div>
+      <div id="meldung" role="status"></div>
+      <div id="hinweis" hidden></div>
+      <div id="energie-info" hidden></div>
+      <!-- Unten: nur die Trefferliste scrollt -->
+      <div class="rechts" id="ausgabe"></div>
+    </div>
+  </div>
+
+
+  <!-- Zahlenschloss der Zeitmaschine (Teil 2) -->
+  <div id="schloss" class="fenster" hidden role="dialog" aria-label="Zeitmaschine: Jahr eintragen">
+    <div class="titel" id="schloss-titel">ZEITMASCHINE · JAHR</div>
+    <div id="anzeige"></div>
+    <div class="tasten" id="tasten"></div>
+    <button type="button" class="zu" id="schloss-zu">Schliessen</button>
+  </div>
+
+  <div id="stempel">ZIEL GESETZT</div>
+
+  <div id="blende"></div>
+
+  <!-- Titelkarte der Szene: erscheint kurz und blendet dann von selbst aus -->
+  <div id="start" class="vollbild titelkarte">
+    <div class="kicker">SZENE 4 · DRITTE ZEITREISE</div>
+    <h1>Der erste Kaiser</h1>
+    <p>China · Thronsaal · vor Christus</p>
+  </div>
+
+  <div id="ende" class="vollbild" hidden>
+    <div class="kicker">SZENE 4 GESCHAFFT</div>
+    <h1>Das Ziel ist gesetzt</h1>
+    <p>Nächstes Reiseziel: <b id="endjahr"></b></p>
+    <button type="button" onclick="filmZeigen()">Weiter ▸</button>
+    <button type="button" onclick="location.reload()">Nochmals spielen</button>
+    <button type="button" onclick="location.href='../HBI.html'">Zum Startbildschirm</button>
+  </div>
+
+  <!-- Film: „Weiter“ spielt ../media/cutszene_stockholm.mp4 — fehlt die Datei, geht es direkt zur Kampagnenkarte -->
+  <div id="film" hidden>
+    <video id="video" playsinline></video>
+  </div>
+</div>
+
+<!-- Datensatz: Personen-Datenbank, erzeugt aus Innovation/Datenbank_Personen -->
+<script src="spielstand.js"></script>
+<script>document.getElementById('buehne').classList.add('c' + Spiel.charakter());</script>
+<script src="../daten/personen.js" charset="utf-8"></script>
+<!-- Echtes SQLite im Browser wie in Teil B: sql.js (MIT), Variante ohne .wasm → läuft auch per Doppelklick -->
+<script src="sql-asm.js" charset="utf-8"></script>
+<script src="sql-meldungen.js" charset="utf-8"></script>
+<script src="sql-szene.js" charset="utf-8"></script>
+<script>
+/* ============================================================
+   DATEN — kommen aus ../daten/personen.js (SPALTEN und DATEN).
+   Nicht hier von Hand aendern: Quelle ist erstelle_datenbank.py.
+   ============================================================ */
+
+// Loesungen werden aus den Daten berechnet, damit sie immer stimmen.
+var istZahl = function(x){ return typeof x === 'number'; };
+// Teil 1: vor Christus geboren (negatives Geburtsjahr) UND Herkunft China -> die Person, die China vereint hat.
+var VORCHRISTUS = DATEN.filter(function(p){ return istZahl(p.geburtsjahr) && p.geburtsjahr < 0; });
+var KAISER = DATEN.filter(function(p){ return p.herkunft === 'China' && istZahl(p.geburtsjahr) && p.geburtsjahr < 0; });
+// Die drei Personen im Saal: die richtige, eine echte aus dem Archiv, die nicht passt, und eine erfundene, die im Archiv NICHT vorkommt.
+var NAME_ZWEITE = 'Wu Zetian';
+var NAME_ERFUNDEN = 'Zhao Mingrui';
+if (KAISER.length !== 1) console.warn('Datensatz: Es sollte genau eine Person aus China mit Geburtsjahr vor Christus geben, gefunden: ' + KAISER.length);
+if (!DATEN.some(function(p){ return p.name === NAME_ZWEITE; })) console.warn('Datensatz: ' + NAME_ZWEITE + ' fehlt im Archiv!');
+if (DATEN.some(function(p){ return p.name === NAME_ERFUNDEN; })) console.warn('Datensatz: ' + NAME_ERFUNDEN + ' steht im Archiv, sollte aber erfunden sein!');
+// Teil 2: die zuletzt geborene Person -> ihr Geburtsjahr ist das Reiseziel.
+var MAXJAHR = Math.max.apply(null, DATEN.filter(function(p){ return istZahl(p.geburtsjahr); }).map(function(p){ return p.geburtsjahr; }));
+var JUNGE = DATEN.filter(function(p){ return p.geburtsjahr === MAXJAHR; });
+
+var HINWEISE_T1 = [
+  'Wer vor Christus geboren wurde, hat ein negatives Geburtsjahr, also ein Geburtsjahr kleiner als 0. Welches Zeichen steht für „kleiner als“?',
+  'Zuerst: WHERE geburtsjahr < 0. Danach hängst du mit AND die Herkunft an.',
+  "Die Abfrage lautet: SELECT * FROM personen WHERE geburtsjahr < 0 AND herkunft = 'China'"
+];
+var HINWEISE_T2 = [
+  'Die jüngste Person hat das grösste Geburtsjahr. Das Zeichen < hat ein Gegenstück.',
+  'Mit > („grösser als“) findest du alle Personen mit einem grösseren Geburtsjahr. Taste dich mit einer Jahreszahl an die jüngste Person heran.',
+  'Zum Beispiel: SELECT * FROM personen WHERE geburtsjahr > ' + (MAXJAHR - 1) + ' — bleibt nur eine Person übrig, ist es die jüngste. Ihr Geburtsjahr gibst du in die Zeitmaschine ein.'
+];
+var HINWEISE = HINWEISE_T1;
+
+
+/* ============================================================
+   SQL — echtes SQLite wie in Teil B (siehe sql-szene.js).
+   abfrage() liefert { zaehlen, spalten, zeilen } mit den Original-
+   Objekten aus DATEN — die Prüfungen weiter unten bleiben gültig.
+   Fehler() bleibt für die eigenen Meldungen der Szene (Platzhalter …).
+   ============================================================ */
+function Fehler(text){ throw { fehler:text }; }
+function abfrage(q){ return SqlSzene.abfrage(q); }
+
+/* ============================================================
+   TON — Platzhalter-Klänge per Web Audio. Liegt eine Datei unter
+   ../media/<name>.mp3, wird automatisch diese abgespielt.
+   ============================================================ */
+var ctx = null, master = null, stumm = false;
+function tonStart(){
+  if (ctx) return;
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+  // Kein Hintergrund-Brummen mehr (entfernt 21.09.) — passende Atmo-Geräusche folgen später
+}
+function ton(freq, dauer, typ, laut, verz){
+  if (!ctx || stumm || ctx.state !== 'running') return; // noch stumm: Töne nicht aufstauen
+  var t = ctx.currentTime + (verz || 0), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = typ || 'sine'; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(laut || 0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dauer + 0.02);
+}
+var SYNTH = {
+  tick: function(){ ton(1700 + Math.random()*300, 0.02, 'square', 0.025); },
+  klick: function(){ ton(900, 0.05, 'triangle', 0.15); },
+  fehler: function(){ ton(160, 0.18, 'sawtooth', 0.12); ton(120, 0.25, 'sawtooth', 0.12, 0.12); },
+  erfolg: function(){ ton(523, 0.3, 'sine', 0.2); ton(659, 0.3, 'sine', 0.2, 0.1); ton(784, 0.5, 'sine', 0.2, 0.2); },
+  stempel: function(){
+    if (!ctx || stumm || ctx.state !== 'running') return;
+    var n = ctx.createBufferSource(), b = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = (Math.random()*2 - 1) * Math.pow(1 - i/d.length, 3);
+    var g = ctx.createGain(); g.gain.value = 0.5; n.buffer = b; n.connect(g); g.connect(master); n.start();
+    ton(70, 0.3, 'sine', 0.5);
+  }
+};
+SYNTH.geschafft = function(){     // „Erreicht“-Klang: aufsteigender Dur-Akkord mit Glitzern (überall derselbe)
+  [523, 659, 784, 1047].forEach(function(f, i){ ton(f, 0.28, 'triangle', 0.2, i * 0.11); });
+  ton(1047, 0.9, 'sine', 0.16, 0.44); ton(1319, 0.9, 'sine', 0.12, 0.44); ton(1568, 0.9, 'sine', 0.1, 0.44);
+  ton(2093, 0.18, 'sine', 0.07, 0.6); ton(2637, 0.18, 'sine', 0.06, 0.7);
+};
+function klang(name){
+  if (stumm) return;
+  var fertig = false, a = new Audio('../media/' + name + '.mp3');
+  function ersatz(){ if (fertig) return; fertig = true; SYNTH[name] && SYNTH[name](); }
+  a.onerror = ersatz; a.play().catch(ersatz);
+}
+
+/* ============================================================
+   SZENE AUFBAUEN
+   ============================================================ */
+var $ = function(id){ return document.getElementById(id); };
+var RUHIG = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   DIALOG
+   ============================================================ */
+var dlg = $('dialog'), dlgText = dlg.querySelector('.text'), dlgName = dlg.querySelector('.name');
+var schlange = [], nachDialog = null, tippTimer = null, tipptGerade = false, ganzerText = '';
+var FIGUREN = { vogt:'Direktorin Vogt', du:'Du (Gedanken)' };
+
+// Die Figur, die gerade spricht (oder denkt), bekommt einen goldenen Schein.
+function markiereSprecher(wer){
+  $('fig-vogt').classList.toggle('spricht', wer === 'vogt');
+  $('fig-du').classList.toggle('spricht', wer === 'du');
+}
+function sage(zeilen, danach){ schlange = zeilen.slice(); nachDialog = danach; dlg.hidden = false; naechsteZeile(); }
+function naechsteZeile(){
+  var z = schlange.shift();
+  if (!z) { dlg.hidden = true; markiereSprecher(null); var f = nachDialog; nachDialog = null; f && f(); return; }
+  dlgName.textContent = FIGUREN[z.wer];
+  dlg.classList.toggle('gedanke', z.wer === 'du');
+  markiereSprecher(z.wer);
+  dlg.querySelectorAll('.portrait svg').forEach(function(s){ s.toggleAttribute('hidden', s.getAttribute('data-wer') !== z.wer); });
+  tippe(z.text);
+}
+function tippe(text){
+  clearInterval(tippTimer); ganzerText = text;
+  if (RUHIG) { dlgText.textContent = text; return; }
+  var i = 0; tipptGerade = true; dlgText.textContent = '';
+  tippTimer = setInterval(function(){
+    i++; dlgText.textContent = text.slice(0, i);
+    if (i % 2 === 0 && text[i-1] !== ' ') SYNTH.tick();
+    if (i >= text.length) { clearInterval(tippTimer); tipptGerade = false; }
+  }, 26);
+}
+function weiter(){
+  if (tipptGerade) { clearInterval(tippTimer); tipptGerade = false; dlgText.textContent = ganzerText; }
+  else naechsteZeile();
+}
+dlg.addEventListener('click', weiter);
+document.addEventListener('keydown', function(e){
+  if (!dlg.hidden && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); weiter(); }
+});
+
+/* ============================================================
+   ABLAUF DER SZENE
+   Teil 1: vor Christus geboren (<) + Herkunft China -> die richtige Person krönen.
+   Teil 2: die zuletzt geborene Person finden (>) -> ihr Geburtsjahr in die Zeitmaschine eintragen.
+   ============================================================ */
+var phase = 'start', teil = 1, hinweisStufe = 0, neuNotiz = false, schrittNr = 0;
+var befehlOk = false;   // pro Rätsel: mindestens eine gültige Abfrage (nicht nur ein Grundbaustein), siehe SqlSzene.istGrundbefehl
+Spiel.zeichneEnergie($('energie-anzeige'));
+
+SYNTH.riss = function(){ ton(220, 0.7, 'sawtooth', 0.08); ton(440, 0.6, 'sine', 0.1, 0.12); ton(660, 0.5, 'sine', 0.08, 0.3); };
+
+/* --- Die drei Personen im Saal (Reihenfolge wird bei jedem Laden neu gemischt) --- */
+var SVGNS = 'http://www.w3.org/2000/svg';
+var KANDIDATEN = [
+  { name: NAME_ZWEITE,   typ: 'zetian', richtig: false },
+  { name: NAME_ERFUNDEN, typ: 'beamte', richtig: false },
+  { name: KAISER[0] ? KAISER[0].name : '?', typ: 'kaiser', richtig: true }
+];
+(function mischen(){
+  for (var i = KANDIDATEN.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1)), t = KANDIDATEN[i]; KANDIDATEN[i] = KANDIDATEN[j]; KANDIDATEN[j] = t;
+  }
+})();
+var KAND_X = [950, 1120, 1290];
+function figurSVG(typ, name){
+  var robe = { zetian:'#2f7a5a', beamte:'#3f5f9a', kaiser:'#241a1a' }[typ];
+  var rand = { zetian:'#d4af37', beamte:'#c9d6f0', kaiser:'#b0302a' }[typ];
+  var s = '<rect x="-66" y="-312" width="132" height="318" fill="transparent"/>' +
+          '<rect class="glanz" x="-70" y="-318" width="140" height="326" rx="14"/>' +
+          '<path class="kontur" d="M-54,0 L-42,-188 Q0,-214 42,-188 L54,0 Z" fill="' + robe + '" stroke="#8f7a3f" stroke-width="2"/>' +
+          '<path d="M-18,-200 L0,-140 L18,-200" fill="none" stroke="' + rand + '" stroke-width="5"/>' +
+          '<rect x="-46" y="-96" width="92" height="14" fill="' + rand + '" opacity=".9"/>' +
+          '<circle class="kontur" cx="0" cy="-240" r="34" fill="#e0c4a2" stroke="#8f7a3f" stroke-width="2"/>';
+  if (typ === 'zetian') {
+    s += '<path d="M-35,-238 Q-38,-284 0,-284 Q38,-284 35,-238 Q26,-264 0,-266 Q-26,-264 -35,-238 Z" fill="#14100e"/>' +
+         '<circle cx="0" cy="-294" r="13" fill="#14100e"/>' +
+         '<path d="M-24,-292 L24,-292" stroke="#d4af37" stroke-width="3"/><circle cx="-24" cy="-292" r="3.5" fill="#d4af37"/><circle cx="24" cy="-292" r="3.5" fill="#d4af37"/>';
+  } else if (typ === 'beamte') {
+    s += '<rect x="-26" y="-292" width="52" height="24" rx="4" fill="#14100e"/>' +
+         '<rect x="-64" y="-284" width="38" height="7" fill="#14100e"/><rect x="26" y="-284" width="38" height="7" fill="#14100e"/>';
+  } else {
+    s += '<rect x="-30" y="-304" width="60" height="14" fill="#14100e" stroke="#d4af37" stroke-width="1.5"/>' +
+         '<rect x="-44" y="-292" width="88" height="10" fill="#14100e" stroke="#d4af37" stroke-width="1.5"/>';
+    for (var x = -36; x <= 36; x += 12) s += '<line x1="' + x + '" y1="-282" x2="' + x + '" y2="-262" stroke="#d4af37" stroke-width="1.5"/><circle cx="' + x + '" cy="-260" r="2.6" fill="#d4af37"/>';
+  }
+  s += '<circle cx="-11" cy="-240" r="2.6" fill="#1a1208"/><circle cx="11" cy="-240" r="2.6" fill="#1a1208"/>' +
+       '<path d="M-8,-224 Q0,-219 8,-224" fill="none" stroke="#8a4a3a" stroke-width="2"/>';
+  // Namensschild auf dem Podest
+  s += '<rect x="-84" y="8" width="168" height="32" fill="#efe6cf" stroke="#8f7a3f" stroke-width="2"/>' +
+       '<text x="0" y="31" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="#2b1d14">' + name + '</text>';
+  // Krone: fällt nach der richtigen Wahl auf den Kopf
+  s += '<g class="krone"><path d="M-32,-300 L-28,-326 L-14,-310 L0,-334 L14,-310 L28,-326 L32,-300 Z" fill="#d4af37" stroke="#7a5a1e" stroke-width="2"/>' +
+       '<circle cx="0" cy="-318" r="4" fill="#c0392b"/><circle cx="-18" cy="-308" r="3" fill="#2d7a4a"/><circle cx="18" cy="-308" r="3" fill="#3f5f9a"/></g>';
+  return s;
+}
+KANDIDATEN.forEach(function(k, i){
+  var g = document.createElementNS(SVGNS, 'g');
+  g.setAttribute('id', 'hs-kand-' + i); g.setAttribute('class', 'hs kand'); g.setAttribute('role', 'button'); g.setAttribute('tabindex', '-1');
+  g.setAttribute('aria-label', 'Person im Saal: ' + k.name);
+  g.setAttribute('transform', 'translate(' + KAND_X[i] + ',660)');
+  g.innerHTML = figurSVG(k.typ, k.name);
+  $('kandidaten').appendChild(g); k.gruppe = g; k.id = g.id;
+});
+var KAND_IDS = KANDIDATEN.map(function(k){ return k.id; });
+
+tonStart();
+function tonFreigeben(){ if (ctx && ctx.state !== 'running') ctx.resume(); }
+document.addEventListener('pointerdown', tonFreigeben);
+document.addEventListener('keydown', tonFreigeben);
+
+setTimeout(function(){
+  $('start').classList.add('weg');
+  setTimeout(szeneBeginnen, RUHIG ? 0 : 800);
+}, 1800);
+
+function szeneBeginnen(){
+  $('start').hidden = true; phase = 'intro';
+  sage([
+    { wer:'vogt', text:'Dritte Zeitreise: China, in der Zeit vor Christus. Drei Personen wollen zum Kaiser gekrönt werden.' },
+    { wer:'vogt', text:'Nur eine hat China vereint. Kröne die richtige – sonst schreibt sich die Geschichte um.' }
+  ], aufgabeStarten);
+}
+
+function aktivieren(id, an){ var h = $(id); h.classList.toggle('aktiv', an); h.setAttribute('tabindex', an ? '0' : '-1'); }
+function aufgabeStarten(){
+  phase = 'aufgabe'; $('auftrag').hidden = false; $('notiz-knopf').hidden = false;
+  neuNotiz = true; $('notiz-knopf').classList.add('neu'); $('a-notiz').classList.add('neu');
+  zeigeSchritt(1);
+  ['hs-kopf'].concat(KAND_IDS).forEach(function(id){ aktivieren(id, true); });
+  blaseAktualisieren();
+}
+function frei(){ return dlg.hidden && $('terminal').hidden && $('schloss').hidden; }
+function hotspot(id, aktion){
+  var h = $(id);
+  h.addEventListener('click', function(){ if (phase === 'aufgabe' && frei()) { klang('klick'); aktion(); } });
+  h.addEventListener('keydown', function(e){ if ((e.key === 'Enter' || e.key === ' ') && phase === 'aufgabe' && frei()) { e.preventDefault(); aktion(); } });
+}
+hotspot('hs-kopf', function(){ blaseZeigen(false); $('terminal').hidden = false; $('eingabe').focus(); });
+hotspot('hs-zeit', zeitOeffnen);
+KANDIDATEN.forEach(function(k){ hotspot(k.id, function(){ kandidatGeklickt(k); }); });
+
+/* --- Denkblase: erscheint nur beim Darüberfahren (Maus) bzw. Fokus (Tastatur) --- */
+function blaseZeigen(an){
+  $('denkblase').classList.toggle('sichtbar', !!an && phase === 'aufgabe' && frei());
+}
+function blaseAktualisieren(){ blaseZeigen($('hs-kopf').matches(':hover') || document.activeElement === $('hs-kopf')); }
+(function(){
+  var kopf = $('hs-kopf');
+  kopf.addEventListener('mouseenter', function(){ blaseZeigen(true); });
+  kopf.addEventListener('mouseleave', function(){ blaseZeigen(false); });
+  kopf.addEventListener('focus', function(){ blaseZeigen(true); });
+  kopf.addEventListener('blur', function(){ blaseZeigen(false); });
+})();
+
+/* --- Notizbuch: alle gelernten Befehle. Das Zeichen < ist neu in dieser Szene. --- */
+var NOTIZEN = [
+  { name:'SELECT', text:'zeigt dir Spalten an. Der Stern * bedeutet: alle Spalten.', bsp:'SELECT * FROM personen' },
+  { name:'COUNT(*)', text:'zählt die Treffer einer Abfrage und zeigt dir nur die Zahl — nicht die einzelnen Personen.', bsp:"SELECT COUNT(*) FROM personen WHERE herkunft = 'Schweiz'" },
+  { name:'FROM',   text:'sagt, aus welcher Tabelle die Daten kommen.', bsp:'' },
+  { name:'WHERE',  text:'zeigt nur die Personen, für die eine Bedingung stimmt.', bsp:"WHERE herkunft = 'Schweiz'" },
+  { name:'AND',    text:'beide Bedingungen müssen gleichzeitig stimmen.', bsp:"WHERE geburtsjahr = 1961 AND wirkungsbereich = 'Politik'" },
+  { name:'OR',     text:'mindestens eine der Bedingungen muss stimmen.', bsp:"WHERE herkunft = 'Frankreich' OR herkunft = 'Japan'" },
+  { name:'Zahl oder Text?', text:'Zahlen schreibst du ohne Anführungszeichen, Text mit einfachen Anführungszeichen.', bsp:"geburtsjahr = 1961    herkunft = 'Schweiz'" },
+  { name:'( )',    text:'Klammern fassen zusammen, was zusammengehört. Zuerst gilt, was in der Klammer steht.', bsp:"WHERE (… OR …) AND …" },
+  { name:'<',      text:'„kleiner als“: zeigt nur Personen, bei denen der Wert kleiner ist als die Zahl.', bsp:'WHERE geburtsjahr < 1500', neu:true }
+];
+function notizenZeichnen(){
+  var l = $('notiz-liste'); l.innerHTML = '';
+  NOTIZEN.forEach(function(n){
+    var p = document.createElement('p'); p.className = 'eintrag';
+    var b = document.createElement('b'); b.textContent = n.name; p.appendChild(b);
+    if (n.neu && neuNotiz) { var neu = document.createElement('span'); neu.className = 'neu'; neu.textContent = 'NEU'; p.appendChild(neu); }
+    p.appendChild(document.createTextNode(' – ' + n.text));
+    if (n.bsp) { var c = document.createElement('code'); c.textContent = 'Beispiel: ' + n.bsp; p.appendChild(c); }
+    l.appendChild(p);
+  });
+}
+function notizbuchUmschalten(zeigen){
+  var nb = $('notizbuch');
+  if (zeigen === undefined) zeigen = nb.hidden;
+  if (zeigen) { notizenZeichnen(); neuNotiz = false; $('notiz-knopf').classList.remove('neu'); $('a-notiz').classList.remove('neu'); klang('klick'); }
+  nb.hidden = !zeigen;
+}
+$('notiz-knopf').onclick = function(){ notizbuchUmschalten(); };
+$('a-notiz').onclick = function(){ notizbuchUmschalten(true); };
+$('notiz-zu').onclick = function(){ notizbuchUmschalten(false); };
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('notizbuch').hidden) notizbuchUmschalten(false); });
+// Ein Klick neben das Notizbuch (z. B. ins SQL-Feld) schliesst es; Klicks im Notizbuch und auf seine Öffner nicht.
+document.addEventListener('pointerdown', function(e){
+  if ($('notizbuch').hidden) return;
+  if (e.target.closest && e.target.closest('#notizbuch, #notiz-knopf, #a-notiz')) return;
+  notizbuchUmschalten(false);
+});
+
+/* --- Auftrag (auch in der SQL-Maske sichtbar) --- */
+function auftragKopieren(){
+  var t = $('term-auftrag'); t.innerHTML = $('auftrag').innerHTML;
+  var tipp = t.querySelector('small'); if (tipp) tipp.remove();
+}
+auftragKopieren();
+
+/* --- SQL-Maske (= dein Hirn) --- */
+var SPALTENWAHL_ANZEIGEN = true;
+if (SPALTENWAHL_ANZEIGEN) {
+  $('spalten-wahl').hidden = false;
+  SPALTEN.forEach(function(s){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = s;
+    b.onclick = function(){ einfuegen(s); }; $('chips').appendChild(b);
+  });
+}
+function einfuegen(txt){
+  var e = $('eingabe'), a = e.selectionStart, z = e.selectionEnd;
+  var vor = e.value.slice(0, a), leer = vor && !/\s$/.test(vor) ? ' ' : '';
+  e.value = vor + leer + txt + e.value.slice(z);
+  e.focus(); e.selectionStart = e.selectionEnd = a + leer.length + txt.length;
+}
+
+/* --- Geführte Anleitung nur in Teil 1: 1 = das neue Zeichen < (mit AND), 2 = gefunden.
+       In Teil 2 gibt es keine Anleitung mehr. --- */
+function zeigeSchritt(n){
+  schrittNr = n;
+  var T = {
+    1: { kopf:'NEUES ZEICHEN: <',
+         text:'Jahre vor Christus sind negative Zahlen. Das Zeichen < heisst „kleiner als“. Gesucht: vor Christus geboren UND aus China.',
+         code:"SELECT * FROM personen WHERE geburtsjahr < ____ AND ....." },
+    2: { kopf:'GEFUNDEN · DIESE PERSON HAT CHINA VEREINT',
+         text:'Nur eine Person passt. Klicke im Thronsaal die Person an, die gekrönt werden soll.',
+         code:'' }
+  }[n];
+  var a = $('anleitung');
+  a.classList.toggle('geschafft', n === 2);
+  a.querySelector('.a-kopf').textContent = T.kopf;
+  a.querySelector('.a-text').textContent = T.text;
+  a.querySelector('.a-code').textContent = T.code;
+}
+function pruefeSchritt(r, gemogelt){
+  if (teil !== 1 || schrittNr >= 2 || r.zaehlen || gemogelt) return;
+  var gefunden = r.zeilen.length === KAISER.length && r.zeilen.every(function(p){ return KAISER.indexOf(p) >= 0; });
+  if (gefunden) { zeigeSchritt(2); klang('erfolg'); }
+}
+
+function ausfuehren(){
+  var m = $('meldung'), aus = $('ausgabe');
+  try {
+    var text = $('eingabe').value;
+    if (text.trim()) { versucht = true; $('energie-info').hidden = true; }
+    // Die Platzhalter in der Anleitung (____ und .....) sind keine Werte.
+    if (/_{2,}|\.{3,}/.test(text)) Fehler('Die Platzhalter ____ und ..... sind nur Platzhalter. Ersetze sie durch die passenden Werte und Bedingungen aus dem Auftrag.');
+    var r = abfrage(text);
+    m.className = 'ok';
+    aus.innerHTML = '';
+    var ohneText = text.replace(/'[^']*'/g, "''");
+    var gemogelt = /\b(name|id)\s*(=|<>|!=|<=|>=|<|>)/i.test(ohneText);
+    if (!SqlSzene.istGrundbefehl(text)) befehlOk = true;
+    m.textContent = 'Abfrage ausgeführt.';
+    if (r.zaehlen) {
+      aus.innerHTML = '<div class="treffer">ANZAHL</div><div class="karte" style="max-width:14em"><strong style="font-size:2.4em">' + r.zeilen.length + '</strong><span>Personen erfüllen die Bedingung</span></div>';
+    } else {
+      // Bewusst OHNE Trefferzahl: In echtem SQL zählst du mit SELECT COUNT(*), nicht durch Ablesen der Liste.
+      // Echtes SQL liefert nicht nur Personen: AVG(…), GROUP BY, DISTINCT … als Zahl oder Tabelle
+      if (r.art === 'zahl' || r.art === 'tabelle') aus.innerHTML = SqlSzene.alsTabelle(r);
+      else if (!r.zeilen.length) { aus.insertAdjacentHTML('beforeend', '<p class="leer">Keine Person passt. Prüfe die Schreibweise des Textes.</p>'); }
+      var raster = document.createElement('div'); raster.className = 'karten'; aus.appendChild(raster);
+      r.zeilen.forEach(function(z, n){
+        var k = document.createElement('div'); k.className = 'karte'; k.style.animationDelay = (Math.min(n, 24) * 0.03) + 's';
+        var titel = r.spalten.indexOf('name') >= 0 ? z.name : '#' + z.id;
+        var html = '<strong>' + titel + '</strong>';
+        // Werte so, wie SQLite sie liefert — auch berechnete Spalten (z. B. 2026 - geburtsjahr AS jahre)
+        r.spalten.forEach(function(s, i){ if (s !== 'name') html += '<span>' + SqlSzene.text(s) + ': ' + SqlSzene.text(r.werte ? r.werte[n][i] : z[s]) + '</span>'; });
+        k.innerHTML = html; raster.appendChild(k);
+      });
+    }
+    // Kleine Stupser, ohne die Lösung zu verraten:
+    if (gemogelt) m.textContent += '   Tipp: Nach einem Namen zu suchen wäre gemogelt – nutze Eigenschaften wie Geburtsjahr oder Herkunft.';
+    if (!r.zeilen.length && /\b([a-z_]+)\s*=\s*''\s+and\s+\1\s*=\s*''/i.test(ohneText))
+      m.textContent += '   Tipp: Niemand kann gleichzeitig beides sein.';
+    if (/\band\b/i.test(ohneText) && /\bor\b/i.test(ohneText) && ohneText.indexOf('(') < 0)
+      m.textContent += '   Tipp: AND wird vor OR gerechnet. Setze eine Klammer um das, was zusammengehört.';
+    pruefeSchritt(r, gemogelt);
+    klang('klick');
+  } catch (err) {
+    if (!err.fehler) throw err;
+    m.className = 'fehler'; m.textContent = '✗ ' + err.fehler; klang('fehler');
+  }
+}
+$('los').onclick = ausfuehren;
+
+/* --- Grundbausteine: Ein Klick ersetzt den Inhalt des Feldes (wie das Grundgerüst in „Wer bin ich?“) --- */
+document.querySelectorAll('#bausteine .baustein').forEach(function(b){
+  b.onclick = function(){
+    var e = $('eingabe'), text = b.getAttribute('data-text'), ok = false;
+    e.focus(); e.select();
+    try { ok = document.execCommand('insertText', false, text); } catch (x) {}   // so geht Strg+Z weiterhin
+    if (!ok || e.value !== text) e.value = text;
+    e.selectionStart = e.selectionEnd = e.value.length;
+  };
+});
+$('eingabe').addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ausfuehren(); } });
+function hinweiseZuruecksetzen(liste){
+  HINWEISE = liste; hinweisStufe = 0; versucht = false; $('energie-info').hidden = true; $('hinweis').hidden = true; $('hinweis').textContent = '';
+  $('hilfe').disabled = false; $('hilfe').textContent = 'Hinweis (−1 Energie)';
+}
+var versucht = false;   // Einen Hinweis gibt es erst, wenn man im SQL-Feld etwas versucht hat
+function energieInfo(text){ var i = $('energie-info'); i.textContent = text; i.hidden = false; }
+$('hilfe').onclick = function(){
+  if (hinweisStufe >= HINWEISE.length) return;
+  if (!versucht) { energieInfo('Probiere zuerst selbst eine Abfrage aus – danach helfe ich dir.'); return; }
+  if (Spiel.energie() <= 0) { energieInfo('Dein Gehirn ist zu müde. Sammle Energie in den Sidequests.'); return; }
+  $('energie-info').hidden = true;
+  Spiel.energieAb();
+  var h = $('hinweis'); h.hidden = false;
+  h.textContent = 'Hinweis ' + (hinweisStufe + 1) + '/3: ' + HINWEISE[hinweisStufe];
+  hinweisStufe++; versucht = false;
+  if (hinweisStufe >= HINWEISE.length) { $('hilfe').disabled = true; $('hilfe').textContent = 'Keine weiteren Hinweise'; }
+};
+$('term-zu').onclick = function(){ $('terminal').hidden = true; blaseAktualisieren(); };
+
+/* --- Teil 1: die richtige Person krönen --- */
+function kandidatGeklickt(k){
+  if (teil !== 1) return;                       // in Teil 2 sind die Personen nur Kulisse
+  if (!befehlOk) {
+    sage([{ wer:'vogt', text: k.richtig ? SqlSzene.ZUERST_ABFRAGE : 'Erst musst du herausfinden, wer China vereint hat. Suche in deinem Hirn und klicke auf deinen Kopf.' }], blaseAktualisieren);
+    return;
+  }
+  if (k.richtig) return kroenen(k);
+  klang('fehler');
+  
+  var warum = k.typ === 'beamte'
+    ? '„' + k.name + '“ kommt in deinem Archiv gar nicht vor. Vergleiche mit der Karteikarte.'
+    : '„' + k.name + '“ taucht in deinem Ergebnis nicht auf. Vergleiche mit der Karteikarte.';
+  sage([{ wer:'vogt', text: warum }], blaseAktualisieren);
+}
+function blende(zwischen, danach){
+  var b = $('blende');
+  b.classList.add('zu');
+  setTimeout(function(){
+    zwischen(); b.classList.remove('zu');
+    setTimeout(danach, RUHIG ? 0 : 750);
+  }, RUHIG ? 0 : 800);
+}
+function kroenen(k){
+  phase = 'pause'; $('terminal').hidden = true; blaseZeigen(false); notizbuchUmschalten(false);
+  ['hs-kopf'].concat(KAND_IDS).forEach(function(id){ aktivieren(id, false); });
+  k.gruppe.classList.add('gekroent'); k.gruppe.querySelector('.krone').classList.add('faellt');
+  klang('geschafft');
+  setTimeout(function(){
+    sage([
+      { wer:'vogt', text:'„' + k.name + '“ hat China vereint – die Geschichte ist gesichert!' },
+      { wer:'vogt', text:'Doch der Zeitriss bleibt offen und zieht uns schon weiter …' }
+    ], function(){
+      klang('riss');
+      blende(wechselZuTeil2, function(){
+        sage([
+          { wer:'vogt', text:'Die anderen beiden sind verschwunden. Neues Reiseziel: das Geburtsjahr der jüngsten Person im Archiv.' },
+          { wer:'vogt', text:'Trag es in die Zeitmaschine ein.' }
+        ], function(){ phase = 'aufgabe'; blaseAktualisieren(); });
+      });
+    });
+  }, RUHIG ? 300 : 1500);
+}
+function wechselZuTeil2(){
+  teil = 2;
+  KANDIDATEN.forEach(function(k){ if (!k.richtig) k.gruppe.style.display = 'none'; });
+  $('zeit-gruppe').classList.add('da'); aktivieren('hs-zeit', true); aktivieren('hs-kopf', true);
+  $('auftrag').innerHTML = '<b>AUFTRAG · DAS NÄCHSTE ZIEL</b>Der Zeitriss führt uns weiter. Das Reiseziel ist das <u>Geburtsjahr</u> der <u>jüngsten</u> Person in deinem Archiv. Finde es und trage es in die Zeitmaschine ein.';
+  auftragKopieren();
+  // Teil 2: keine Anleitung mehr, kein neuer Notizbuch-Eintrag
+  $('anleitung').classList.add('nur-notiz');
+  hinweiseZuruecksetzen(HINWEISE_T2);
+  befehlOk = false;   // neues Rätsel: wieder mindestens eine gültige Abfrage nötig
+  $('eingabe').value = '';
+  $('meldung').className = ''; $('meldung').textContent = '';
+  $('ausgabe').innerHTML = '';
+}
+
+/* --- Teil 2: Zeitmaschine (Zahlenschloss) — nimmt das Jahr erst nach einer gültigen Abfrage an (befehlOk) --- */
+var code = '';
+['1','2','3','4','5','6','7','8','9','⌫','0','OK'].forEach(function(t){
+  var b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+  if (t === 'OK') b.className = 'ok';
+  b.onclick = function(){ taste(t); }; $('tasten').appendChild(b);
+});
+function taste(t){
+  var a = $('anzeige'); a.classList.remove('falsch');
+  if (t === '⌫') code = code.slice(0, -1);
+  else if (t === 'OK') return pruefeCode();
+  else if (code.length < 4) { code += t; SYNTH.klick(); }
+  a.textContent = code;
+}
+document.addEventListener('keydown', function(e){
+  if ($('schloss').hidden) return;
+  if (/^[0-9]$/.test(e.key)) taste(e.key);
+  else if (e.key === 'Backspace') taste('⌫');
+  else if (e.key === 'Enter') taste('OK');
+  else if (e.key === 'Escape') { $('schloss').hidden = true; blaseAktualisieren(); }
+});
+$('schloss-zu').onclick = function(){ $('schloss').hidden = true; blaseAktualisieren(); };
+function zeitOeffnen(){ if (teil !== 2) return; code = ''; $('anzeige').textContent = ''; $('schloss').hidden = false; }
+function pruefeCode(){
+  var a = $('anzeige');
+  if (code === String(MAXJAHR)) {
+    if (befehlOk) return szeneGeschafft();
+    // Jahr stimmt, aber noch keine gültige Abfrage in diesem Rätsel: kein Abzug, nur ein Hinweis
+    code = ''; a.textContent = ''; $('schloss').hidden = true; klang('fehler');
+    sage([{ wer:'vogt', text: SqlSzene.ZUERST_ABFRAGE }], blaseAktualisieren);
+    return;
+  }
+  void a.offsetWidth; a.classList.add('falsch'); klang('fehler');
+  
+  code = ''; setTimeout(function(){ a.textContent = ''; }, 400);
+  $('schloss').hidden = true;
+  sage([{ wer:'vogt', text:'Falsch. Die Zeitmaschine verzeiht keine Schätzungen. Frag dein Hirn – wer wurde zuletzt geboren?' }], blaseAktualisieren);
+}
+
+function szeneGeschafft(){
+  phase = 'geschafft'; $('schloss').hidden = true; $('terminal').hidden = true;
+  ['hs-kopf', 'hs-zeit'].forEach(function(id){ aktivieren(id, false); });
+  $('auftrag').hidden = true; $('notiz-knopf').hidden = true; notizbuchUmschalten(false); blaseZeigen(false);
+  $('zeit-anzeige').textContent = MAXJAHR;
+  $('stempel').classList.add('zeigen'); klang('geschafft');
+  setTimeout(function(){
+    $('stempel').classList.remove('zeigen');
+    var namen = JUNGE.map(function(p){ return p.name; }).join(' und ');
+    sage([
+      { wer:'vogt', text:MAXJAHR + ' – das Geburtsjahr von ' + namen + '. Ungefähr dorthin führt uns die nächste Zeitreise.' },
+      { wer:'du',   text:'Ich habe vorhin jemanden gekrönt, ohne zu fragen, ob das gut war …' }
+    ], function(){ $('endjahr').textContent = MAXJAHR; $('ende').hidden = false; });
+  }, 1600);
+}
+
+/* --- Film zur nächsten Zeitreise (Stockholm); ohne Datei direkt zur Kampagnenkarte --- */
+function filmZeigen(){
+  var f = $('film'), v = $('video'), fertig = false;
+  $('ende').hidden = true; f.hidden = false;
+  function ende(){ if (fertig) return; fertig = true; Spiel.zurKarte(4); }
+  v.onended = ende;
+  v.onerror = ende;
+  v.src = '../media/cutszene_stockholm.mp4';
+  v.play().catch(function(){ if (v.error) ende(); });
+}
+
+$('ton').onclick = function(){
+  stumm = !stumm; this.textContent = 'Ton: ' + (stumm ? 'aus' : 'an');
+  if (master) master.gain.value = stumm ? 0 : 0.8;
+};
+</script>
+</body>
+</html>

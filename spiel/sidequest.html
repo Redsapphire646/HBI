@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Sidequest (Platzhalter)</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.4cqw;
+  }
+  #gehirn-hud{position:absolute;top:3.5%;left:2.5%;display:flex;flex-direction:column;gap:.35cqw;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+  .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  h1{margin:0;color:var(--gold);font-size:4.2cqw;text-shadow:0 0 18px rgba(212,175,55,.3);}
+  p{margin:0;color:#b9b6ad;font-size:max(13px,1.5cqw);max-width:60%;line-height:1.5;}
+  .test{border:1px dashed var(--rot);padding:1.2cqw 1.6cqw;margin-top:1cqw;max-width:56%;}
+  .test .etikett{color:var(--rot);letter-spacing:.2em;font-size:max(10px,.9cqw);font-family:var(--mono);margin-bottom:.6cqw;}
+  button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;}
+  button:hover{background:rgba(212,175,55,.12);}
+  #meldung{min-height:1.5em;color:var(--gruen);font-size:max(12px,1.2cqw);}
+</style>
+</head>
+<body>
+<div id="buehne">
+  <div id="gehirn-hud"><div class="hud-label">ENERGIE</div><div id="hud-energie"></div></div>
+
+  <div class="kicker" id="kicker">SIDEQUEST</div>
+  <h1>Folgt bald</h1>
+  <p>Hier kannst du später einen Befehl üben und dabei Energie für dein Gehirn sammeln. Die Aufgaben entstehen noch.</p>
+
+  <div class="test">
+    <div class="etikett">TESTMODUS · SPÄTER ENTFERNEN</div>
+    <button type="button" id="auffuellen">Energie auffüllen</button>
+    <div id="meldung" role="status"></div>
+  </div>
+
+  <button type="button" id="zurueck">◂ Zurück zur Karte</button>
+</div>
+
+<script src="spielstand.js"></script>
+<script>
+var $ = function(id){ return document.getElementById(id); };
+var q = new URLSearchParams(location.hash.replace(/^#/, '')).get('q') || '';
+Spiel.zeichneEnergie($('hud-energie'));
+if (/^\d+\.\d+$/.test(q)) $('kicker').textContent = 'SIDEQUEST ' + q;
+
+$('auffuellen').onclick = function(){
+  if (!/^\d+\.\d+$/.test(q)) { $('meldung').textContent = 'Diese Seite wird über die Kampagnenkarte geöffnet.'; return; }
+  var neu = Spiel.sidequestGeschafft(q);
+  if (!neu && Spiel.sidequestErledigt(q)) { $('meldung').textContent = 'Diese Sidequest ist schon erledigt – die Energie gab es bereits.'; return; }
+  Spiel.energieVoll();
+  $('meldung').textContent = 'Sidequest geschafft: Dein Gehirn ist wieder voll aufgeladen.';
+};
+$('zurueck').onclick = function(){ location.href = Spiel.url('kampagnenkarte.html'); };
+</script>
+</body>
+</html>

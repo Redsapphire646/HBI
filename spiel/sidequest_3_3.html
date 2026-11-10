@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Sidequest 3.3: Neuer Befehl IN</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);
+  }
+  #gehirn-hud{position:absolute;top:3.5%;left:2.5%;display:flex;flex-direction:column;gap:.35cqw;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+  #kopf{position:absolute;top:3.5%;left:0;right:0;text-align:center;pointer-events:none;}
+  #kopf .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  #kopf h1{margin:.15em 0 0;color:var(--gold);font-size:max(20px,2.8cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #zurueck{position:absolute;top:3.5%;right:2.5%;font-family:var(--serif);font-size:max(11px,1cqw);
+    background:rgba(10,15,36,.8);color:var(--gold);border:1px solid var(--gold-dim);padding:.4cqw .9cqw;cursor:pointer;}
+  #zurueck:hover{background:rgba(212,175,55,.12);}
+
+  #maske{position:absolute;left:5%;right:5%;top:24%;bottom:2.5%;display:flex;flex-direction:column;gap:.8cqw;padding:1.1cqw 1.4cqw;
+    background:#0b1020;border:2px solid var(--gold-dim);box-shadow:0 0 3cqw rgba(212,175,55,.15);
+    font-family:var(--mono);font-size:max(11px,1.1cqw);}
+  #maske > *{flex:none;}
+  #maske header{display:flex;justify-content:space-between;align-items:center;color:var(--gold);letter-spacing:.08em;
+    border-bottom:1px solid var(--gold-dim);padding-bottom:.6cqw;}
+  #punkte{display:flex;gap:.5cqw;}
+  #punkte i{display:block;width:1.1cqw;height:1.1cqw;border-radius:50%;border:1px solid var(--gold-dim);}
+  #punkte i.aktuell{border-color:var(--gold);box-shadow:0 0 .6cqw rgba(212,175,55,.6);}
+  #punkte i.fertig{background:var(--gruen);border-color:var(--gruen);}
+
+  /* Oben: links die Einführung (nur bei der ersten Aufgabe), rechts der Auftrag */
+  .oben{display:grid;grid-template-columns:1fr 31%;gap:1cqw;align-items:start;}
+  .oben.ohne{grid-template-columns:1fr;}
+  #anleitung{border:1px solid var(--gruen);border-left-width:.35cqw;background:rgba(159,229,159,.06);padding:.8cqw 1cqw;line-height:1.45;}
+  #anleitung.geschafft{border-color:var(--gold);background:rgba(212,175,55,.08);}
+  #anleitung .a-kopf{color:var(--gruen);letter-spacing:.12em;font-size:.85em;margin-bottom:.4em;}
+  #anleitung.geschafft .a-kopf{color:var(--gold);}
+  #anleitung .a-text{color:#e8dcc0;}
+  #anleitung .a-code{display:block;margin:.6em 0 0;padding:.5em .7em;background:#050810;color:var(--gruen);border:1px dashed #2c3a2c;font:inherit;font-size:1.1em;}
+  #anleitung .a-code:empty{display:none;}
+  #auftrag{background:var(--papier);color:var(--tinte);padding:.8cqw 1cqw;font-family:var(--serif);font-size:max(12px,1.2cqw);line-height:1.4;
+    box-shadow:0 .2cqw .6cqw rgba(0,0,0,.4);border-left:.35cqw solid #8b2e1f;}
+  .oben.ohne #auftrag{font-size:max(13px,1.35cqw);}
+  #auftrag b{display:block;letter-spacing:.2em;font-size:.65em;color:#8b2e1f;margin-bottom:.3em;}
+  #auftrag u{text-decoration-thickness:.12em;}
+
+  .gruppen{display:flex;flex-wrap:wrap;gap:.5cqw 1.6cqw;align-items:center;}
+  .gruppe{display:flex;flex-wrap:wrap;align-items:center;gap:.35cqw;border-left:.3cqw solid var(--farbe);padding-left:.7cqw;}
+  .gruppe .g-label{color:var(--farbe);font-size:.75em;letter-spacing:.12em;text-transform:uppercase;margin-right:.3cqw;}
+  .baustein{border:none;border-radius:.5cqw;padding:.2cqw .75cqw;cursor:pointer;font:inherit;font-weight:bold;color:#0b1020;background:var(--farbe);
+    box-shadow:0 .15cqw 0 rgba(0,0,0,.45), inset 0 -.15cqw 0 rgba(0,0,0,.18);}
+  .baustein:hover,.baustein:focus-visible{filter:brightness(1.15);outline:none;}
+  .baustein:active{transform:translateY(1px);}
+  .baustein.neu{box-shadow:0 0 0 .2cqw var(--fg), 0 0 1cqw rgba(255,255,255,.35);}
+  .eingabe-zeile{display:grid;grid-template-columns:1fr auto;gap:.8cqw;align-items:stretch;}
+  #eingabe{width:100%;min-height:3.6em;resize:none;background:#050810;color:var(--gruen);border:1px solid #2c3a2c;
+    font:inherit;font-size:1.15em;padding:.6em;caret-color:var(--gruen);}
+  #eingabe:focus{outline:1px solid var(--gruen);}
+  #eingabe::placeholder{color:#5f7d5f;font-style:italic;opacity:1;}
+  .knoepfe{display:flex;flex-direction:column;gap:.6cqw;}
+  .knoepfe button{font:inherit;cursor:pointer;padding:.45cqw 1.2cqw;border:1px solid var(--gold);white-space:nowrap;}
+  #los{background:var(--gold);color:#0b1020;font-weight:bold;}
+  #weiter{background:none;color:var(--gruen);border-color:var(--gruen);font-weight:bold;}
+  #meldung{min-height:1.5em;line-height:1.4;}
+  #meldung.fehler{color:var(--rot);} #meldung.ok{color:var(--gruen);}
+  #ausgabe{flex:1 1 0;min-height:0;overflow:auto;padding:1cqw .2cqw 0;border-top:1px solid rgba(143,122,63,.4);}
+  .treffer{color:var(--gold);margin-bottom:.8cqw;letter-spacing:.05em;}
+  .karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(120px,13cqw),1fr));gap:.8cqw;}
+  .karte{background:var(--papier);color:var(--tinte);padding:.6cqw .8cqw;font-family:var(--serif);
+    border-top:.35cqw solid #8b2e1f;box-shadow:0 .2cqw .5cqw rgba(0,0,0,.4);animation:rein .25s ease-out both;}
+  .karte strong{display:block;font-size:1.05em;margin-bottom:.2em;}
+  .karte span{display:block;font-size:.85em;opacity:.8;}
+  @keyframes rein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .leer{color:#b9b6ad;font-style:italic;}
+
+  #fertig{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.2cqw;background:rgba(5,8,18,.9);}
+  #fertig h2{margin:0;color:var(--gold);font-size:max(22px,3.6cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #fertig p{margin:0;max-width:56%;color:#d6d1c0;font-size:max(13px,1.5cqw);line-height:1.5;}
+  #fertig button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:.6cqw;}
+  #fertig button:hover{background:rgba(212,175,55,.12);}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;transition-duration:0s !important;} }
+</style>
+</head>
+<body>
+<div id="buehne">
+  <div id="gehirn-hud" title="Energie"><div class="hud-label">ENERGIE</div><div id="hud-energie"></div></div>
+  <div id="kopf"><div class="kicker">SIDEQUEST 3.3 · NEU</div><h1>Ein neuer Befehl: IN</h1></div>
+  <button type="button" id="zurueck">◂ Zur Zentrale</button>
+
+  <div id="maske" role="group" aria-label="Neuer Befehl IN">
+    <header><span id="kopfzeile">EINFÜHRUNG</span><span id="punkte" aria-hidden="true"></span></header>
+    <div class="oben" id="oben">
+      <div id="anleitung" aria-live="polite">
+        <div class="a-kopf"></div>
+        <div class="a-text"></div>
+        <code class="a-code"></code>
+      </div>
+      <div id="auftrag"></div>
+    </div>
+    <div id="bausteine" class="gruppen"></div>
+    <div class="eingabe-zeile">
+      <textarea id="eingabe" spellcheck="false" aria-label="SQL-Abfrage" placeholder="SQL Abfrage hier eingeben"></textarea>
+      <div class="knoepfe">
+        <button type="button" id="los">▶ Ausführen</button>
+        <button type="button" id="weiter" hidden>Weiter ▸</button>
+      </div>
+    </div>
+    <div id="meldung" role="status"></div>
+    <div id="ausgabe"></div>
+  </div>
+
+  <div id="fertig" hidden>
+    <h2>Geschafft!</h2>
+    <p id="fertig-text"></p>
+    <button type="button" id="fertig-weiter">Zurück zur Zentrale ▸</button>
+  </div>
+</div>
+
+<script src="spielstand.js"></script>
+<script src="../daten/personen.js" charset="utf-8"></script>
+<script src="sql-asm.js" charset="utf-8"></script>
+<script src="sql-meldungen.js" charset="utf-8"></script>
+<script src="sql-szene.js" charset="utf-8"></script>
+<script>
+/* ============================================================
+   AUFGABEN — Einführung von IN (wie im Story-Modus: Anleitung links oben, Auftrag rechts), danach drei Festigungen.
+   in = { spalte, werte[] } (die IN-Liste), gleich = optionale Bedingung mit = (mit AND verknüpft, ohne Klammern).
+   Die Lösung wird aus den Daten berechnet; die Spalten wechseln bewusst.
+   ============================================================ */
+var AUFGABEN = [
+  { teil:'EINFÜHRUNG', art:'zaehlen', in:{ spalte:'kontinent', werte:['Asien', 'Afrika', 'Ozeanien'] }, gleich:null,
+    auftrag:'Wie viele Personen kommen aus <u>Asien</u>, <u>Afrika</u> oder <u>Ozeanien</u>? Schau in die Spalte <u>kontinent</u>.',
+    kopf:'NEU · IN ( … )',
+    text:'IN ist eine Abkürzung für mehrere OR. Statt kontinent = \'Asien\' OR kontinent = \'Afrika\' … schreibst du alle Werte in eine Klammer, getrennt durch Kommas. Klicke den Baustein SELECT COUNT(*) FROM personen und ergänze:',
+    code:"WHERE kontinent IN ('____', '____', '____')" },
+  { teil:'FESTIGUNG 1', art:'zeigen', in:{ spalte:'herkunft', werte:['Japan', 'China', 'Indien'] }, gleich:null,
+    auftrag:'Zeige alle Personen, deren <u>herkunft</u> Japan, China oder Indien ist.' },
+  { teil:'FESTIGUNG 2', art:'zaehlen', in:{ spalte:'epoche', werte:['Antike', 'Mittelalter'] }, gleich:{ spalte:'geschlecht', wert:'weiblich' },
+    auftrag:'Wie viele Personen sind <u>weiblich</u> (<u>geschlecht</u>) und gehören zur <u>epoche</u> Antike oder Mittelalter?' },
+  { teil:'FESTIGUNG 3', art:'zeigen', in:{ spalte:'wirkungsbereich', werte:['Musik', 'Sport', 'Literatur'] }, gleich:{ spalte:'epoche', wert:'Gegenwart' },
+    auftrag:'Zeige alle Personen aus der <u>epoche</u> Gegenwart, deren <u>wirkungsbereich</u> Musik, Sport oder Literatur ist.' }
+];
+AUFGABEN.forEach(function(a){
+  a.soll = DATEN.filter(function(p){
+    return a.in.werte.indexOf(p[a.in.spalte]) >= 0 && (!a.gleich || p[a.gleich.spalte] === a.gleich.wert);
+  });
+  if (!a.soll.length) console.warn('Datensatz: Aufgabe ' + a.teil + ' hat keine Treffer');
+});
+
+/* ---- Bausteine (Farben wie in „Wer bin ich?“ und im Story-Modus) ---- */
+var GRUPPEN = [
+  { titel:'Grundgerüst', farbe:'#d4af37', bausteine:[ ['SELECT * FROM personen','SELECT * FROM personen','neu'], ['SELECT COUNT(*) FROM personen','SELECT COUNT(*) FROM personen','neu'], ['WHERE','WHERE'] ] },
+  { titel:'Spalten',     farbe:'#5fa8e8', bausteine:SPALTEN.map(function(s){ return [s, s]; }) },
+  { titel:'Text',        farbe:'#9fe59f', bausteine:[ ["'…'", "'|'"] ] },
+  { titel:'Vergleichen', farbe:'#4fd1c5', bausteine:[ ['=','='] ] },
+  { titel:'Verknüpfen',  farbe:'#f0a04b', bausteine:[ ['AND','AND'], ['OR','OR'] ] },
+  { titel:'Liste',       farbe:'#e88bc4', bausteine:[ ['IN ( )','IN (|)','','neu'], [',',','] ] }
+];
+
+/* ---- Ton ---- */
+var ctx = null, master = null;
+function tonStart(){ if (ctx) return; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination); }
+function ton(freq, dauer, typ, laut, verz){ if (!ctx || ctx.state !== 'running') return;
+  var t = ctx.currentTime + (verz || 0), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = typ || 'sine'; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(laut || 0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dauer + 0.02); }
+var KLANG = {
+  klick: function(){ ton(900, 0.05, 'triangle', 0.15); },
+  erfolg: function(){ ton(523, 0.3, 'sine', 0.2); ton(659, 0.3, 'sine', 0.2, 0.1); ton(784, 0.5, 'sine', 0.2, 0.2); },
+  fehler: function(){ ton(160, 0.18, 'sawtooth', 0.12); ton(120, 0.25, 'sawtooth', 0.12, 0.12); },
+  geschafft: function(){
+    [523, 659, 784, 1047].forEach(function(f, i){ ton(f, 0.28, 'triangle', 0.2, i * 0.11); });
+    ton(1047, 0.9, 'sine', 0.16, 0.44); ton(1319, 0.9, 'sine', 0.12, 0.44); ton(1568, 0.9, 'sine', 0.1, 0.44);
+    ton(2093, 0.18, 'sine', 0.07, 0.6); ton(2637, 0.18, 'sine', 0.06, 0.7);
+  }
+};
+tonStart();
+document.addEventListener('pointerdown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+function klang(n){ try { KLANG[n](); } catch (e) {} }
+
+var $ = function(id){ return document.getElementById(id); };
+function abfrage(q){ return SqlSzene.abfrage(q); }
+Spiel.zeichneEnergie($('hud-energie'));
+
+/* ---- Bausteine: Grundgerüst ersetzt das Feld, alle anderen fügen an der Cursorposition ein; „|“ = dort steht danach der Cursor ---- */
+function einfuegen(text, art){
+  if (geloest) return;
+  var e = $('eingabe'), ok = false;
+  if (art === 'neu') {
+    e.focus(); e.select();
+    try { ok = document.execCommand('insertText', false, text); } catch (x) {}
+    if (!ok || e.value !== text) e.value = text;
+    e.selectionStart = e.selectionEnd = e.value.length;
+    return;
+  }
+  var a = e.selectionStart, z = e.selectionEnd;
+  var komma = text === ',';
+  if (komma && (e.value.slice(0, a).match(/'/g) || []).length % 2 === 1) {      // Cursor steht in einem Text: das Komma kommt hinter das schliessende '
+    var zu = e.value.indexOf("'", a);
+    if (zu >= 0) a = z = zu + 1;
+  }
+  var vor = e.value.slice(0, a), nach = e.value.slice(z);
+  var leer = vor && !komma && !/[\s(]$/.test(vor) ? ' ' : '';
+  if (komma) text = ', ';
+  var pos = text.indexOf('|'), t = text.replace('|', '');
+  e.value = vor + leer + t + nach;
+  e.focus(); e.selectionStart = e.selectionEnd = a + leer.length + (pos >= 0 ? pos : t.length);
+}
+GRUPPEN.forEach(function(g){
+  var d = document.createElement('div'); d.className = 'gruppe'; d.style.setProperty('--farbe', g.farbe);
+  var l = document.createElement('span'); l.className = 'g-label'; l.textContent = g.titel; d.appendChild(l);
+  g.bausteine.forEach(function(b){
+    var k = document.createElement('button'); k.type = 'button'; k.className = 'baustein' + (b[3] === 'neu' ? ' neu' : ''); k.textContent = b[0];
+    k.onclick = function(){ klang('klick'); einfuegen(b[1], b[2]); }; d.appendChild(k);
+  });
+  $('bausteine').appendChild(d);
+});
+
+/* ---- Ablauf ---- */
+var nr = 0, geloest = false;
+for (var i = 0; i < AUFGABEN.length; i++) $('punkte').appendChild(document.createElement('i'));
+
+function zeigeAufgabe(){
+  var a = AUFGABEN[nr];
+  geloest = false;
+  $('kopfzeile').textContent = a.teil + ' · ' + (nr + 1) + ' VON ' + AUFGABEN.length;
+  Array.prototype.forEach.call($('punkte').children, function(p, k){ p.className = k < nr ? 'fertig' : k === nr ? 'aktuell' : ''; });
+  $('auftrag').innerHTML = '<b>AUFTRAG</b>' + a.auftrag;
+  var an = $('anleitung'); an.hidden = !a.kopf; an.classList.remove('geschafft');
+  $('oben').classList.toggle('ohne', !a.kopf);
+  if (a.kopf) { an.querySelector('.a-kopf').textContent = a.kopf; an.querySelector('.a-text').textContent = a.text; an.querySelector('.a-code').textContent = a.code; }
+  $('eingabe').value = ''; $('ausgabe').innerHTML = '';
+  $('meldung').className = ''; $('meldung').textContent = '';
+  $('weiter').hidden = true; $('los').disabled = false; $('eingabe').disabled = false;
+  $('eingabe').focus();
+}
+
+function gleicheMenge(a, b){ return a.length === b.length && a.every(function(p){ return b.indexOf(p) >= 0; }); }
+
+function ausfuehren(){
+  if (geloest) return;
+  var m = $('meldung'), aus = $('ausgabe'), a = AUFGABEN[nr];
+  try {
+    var text = $('eingabe').value;
+    if (/_{2,}/.test(text)) throw { fehler:'Die Unterstriche ____ sind nur Platzhalter. Ersetze sie durch die passenden Werte.' };
+    var r = abfrage(text);
+    aus.innerHTML = '';
+    if (r.zaehlen) {
+      aus.innerHTML = '<div class="treffer">ANZAHL</div><div class="karte" style="max-width:14em"><strong style="font-size:2.4em">' + r.zeilen.length + '</strong><span>Personen erfüllen die Bedingung</span></div>';
+    } else if (r.art === 'zahl' || r.art === 'tabelle') {
+      aus.innerHTML = SqlSzene.alsTabelle(r);
+    } else {
+      if (!r.zeilen.length) aus.insertAdjacentHTML('beforeend', '<p class="leer">Keine Person passt. Prüfe die Schreibweise des Wertes.</p>');
+      var raster = document.createElement('div'); raster.className = 'karten'; aus.appendChild(raster);
+      r.zeilen.forEach(function(z, n){
+        var k = document.createElement('div'); k.className = 'karte'; k.style.animationDelay = (Math.min(n, 24) * 0.03) + 's';
+        var titel = r.spalten.indexOf('name') >= 0 ? z.name : '#' + z.id;
+        var html = '<strong>' + titel + '</strong>';
+        r.spalten.forEach(function(s, i){ if (s !== 'name') html += '<span>' + SqlSzene.text(s) + ': ' + SqlSzene.text(r.werte ? r.werte[n][i] : z[s]) + '</span>'; });
+        k.innerHTML = html; raster.appendChild(k);
+      });
+    }
+    // Prüfung: richtige Art, der neue Befehl IN wurde benutzt (nicht OR), Ergebnis stimmt
+    var ohneText = text.replace(/'[^']*'/g, "''");
+    var gut = false, rueckmeldung = '';
+    if (a.art === 'zeigen' && r.zaehlen) rueckmeldung = 'Hier sollst du die Personen sehen, nicht zählen.';
+    else if (a.art === 'zaehlen' && !r.zaehlen) rueckmeldung = 'Hier sollst du zählen: Nutze COUNT(*).';
+    else if (!/\bIN\s*\(/i.test(ohneText)) rueckmeldung = 'Nutze den neuen Befehl IN ( … ) statt mehrerer OR.';
+    else if (/\bOR\b/i.test(ohneText)) rueckmeldung = 'Mit IN brauchst du kein OR mehr: Alle Werte stehen in der Klammer.';
+    else if (a.gleich && !/\bAND\b/i.test(ohneText)) rueckmeldung = 'Verbinde die beiden Bedingungen mit AND.';
+    else if (a.art === 'zaehlen' ? r.wert === a.soll.length : (r.art === 'personen' && gleicheMenge(r.zeilen, a.soll))) gut = true;
+    else rueckmeldung = 'Das Ergebnis passt noch nicht. Prüfe die Spalte, die Werte, die Kommas und die Anführungszeichen.';
+    if (gut) richtig(); else { m.className = 'fehler'; m.textContent = rueckmeldung; klang('fehler'); }
+  } catch (err) {
+    if (!err.fehler) throw err;
+    m.className = 'fehler'; m.textContent = '✗ ' + err.fehler; klang('fehler');
+  }
+}
+function richtig(){
+  var a = AUFGABEN[nr];
+  geloest = true;
+  $('meldung').className = 'ok';
+  $('meldung').textContent = a.kopf ? 'Richtig! Du kennst jetzt IN. Gleich folgen drei Aufgaben zum Festigen.' : (nr + 1 < AUFGABEN.length ? 'Richtig!' : 'Richtig! Das war die letzte Aufgabe.');
+  if (a.kopf) { var an = $('anleitung'); an.classList.add('geschafft'); an.querySelector('.a-kopf').textContent = 'GESCHAFFT · IN ( … ) = DIE ABKÜRZUNG FÜR OR'; an.querySelector('.a-text').textContent = 'IN prüft, ob der Wert in der Liste steht. Mit AND kannst du es zusätzlich mit einer anderen Bedingung verbinden — ganz ohne Klammern.'; an.querySelector('.a-code').textContent = "WHERE spalte IN ('Wert1', 'Wert2') AND andere_spalte = 'Wert'"; }
+  Array.prototype.forEach.call($('punkte').children, function(p, k){ if (k <= nr) p.className = 'fertig'; });
+  $('weiter').textContent = nr + 1 < AUFGABEN.length ? 'Weiter ▸' : 'Fertig ▸';
+  $('weiter').hidden = false; $('los').disabled = true; $('eingabe').disabled = true;
+  klang('erfolg'); $('weiter').focus();
+}
+$('los').onclick = ausfuehren;
+$('eingabe').addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ausfuehren(); } });
+$('weiter').onclick = function(){
+  klang('klick');
+  if (nr + 1 < AUFGABEN.length) { nr++; zeigeAufgabe(); } else fertig();
+};
+
+/* ---- Geschafft: Energie wird aufgefüllt (einmal pro Sidequest) ---- */
+function fertig(){
+  var erstesMal = Spiel.sidequestGeschafft('3.3');
+  if (erstesMal) Spiel.energiePlus(1);
+  klang('geschafft');
+  $('fertig-text').textContent = erstesMal
+    ? 'Du kennst jetzt den Befehl IN. Dein Gehirn hat einen Energiebalken gewonnen.'
+    : 'Du kennst jetzt den Befehl IN. Die Energie für diese Sidequest hattest du schon.';
+  $('fertig').hidden = false;
+}
+function zurKarte(){ location.href = Spiel.url('zentrale.html', { z:3, r:1 }); }      // zurück in die Hauptzentrale
+$('zurueck').onclick = zurKarte;
+$('fertig-weiter').onclick = zurKarte;
+zeigeAufgabe();
+</script>
+</body>
+</html>

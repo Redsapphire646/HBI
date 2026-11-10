@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Sidequest 2.1: Fehler finden</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);
+  }
+  #gehirn-hud{position:absolute;top:3.5%;left:2.5%;display:flex;flex-direction:column;gap:.35cqw;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+  #kopf{position:absolute;top:3.5%;left:0;right:0;text-align:center;pointer-events:none;}
+  #kopf .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  #kopf h1{margin:.15em 0 0;color:var(--gold);font-size:max(20px,2.8cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #zurueck{position:absolute;top:3.5%;right:2.5%;font-family:var(--serif);font-size:max(11px,1cqw);
+    background:rgba(10,15,36,.8);color:var(--gold);border:1px solid var(--gold-dim);padding:.4cqw .9cqw;cursor:pointer;}
+  #zurueck:hover{background:rgba(212,175,55,.12);}
+
+  #maske{position:absolute;left:5%;right:5%;top:24%;bottom:2.5%;display:flex;flex-direction:column;gap:.9cqw;padding:1.1cqw 1.4cqw;
+    background:#0b1020;border:2px solid var(--gold-dim);box-shadow:0 0 3cqw rgba(212,175,55,.15);
+    font-family:var(--mono);font-size:max(11px,1.1cqw);overflow:auto;}
+  #maske > *{flex:none;}
+  #maske header{display:flex;justify-content:space-between;align-items:center;color:var(--gold);letter-spacing:.08em;
+    border-bottom:1px solid var(--gold-dim);padding-bottom:.6cqw;}
+  #punkte{display:flex;gap:.5cqw;}
+  #punkte i{display:block;width:1.1cqw;height:1.1cqw;border-radius:50%;border:1px solid var(--gold-dim);}
+  #punkte i.aktuell{border-color:var(--gold);box-shadow:0 0 .6cqw rgba(212,175,55,.6);}
+  #punkte i.fertig{background:var(--gruen);border-color:var(--gruen);}
+
+  #abfrage-karte{background:var(--papier);color:var(--tinte);padding:.8cqw 1cqw;font-family:var(--serif);
+    box-shadow:0 .2cqw .6cqw rgba(0,0,0,.4);border-left:.35cqw solid #8b2e1f;}
+  #abfrage-karte b{display:block;letter-spacing:.2em;font-size:.65em;color:#8b2e1f;margin-bottom:.4em;}
+  #abfrage{display:block;background:#050810;color:var(--gruen);font:inherit;font-family:var(--mono);font-size:1.25em;padding:.6em .8em;
+    border:1px dashed #2c3a2c;overflow-wrap:anywhere;}
+
+  .schritt{display:flex;flex-direction:column;gap:.6cqw;}
+  .frage{color:var(--gold);letter-spacing:.04em;font-size:1.1em;}
+  .optionen{display:grid;gap:.6cqw;}
+  .optionen.zwei{grid-template-columns:1fr 1fr;}
+  .optionen.eins{grid-template-columns:1fr 1fr;}
+  .optionen.eins .opt{font-size:1.12em;}
+  .opt{font:inherit;text-align:left;cursor:pointer;color:var(--fg);background:rgba(212,175,55,.06);border:1px solid var(--gold-dim);padding:.6cqw .9cqw;line-height:1.4;}
+  .opt:hover:not(:disabled),.opt:focus-visible{background:rgba(212,175,55,.16);border-color:var(--gold);outline:none;}
+  .opt.code{font-family:var(--mono);color:var(--gruen);overflow-wrap:anywhere;}
+  .opt.zweiwahl{text-align:center;font-weight:bold;padding:.9cqw;}
+  .opt.richtig{background:rgba(159,229,159,.14);border-color:var(--gruen);color:var(--gruen);}
+  .opt.falsch{background:rgba(224,115,95,.12);border-color:var(--rot);color:var(--rot);opacity:.85;animation:wackeln .35s;}
+  .opt:disabled{cursor:default;}
+  .opt .grund{display:block;margin-top:.3em;font-family:var(--serif);font-weight:normal;font-size:.9em;color:#e8b8ac;}
+  .knoepfe{display:flex;justify-content:flex-end;}
+  #weiter{font:inherit;cursor:pointer;padding:.45cqw 1.4cqw;background:none;color:var(--gruen);border:1px solid var(--gruen);font-weight:bold;}
+  #meldung{min-height:1.4em;line-height:1.4;}
+  #meldung.fehler{color:var(--rot);} #meldung.ok{color:var(--gruen);}
+  @keyframes wackeln{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  #fertig{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.2cqw;background:rgba(5,8,18,.9);}
+  #fertig h2{margin:0;color:var(--gold);font-size:max(22px,3.6cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #fertig p{margin:0;max-width:56%;color:#d6d1c0;font-size:max(13px,1.5cqw);line-height:1.5;}
+  #fertig button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:.6cqw;}
+  #fertig button:hover{background:rgba(212,175,55,.12);}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;transition-duration:0s !important;} }
+</style>
+</head>
+<body>
+<div id="buehne">
+  <div id="gehirn-hud" title="Energie"><div class="hud-label">ENERGIE</div><div id="hud-energie"></div></div>
+  <div id="kopf"><div class="kicker">SIDEQUEST 2.1</div><h1>Fehler finden</h1></div>
+  <button type="button" id="zurueck">◂ Zur Zentrale</button>
+
+  <div id="maske" role="group" aria-label="Abfrage prüfen">
+    <header><span id="kopfzeile">ABFRAGE</span><span id="punkte" aria-hidden="true"></span></header>
+    <div id="abfrage-karte"><b>DIESE ABFRAGE WURDE GESCHRIEBEN</b><code id="abfrage"></code></div>
+    <div id="schritte" class="schritt" aria-live="polite"></div>
+    <div id="meldung" role="status"></div>
+    <div class="knoepfe"><button type="button" id="weiter" hidden>Weiter ▸</button></div>
+  </div>
+
+  <div id="fertig" hidden>
+    <h2>Geschafft!</h2>
+    <p id="fertig-text"></p>
+    <button type="button" id="fertig-weiter">Zurück zur Zentrale ▸</button>
+  </div>
+</div>
+
+<script src="spielstand.js"></script>
+<script>
+/* ============================================================
+   AUFGABEN — Debuggen: Eine Abfrage ist geschrieben, sie kann einen Fehler haben oder nicht.
+   1. Urteil: „funktioniert“ oder „hat einen Fehler“.
+   2. Folgefrage: stimmt die Abfrage → Was sagt sie aus? · hat sie einen Fehler → Welche Korrektur ist richtig?
+   optionen: genau eine mit ok:true; warum = Erklärung, wenn man sie fälschlich wählt.
+   Nur Erlerntes aus Szene 1 und 2: SELECT, *, COUNT(*), FROM, WHERE, AND, =, Text/Zahl.
+   ============================================================ */
+var AUFGABEN = [
+  { sql:"SELECT COUNT(*) FROM personen WHERE herkunft = 'Schweiz'", fehler:false,
+    optionen:[
+      { text:'Sie zählt, wie viele Personen aus der Schweiz kommen.', ok:true },
+      { text:'Sie zeigt alle Personen aus der Schweiz mit allen Spalten.', warum:'Mit COUNT(*) siehst du nur eine Zahl, keine Personen.' },
+      { text:'Sie zählt alle Personen in der Tabelle.', warum:'WHERE schränkt ein: Gezählt werden nur die Personen aus der Schweiz.' },
+      { text:'Sie zeigt nur die Spalte herkunft.', warum:'Hier steht COUNT(*): Es wird gezählt, nichts angezeigt.' }
+    ] },
+  { sql:"SELECT * FROM personen WHERE kontinent = Europa", fehler:true,
+    optionen:[
+      { text:"SELECT * FROM personen WHERE kontinent = 'Europa'", ok:true },
+      { text:"SELECT * FROM personen WHERE 'kontinent' = Europa", warum:'Die Anführungszeichen gehören um den Text-Wert, nicht um den Spaltennamen.' },
+      { text:"SELECT * FROM personen kontinent = 'Europa'", warum:'Hier fehlt jetzt das WHERE.' },
+      { text:"SELECT * FROM personen WHERE kontinent = (Europa)", warum:'Klammern machen aus Europa keinen Text. Text steht in einfachen Anführungszeichen.' }
+    ] },
+  { sql:"SELECT * FROM personen WHERE herkunft = 'Japan' geschlecht = 'weiblich'", fehler:true,
+    optionen:[
+      { text:"SELECT * FROM personen WHERE herkunft = 'Japan' AND geschlecht = 'weiblich'", ok:true },
+      { text:"SELECT * FROM personen WHERE herkunft = 'Japan', geschlecht = 'weiblich'", warum:'Bedingungen verbindet man mit AND, nicht mit einem Komma.' },
+      { text:"SELECT * FROM personen WHERE herkunft = 'Japan' AND geschlecht 'weiblich'", warum:'Zwischen Spalte und Wert fehlt das =.' },
+      { text:"SELECT * FROM personen WHERE herkunft = 'Japan' AND geschlecht = weiblich", warum:'weiblich ist Text und braucht Anführungszeichen.' }
+    ] },
+  { sql:"SELECT * FROM personen WHERE geburtsjahr = 1961 AND herkunft = 'USA'", fehler:false,
+    optionen:[
+      { text:'Sie zeigt alle Personen, die 1961 geboren wurden und aus den USA kommen.', ok:true },
+      { text:'Sie zeigt alle Personen, die 1961 gestorben sind und aus den USA kommen.', warum:'Es steht geburtsjahr, nicht todesjahr.' },
+      { text:'Sie zählt, wie viele Personen 1961 geboren wurden und aus den USA kommen.', warum:'Zum Zählen bräuchte es COUNT(*). Mit * werden die Personen angezeigt.' },
+      { text:'Sie zeigt alle Personen, die 1961 geboren wurden oder aus den USA kommen.', warum:'AND heisst: Beide Bedingungen müssen stimmen.' }
+    ] }
+];
+
+/* ---- Ton ---- */
+var ctx = null, master = null;
+function tonStart(){ if (ctx) return; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination); }
+function ton(freq, dauer, typ, laut, verz){ if (!ctx || ctx.state !== 'running') return;
+  var t = ctx.currentTime + (verz || 0), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = typ || 'sine'; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(laut || 0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dauer + 0.02); }
+var KLANG = {
+  klick: function(){ ton(900, 0.05, 'triangle', 0.15); },
+  erfolg: function(){ ton(523, 0.3, 'sine', 0.2); ton(659, 0.3, 'sine', 0.2, 0.1); ton(784, 0.5, 'sine', 0.2, 0.2); },
+  fehler: function(){ ton(160, 0.18, 'sawtooth', 0.12); ton(120, 0.25, 'sawtooth', 0.12, 0.12); },
+  geschafft: function(){
+    [523, 659, 784, 1047].forEach(function(f, i){ ton(f, 0.28, 'triangle', 0.2, i * 0.11); });
+    ton(1047, 0.9, 'sine', 0.16, 0.44); ton(1319, 0.9, 'sine', 0.12, 0.44); ton(1568, 0.9, 'sine', 0.1, 0.44);
+    ton(2093, 0.18, 'sine', 0.07, 0.6); ton(2637, 0.18, 'sine', 0.06, 0.7);
+  }
+};
+tonStart();
+document.addEventListener('pointerdown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+function klang(n){ try { KLANG[n](); } catch (e) {} }
+
+var $ = function(id){ return document.getElementById(id); };
+Spiel.zeichneEnergie($('hud-energie'));
+function mischen(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+/* ---- Ablauf ---- */
+var nr = 0;
+for (var i = 0; i < AUFGABEN.length; i++) $('punkte').appendChild(document.createElement('i'));
+
+function meldung(art, text){ $('meldung').className = art; $('meldung').textContent = text; }
+function neuerSchritt(frage, klasse, knoepfe){
+  var s = document.createElement('div'); s.className = 'schritt';
+  var f = document.createElement('div'); f.className = 'frage'; f.textContent = frage; s.appendChild(f);
+  var o = document.createElement('div'); o.className = 'optionen ' + klasse; s.appendChild(o);
+  knoepfe.forEach(function(k){ o.appendChild(k); });
+  $('schritte').appendChild(s);
+  return s;
+}
+function optionKnopf(text, code, zweiwahl){
+  var b = document.createElement('button'); b.type = 'button'; b.className = 'opt' + (code ? ' code' : '') + (zweiwahl ? ' zweiwahl' : '');
+  b.textContent = text; return b;
+}
+function sperren(knoepfe){ knoepfe.forEach(function(k){ k.disabled = true; }); }
+
+function zeigeAufgabe(){
+  var a = AUFGABEN[nr];
+  $('kopfzeile').textContent = 'ABFRAGE ' + (nr + 1) + ' VON ' + AUFGABEN.length;
+  Array.prototype.forEach.call($('punkte').children, function(p, k){ p.className = k < nr ? 'fertig' : k === nr ? 'aktuell' : ''; });
+  $('abfrage').textContent = a.sql;
+  $('schritte').innerHTML = ''; meldung('', ''); $('weiter').hidden = true;
+
+  // Schritt 1: funktioniert oder Fehler?
+  var gut = optionKnopf('✓ Die Abfrage funktioniert', false, true), schlecht = optionKnopf('✗ Die Abfrage hat einen Fehler', false, true);
+  neuerSchritt('Funktioniert diese Abfrage, oder steckt ein Fehler drin?', 'zwei', [gut, schlecht]);
+  [gut, schlecht].forEach(function(b){
+    b.onclick = function(){
+      var meintFehler = b === schlecht;
+      if (meintFehler !== a.fehler) {
+        b.classList.add('falsch'); b.disabled = true; klang('fehler');
+        meldung('fehler', a.fehler
+          ? 'Nicht ganz: Hier stimmt etwas nicht. Lies die Abfrage Wort für Wort.'
+          : 'Nicht ganz: Diese Abfrage ist in Ordnung. Lies sie Wort für Wort.');
+        return;
+      }
+      b.classList.add('richtig'); sperren([gut, schlecht]); klang('erfolg');
+      meldung('ok', a.fehler ? 'Richtig erkannt: Die Abfrage hat einen Fehler.' : 'Richtig erkannt: Die Abfrage funktioniert.');
+      folgefrage(a);
+    };
+  });
+}
+
+// Schritt 2: Aussage bzw. Korrektur
+function folgefrage(a){
+  var knoepfe = mischen(a.optionen).map(function(o){
+    var b = optionKnopf(o.text, a.fehler, false); b.onclick = function(){ gewaehlt(a, o, b, knoepfe); }; return b;
+  });
+  neuerSchritt(a.fehler ? 'Welche Korrektur ist richtig?' : 'Was sagt die Abfrage aus?', 'eins', knoepfe);
+}
+function gewaehlt(a, o, b, knoepfe){
+  if (!o.ok) {
+    b.classList.add('falsch'); b.disabled = true; klang('fehler');
+    var g = document.createElement('span'); g.className = 'grund'; g.textContent = o.warum; b.appendChild(g);
+    meldung('fehler', 'Das ist es nicht. Versuche es nochmals.');
+    return;
+  }
+  b.classList.add('richtig'); sperren(knoepfe);
+  Array.prototype.forEach.call($('punkte').children, function(p, k){ if (k <= nr) p.className = 'fertig'; });
+  meldung('ok', nr + 1 < AUFGABEN.length ? 'Richtig!' : 'Richtig! Das war die letzte Abfrage.');
+  $('weiter').textContent = nr + 1 < AUFGABEN.length ? 'Nächste Abfrage ▸' : 'Fertig ▸';
+  $('weiter').hidden = false; klang('erfolg'); $('weiter').focus();
+  $('weiter').scrollIntoView({ block:'nearest' });
+}
+$('weiter').onclick = function(){
+  klang('klick');
+  if (nr + 1 < AUFGABEN.length) { nr++; zeigeAufgabe(); } else fertig();
+};
+
+/* ---- Geschafft: Energie wird aufgefüllt (einmal pro Sidequest) ---- */
+function fertig(){
+  var erstesMal = Spiel.sidequestGeschafft('2.1');
+  if (erstesMal) Spiel.energiePlus(1);
+  klang('geschafft');
+  $('fertig-text').textContent = erstesMal
+    ? 'Alle vier Abfragen geprüft. Dein Gehirn hat einen Energiebalken gewonnen.'
+    : 'Alle vier Abfragen geprüft. Die Energie für diese Sidequest hattest du schon.';
+  $('fertig').hidden = false;
+}
+function zurKarte(){ location.href = Spiel.url('zentrale.html', { z:2, r:1 }); }      // zurück in die Hauptzentrale
+$('zurueck').onclick = zurKarte;
+$('fertig-weiter').onclick = zurKarte;
+zeigeAufgabe();
+</script>
+</body>
+</html>

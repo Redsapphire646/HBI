@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Sidequest 1.1: SQL verstehen</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  /* Die Bühne hat immer 16:9 und skaliert mit dem Fenster — gleiche Rahmung wie die Szenen */
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);
+  }
+  #gehirn-hud{position:absolute;top:3.5%;left:2.5%;display:flex;flex-direction:column;gap:.35cqw;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+
+  #kopf{position:absolute;top:3.5%;left:0;right:0;text-align:center;pointer-events:none;}
+  #kopf .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  #kopf h1{margin:.15em 0 0;color:var(--gold);font-size:max(20px,2.8cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #kopf p{margin:.35em auto 0;max-width:52%;color:#b9b6ad;font-size:max(12px,1.2cqw);}
+
+  /* Drei Spalten mit je vier Karten */
+  #feld{position:absolute;left:5%;right:5%;top:25%;bottom:15%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4.2cqw;}
+  #linien{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible;}
+  .spalte{display:flex;flex-direction:column;gap:.9cqw;position:relative;z-index:2;}
+  .spalte h2{margin:0 0 .2cqw;font-size:max(10px,.9cqw);letter-spacing:.22em;color:var(--gold-dim);font-weight:normal;text-align:center;}
+  .karten{flex:1;display:grid;grid-template-rows:repeat(4,1fr);gap:.9cqw;}
+  .karte{display:flex;align-items:center;text-align:left;font:inherit;color:var(--tinte);background:var(--papier);
+    border:none;border-top:.35cqw solid #8b2e1f;padding:.5cqw 1cqw;cursor:pointer;line-height:1.35;
+    font-size:max(11px,1.18cqw);box-shadow:0 .2cqw .5cqw rgba(0,0,0,.4);transition:transform .15s ease,box-shadow .15s ease,outline-color .15s ease;
+    outline:.25cqw solid transparent;outline-offset:.1cqw;}
+  .karte.sql{font-family:var(--mono);font-weight:bold;font-size:max(10px,1.02cqw);color:#1f4d2a;word-break:break-word;}
+  .karte:hover:not(:disabled){transform:translateY(-.15cqw);}
+  .karte:focus-visible{outline-color:var(--fg);}
+  .karte.gewaehlt{outline-color:var(--gold);box-shadow:0 0 1.2cqw rgba(212,175,55,.55);}
+  .karte.passt{outline-color:var(--gruen);}
+  .karte.geloest{outline-color:var(--gruen);border-top-color:#3c8a4a;cursor:default;opacity:.95;}
+  .karte.geloest::after{content:"✓";margin-left:auto;padding-left:.6cqw;color:#2f7a3d;font-weight:bold;font-family:var(--serif);font-size:1.4em;}
+  .karte.wackeln{animation:wackeln .35s;}
+  @keyframes wackeln{25%{transform:translateX(-.5cqw)}75%{transform:translateX(.5cqw)}}
+
+  #status{position:absolute;left:5%;right:5%;bottom:9.5%;text-align:center;min-height:1.6em;color:#b9b6ad;font-size:max(12px,1.2cqw);}
+  #status.ok{color:var(--gruen);} #status.fehler{color:var(--rot);}
+  #zurueck{position:absolute;left:50%;bottom:3.2%;transform:translateX(-50%);font-family:var(--serif);font-size:max(12px,1.2cqw);
+    background:rgba(10,15,36,.8);color:var(--fg);border:1px solid var(--gold-dim);padding:.5cqw 1.6cqw;cursor:pointer;}
+  #zurueck:hover{background:rgba(212,175,55,.12);}
+
+  #fertig{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.2cqw;
+    background:rgba(5,8,18,.88);}
+  #fertig h2{margin:0;color:var(--gold);font-size:max(22px,3.6cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+  #fertig p{margin:0;max-width:56%;color:#d6d1c0;font-size:max(13px,1.5cqw);line-height:1.5;}
+  #fertig button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:.6cqw;}
+  #fertig button:hover{background:rgba(212,175,55,.12);}
+  #fertig .lern{display:grid;grid-template-columns:auto auto;gap:.2cqw 1.4cqw;text-align:left;font-size:max(12px,1.2cqw);color:#e8dcc0;}
+  #fertig .lern b{font-family:var(--mono);color:var(--gruen);font-weight:normal;}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;transition-duration:0s !important;} }
+</style>
+</head>
+<body>
+<div id="buehne">
+  <div id="gehirn-hud" title="Energie"><div class="hud-label">ENERGIE</div><div id="hud-energie"></div></div>
+
+  <div id="kopf">
+    <div class="kicker">SIDEQUEST 1.1</div>
+    <h1>SQL verstehen</h1>
+    <p>Wähle aus jeder Spalte eine Karte, sodass drei zusammengehören: der Satz, der SQL-Befehl und was passiert.</p>
+  </div>
+
+  <div id="feld">
+    <svg id="linien" aria-hidden="true"></svg>
+    <div class="spalte" id="sp-satz"><h2>SO SAGST DU ES</h2><div class="karten"></div></div>
+    <div class="spalte" id="sp-sql"><h2>SO SCHREIBST DU ES IN SQL</h2><div class="karten"></div></div>
+    <div class="spalte" id="sp-wirkung"><h2>DAS PASSIERT</h2><div class="karten"></div></div>
+  </div>
+
+  <div id="status" role="status"></div>
+  <button type="button" id="zurueck">◂ Zurück zur Zentrale</button>
+
+  <div id="fertig" hidden>
+    <h2>Geschafft!</h2>
+    <p id="fertig-text"></p>
+    <div class="lern">
+      <b>SELECT</b><span>wähle</span>
+      <b>*</b><span>alle Spalten</span>
+      <b>FROM personen</b><span>von der Tabelle personen</span>
+      <b>COUNT(*)</b><span>zähle alles</span>
+      <b>name, herkunft …</b><span>Spalten: Eigenschaften jeder Person</span>
+      <b>WHERE</b><span>nur dort, wo eine Bedingung stimmt</span>
+    </div>
+    <button type="button" id="fertig-weiter">Zurück zur Zentrale ▸</button>
+  </div>
+</div>
+
+<script src="spielstand.js"></script>
+<script>
+/* ============================================================
+   KARTEN — vier Dreiergruppen. Satzbau des Satzes und SQL-Befehl laufen Wort für Wort parallel:
+   Wähle = SELECT · alles = * · von der Tabelle personen = FROM personen · zähle = COUNT(*) · wo … gleich … = WHERE … = …
+   ============================================================ */
+var GRUPPEN = [
+  { satz: 'Wähle alles von der Tabelle personen.',
+    sql:  'SELECT * FROM personen',
+    wirkung: 'Zeigt alle Personen mit allen Spalten.' },
+  { satz: 'Zähle alles von der Tabelle personen.',
+    sql:  'SELECT COUNT(*) FROM personen',
+    wirkung: 'Zeigt nur eine Zahl: wie viele Personen es gibt.' },
+  { satz: 'Wähle die Spalte name von der Tabelle personen.',
+    sql:  'SELECT name FROM personen',
+    wirkung: 'Zeigt von jeder Person nur den Namen. Eine Spalte ist eine Eigenschaft, die jede Person hat.' },
+  { satz: "Zähle alles von der Tabelle personen, wo herkunft gleich 'Schweiz' ist.",
+    sql:  "SELECT COUNT(*) FROM personen WHERE herkunft = 'Schweiz'",
+    wirkung: 'Zeigt nur eine Zahl: wie viele Personen aus der Schweiz kommen.' }
+];
+var SPALTEN_ART = [ { id:'sp-satz', feld:'satz' }, { id:'sp-sql', feld:'sql' }, { id:'sp-wirkung', feld:'wirkung' } ];
+
+/* ---- Ton (Platzhalter-Klänge wie in den Szenen) ---- */
+var ctx = null, master = null;
+function tonStart(){ if (ctx) return; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination); }
+function ton(freq, dauer, typ, laut, verz){ if (!ctx || ctx.state !== 'running') return;
+  var t = ctx.currentTime + (verz || 0), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = typ || 'sine'; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(laut || 0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dauer + 0.02); }
+var KLANG = {
+  klick: function(){ ton(900, 0.05, 'triangle', 0.15); },
+  richtig: function(){ ton(523, 0.3, 'sine', 0.2); ton(659, 0.3, 'sine', 0.2, 0.1); ton(784, 0.5, 'sine', 0.2, 0.2); },
+  fehler: function(){ ton(160, 0.18, 'sawtooth', 0.12); ton(120, 0.25, 'sawtooth', 0.12, 0.12); },
+  geschafft: function(){
+    [523, 659, 784, 1047].forEach(function(f, i){ ton(f, 0.28, 'triangle', 0.2, i * 0.11); });
+    ton(1047, 0.9, 'sine', 0.16, 0.44); ton(1319, 0.9, 'sine', 0.12, 0.44); ton(1568, 0.9, 'sine', 0.1, 0.44);
+    ton(2093, 0.18, 'sine', 0.07, 0.6); ton(2637, 0.18, 'sine', 0.06, 0.7);
+  }
+};
+tonStart();
+document.addEventListener('pointerdown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+function klang(n){ try { KLANG[n](); } catch (e) {} }
+
+var $ = function(id){ return document.getElementById(id); };
+Spiel.zeichneEnergie($('hud-energie'));
+
+/* ---- Aufbau: jede Spalte in zufälliger Reihenfolge ---- */
+function mischen(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+var karten = { satz: {}, sql: {}, wirkung: {} };       // karten[feld][gruppe] = Button
+SPALTEN_ART.forEach(function(sp){
+  var box = $(sp.id).querySelector('.karten');
+  mischen(GRUPPEN.map(function(g, i){ return i; })).forEach(function(i){
+    var b = document.createElement('button'); b.type = 'button';
+    b.className = 'karte' + (sp.feld === 'sql' ? ' sql' : '');
+    b.textContent = GRUPPEN[i][sp.feld];
+    b.setAttribute('data-gruppe', i); b.setAttribute('data-feld', sp.feld);
+    b.onclick = function(){ waehle(sp.feld, i); };
+    box.appendChild(b); karten[sp.feld][i] = b;
+  });
+});
+
+/* ---- Zustand ---- */
+var gewaehlt = { satz: null, sql: null, wirkung: null };   // gewählte Gruppen-Nummer je Spalte
+var passt = { ab: false, bc: false };                        // schon als richtig erkannte Verbindung (bleibt stehen)
+var geloest = [];                                            // fertig zugeordnete Gruppen
+var gesperrt = false;
+
+function zeigeStatus(text, art){ $('status').textContent = text; $('status').className = art || ''; }
+zeigeStatus('Tippe je eine Karte pro Spalte an. Drei Karten gehören zusammen.');
+
+/* ---- Verbindungslinien zwischen den Karten ---- */
+var SVGNS = 'http://www.w3.org/2000/svg';
+function mitte(b, seite){
+  var f = $('feld').getBoundingClientRect(), r = b.getBoundingClientRect();
+  return { x: (seite === 'rechts' ? r.right : r.left) - f.left, y: r.top + r.height / 2 - f.top };
+}
+function linie(von, nach, klasse){
+  var a = mitte(von, 'rechts'), b = mitte(nach, 'links');
+  var l = document.createElementNS(SVGNS, 'line');
+  l.setAttribute('x1', a.x); l.setAttribute('y1', a.y); l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
+  l.setAttribute('stroke', klasse === 'fertig' || klasse === 'richtig' ? '#9fe59f' : klasse === 'falsch' ? '#e0735f' : '#d4af37');
+  l.setAttribute('stroke-width', klasse === 'wahl' ? 3 : 4); l.setAttribute('stroke-linecap', 'round');
+  if (klasse === 'wahl') l.setAttribute('stroke-dasharray', '2 7');
+  $('linien').appendChild(l);
+}
+var falscheAnzeigen = { ab: false, bc: false };
+function zeichneLinien(){
+  var s = $('linien'); s.innerHTML = '';
+  geloest.forEach(function(g){ linie(karten.satz[g], karten.sql[g], 'fertig'); linie(karten.sql[g], karten.wirkung[g], 'fertig'); });
+  if (gewaehlt.satz !== null && gewaehlt.sql !== null)
+    linie(karten.satz[gewaehlt.satz], karten.sql[gewaehlt.sql], falscheAnzeigen.ab ? 'falsch' : passt.ab ? 'richtig' : 'wahl');
+  if (gewaehlt.sql !== null && gewaehlt.wirkung !== null)
+    linie(karten.sql[gewaehlt.sql], karten.wirkung[gewaehlt.wirkung], falscheAnzeigen.bc ? 'falsch' : passt.bc ? 'richtig' : 'wahl');
+}
+window.addEventListener('resize', zeichneLinien);
+
+function aktualisiere(){
+  Object.keys(karten).forEach(function(feld){
+    Object.keys(karten[feld]).forEach(function(i){
+      var b = karten[feld][i], g = Number(i);
+      var istGeloest = geloest.indexOf(g) >= 0;
+      b.classList.toggle('geloest', istGeloest);
+      b.disabled = istGeloest;
+      b.classList.toggle('gewaehlt', !istGeloest && gewaehlt[feld] === g);
+      b.classList.toggle('passt', !istGeloest && gewaehlt[feld] === g && ((feld !== 'wirkung' && passt.ab && feld === 'satz') || (feld === 'sql' && (passt.ab || passt.bc)) || (feld === 'wirkung' && passt.bc)));
+    });
+  });
+  zeichneLinien();
+}
+
+/* ---- Auswahl und Prüfung ---- */
+function waehle(feld, g){
+  if (gesperrt || geloest.indexOf(g) >= 0) return;
+  klang('klick');
+  gewaehlt[feld] = gewaehlt[feld] === g ? null : g;
+  // Eine geänderte Karte macht die Verbindungen daneben ungültig
+  if (feld === 'satz') passt.ab = false;
+  if (feld === 'sql') { passt.ab = false; passt.bc = false; }
+  if (feld === 'wirkung') passt.bc = false;
+  zeigeStatus('');
+  aktualisiere();
+  if (gewaehlt.satz !== null && gewaehlt.sql !== null && gewaehlt.wirkung !== null) pruefe();
+}
+function pruefe(){
+  var a = gewaehlt.satz, b = gewaehlt.sql, c = gewaehlt.wirkung;
+  if (a === b && b === c) {                                   // alle drei passen
+    geloest.push(a); gewaehlt = { satz: null, sql: null, wirkung: null }; passt = { ab: false, bc: false };
+    aktualisiere(); klang('richtig');
+    if (geloest.length === GRUPPEN.length) return fertig();
+    zeigeStatus('Richtig! Das gehört zusammen. Noch ' + (GRUPPEN.length - geloest.length) + ' Gruppe' + (GRUPPEN.length - geloest.length === 1 ? '' : 'n') + '.', 'ok');
+    return;
+  }
+  // Falsch: die falschen Verbindungen verschwinden, richtige bleiben stehen
+  var abOk = a === b, bcOk = b === c;
+  gesperrt = true; klang('fehler');
+  falscheAnzeigen = { ab: !abOk, bc: !bcOk };
+  passt = { ab: abOk, bc: bcOk };
+  zeigeStatus(abOk || bcOk ? 'Nicht ganz: Die roten Verbindungen passen nicht zusammen.' : 'Falsch: Diese Karten gehören nicht zusammen.', 'fehler');
+  aktualisiere();
+  [satzKarte(), sqlKarte(), wirkungKarte()].forEach(function(k){ k.classList.remove('wackeln'); void k.offsetWidth; });
+  if (!abOk) { karten.satz[a].classList.add('wackeln'); karten.sql[b].classList.add('wackeln'); }
+  if (!bcOk) { karten.sql[b].classList.add('wackeln'); karten.wirkung[c].classList.add('wackeln'); }
+  setTimeout(function(){
+    falscheAnzeigen = { ab: false, bc: false };
+    if (abOk) { gewaehlt.wirkung = null; passt.bc = false; }                // satz und sql bleiben, nur die Wirkung neu wählen
+    else if (bcOk) { gewaehlt.satz = null; passt.ab = false; }              // sql und wirkung bleiben, nur den Satz neu wählen
+    else gewaehlt = { satz: null, sql: null, wirkung: null };
+    if (!abOk && !bcOk) passt = { ab: false, bc: false };
+    gesperrt = false; aktualisiere();
+  }, RUHIG ? 0 : 900);
+}
+function satzKarte(){ return karten.satz[gewaehlt.satz]; }
+function sqlKarte(){ return karten.sql[gewaehlt.sql]; }
+function wirkungKarte(){ return karten.wirkung[gewaehlt.wirkung]; }
+var RUHIG = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---- Geschafft: Energie wird aufgefüllt (einmal pro Sidequest) ---- */
+function fertig(){
+  var erstesMal = Spiel.sidequestGeschafft('1.1');
+  if (erstesMal) Spiel.energiePlus(1);
+  klang('geschafft');
+  zeigeStatus('');
+  $('fertig-text').textContent = erstesMal
+    ? 'Alle Karten passen. Dein Gehirn hat einen Energiebalken gewonnen.'
+    : 'Alle Karten passen. Die Energie für diese Sidequest hattest du schon.';
+  setTimeout(function(){ $('fertig').hidden = false; }, RUHIG ? 0 : 700);
+}
+function zurKarte(){ location.href = Spiel.url('zentrale.html', { z:1, r:1 }); }      // zurück in die Hauptzentrale
+$('zurueck').onclick = zurKarte;
+$('fertig-weiter').onclick = zurKarte;
+aktualisiere();
+</script>
+</body>
+</html>

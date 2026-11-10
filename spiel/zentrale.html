@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Hauptzentrale</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f;
+    --serif: Georgia, "Times New Roman", serif;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  /* Die Bühne hat immer 16:9 und skaliert mit dem Fenster — alles ist Vektor/Text, bleibt also scharf */
+  #buehne{position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden; container-type:inline-size; background:var(--bg1);}
+  #szene{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* Klickbare Gegenstände */
+  .hs{cursor:default;outline:none;}
+  .hs .glanz{fill:none;stroke:var(--gold);stroke-width:4;opacity:0;}
+  .hs.aktiv{cursor:pointer;}
+  .hs.aktiv .glanz{animation:puls 1.8s ease-in-out infinite;}
+  .hs.aktiv:hover .glanz, .hs.aktiv:focus-visible .glanz{animation:none;opacity:1;}
+  @keyframes puls{0%,100%{opacity:.1}50%{opacity:.8}}
+  .hs.aktiv:hover .schirm-rahmen{stroke:var(--gold);}
+
+  #gehirn-hud{position:absolute;top:8.5%;left:2.5%;display:flex;flex-direction:column;gap:.35cqw;z-index:2;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+
+  /* Dialogbox */
+  #dialog{
+    position:absolute;left:2.5%;right:2.5%;bottom:3.5%;height:25%;display:flex;gap:1.6cqw;
+    padding:1.2cqw 1.6cqw;background:rgba(10,15,36,.94);border:1px solid var(--gold-dim);
+    box-shadow:0 0 2cqw rgba(0,0,0,.6);cursor:pointer;z-index:3;
+  }
+  #dialog .portrait{height:100%;aspect-ratio:1;flex:none;border-radius:50%;border:2px solid var(--gold-dim);background:var(--bg2);overflow:hidden;}
+  #dialog .portrait svg{width:100%;height:100%;display:block;}
+  #dialog .rede{flex:1;display:flex;flex-direction:column;min-width:0;}
+  #dialog .name{color:var(--gold);font-weight:bold;font-size:max(12px,1.35cqw);letter-spacing:.05em;margin-bottom:.4em;}
+  #dialog .text{margin:0;font-size:max(13px,1.7cqw);line-height:1.45;flex:1;}
+  #dialog .weiter{align-self:flex-end;color:var(--gold);font-size:max(11px,1cqw);animation:puls 1.2s infinite;}
+
+  .figur .kontur{transition:stroke .2s ease;}
+  .figur.spricht{filter:drop-shadow(0 0 10px rgba(212,175,55,.55));}
+  .figur.spricht .kontur{stroke:var(--gold);}
+  /* Gewählter Charakter (charakterwahl.html): #buehne bekommt c1 oder c2, die andere Variante wird ausgeblendet */
+  #buehne.c1 .nur-c2, #buehne.c2 .nur-c1{display:none;}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;transition-duration:0s !important;} }
+</style>
+</head>
+<body>
+<div id="buehne">
+  <svg id="szene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="wand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a4a"/><stop offset="1" stop-color="#0e1428"/></linearGradient>
+      <linearGradient id="boden" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a1e"/><stop offset="1" stop-color="#140e09"/></linearGradient>
+      <radialGradient id="licht" cx="0.5" cy="0.5" r="0.6"><stop offset="0" stop-color="#9fe59f" stop-opacity=".10"/><stop offset="1" stop-color="#9fe59f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="schirm" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#1f3d22"/><stop offset="1" stop-color="#07140a"/></radialGradient>
+    </defs>
+
+    <rect width="1600" height="720" fill="url(#wand)"/>
+    <rect y="600" width="1600" height="120" fill="#141c33"/>
+    <line x1="0" y1="600" x2="1600" y2="600" stroke="#8f7a3f" stroke-width="3"/>
+    <rect y="720" width="1600" height="180" fill="url(#boden)"/>
+    <g stroke="#0e0906" stroke-width="2" opacity=".6"><line x1="0" y1="770" x2="1600" y2="770"/><line x1="0" y1="830" x2="1600" y2="830"/></g>
+
+    <!-- Archivregal links (wie in der Empfangshalle) -->
+    <rect x="40" y="150" width="250" height="570" fill="#2b1d14" stroke="#1a110b" stroke-width="6"/>
+    <g id="buecher"></g>
+
+    <!-- Emblem -->
+    <g transform="translate(800,250)">
+      <circle r="140" fill="#131c3d" stroke="#d4af37" stroke-width="6"/>
+      <circle r="118" fill="none" stroke="#d4af37" stroke-opacity=".35" stroke-width="2"/>
+      <g id="emblem-striche"></g>
+      <g id="emblem-zeiger"><line x1="0" y1="0" x2="0" y2="-95" stroke="#d4af37" stroke-opacity=".5" stroke-width="3"/></g>
+      <text y="22" text-anchor="middle" font-family="Georgia, serif" font-size="64" font-weight="bold" fill="#d4af37">HBI</text>
+    </g>
+    <text x="800" y="85" text-anchor="middle" font-family="Georgia, serif" font-size="20" letter-spacing="6" fill="#8f7a3f">HAUPTZENTRALE</text>
+
+    <!-- Konsolentisch mit den Sidequest-Bildschirmen (werden vom Skript gezeichnet) -->
+    <rect x="330" y="590" width="740" height="28" fill="#5a3d27"/>
+    <rect x="360" y="618" width="680" height="80" fill="#3a281b"/>
+    <rect x="350" y="618" width="26" height="130" fill="#2b1d14"/><rect x="1024" y="618" width="26" height="130" fill="#2b1d14"/>
+    <g id="bildschirme"></g>
+
+    <!-- Tür zur Kampagnenkarte -->
+    <g id="hs-tuer" class="hs" role="button" aria-label="Tür zur Kampagnenkarte" tabindex="-1">
+      <rect class="glanz" x="1318" y="268" width="246" height="464" rx="10"/>
+      <rect x="1330" y="280" width="220" height="440" fill="#2b1d14"/>
+      <rect x="1346" y="300" width="188" height="420" fill="#5a3d27"/>
+      <rect x="1364" y="410" width="152" height="120" fill="none" stroke="#3a281b" stroke-width="4"/>
+      <rect x="1364" y="555" width="152" height="140" fill="none" stroke="#3a281b" stroke-width="4"/>
+      <circle cx="1514" cy="545" r="9" fill="#d4af37"/>
+      <rect x="1362" y="322" width="156" height="66" fill="#e8dcc0"/>
+      <text x="1440" y="352" text-anchor="middle" font-family="Georgia, serif" font-size="24" font-weight="bold" fill="#2b1d14">KARTE</text>
+      <text x="1440" y="376" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#2b1d14">Zurück zu den Zeitreisen</text>
+    </g>
+
+    <!-- Dein Avatar: steht allein in der Zentrale -->
+    <g id="fig-du" class="figur" transform="translate(1180,0)" pointer-events="none">
+      <g class="nur-c2" transform="translate(-100,346)"><path d="M58,84 Q54,36 100,36 Q146,36 142,84 L150,170 Q136,180 124,168 L120,114 L80,114 L76,168 Q64,180 50,170Z" fill="#7a4a2a"/></g>
+      <path class="kontur" d="M-60,720 L-50,522 Q0,490 50,522 L60,720 Z" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="2"/>
+      <path d="M-16,496 L0,534 L16,496" fill="none" stroke="#9fe59f" stroke-width="3"/>
+      <path d="M0,534 L0,720" stroke="#9fe59f" stroke-opacity=".35" stroke-width="2"/>
+      <path class="nur-c1" d="M-44,532 L-26,712" stroke="#2d4a6b" stroke-width="9" stroke-linecap="round"/>
+      <g class="nur-c2" transform="translate(-100,346)"><path d="M54,152 Q60,174 52,206 M146,152 Q140,174 148,206" fill="none" stroke="#7a4a2a" stroke-width="10" stroke-linecap="round"/></g>
+      <circle class="kontur" cx="0" cy="430" r="40" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="2"/>
+      <g class="nur-c1">
+        <path d="M-41,428 Q-43,386 0,386 Q43,386 41,428 Q34,404 0,401 Q-34,404 -41,428 Z" fill="#3a4a7a"/>
+        <g transform="translate(-100,346)"><path d="M78,76 Q85,72 92,75 M108,75 Q115,72 122,76" fill="none" stroke="#3a4a7a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><path d="M100,90 L98,98 L102,98" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,106 Q100,113 110,106" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g>
+      </g>
+      <g class="nur-c2" transform="translate(-100,346)"><path d="M60,86 Q56,42 100,42 Q144,42 140,86 Q136,62 112,56 Q92,54 80,64 Q68,72 60,86Z" fill="#7a4a2a"/><path d="M78,77 Q85,73 92,76 M108,76 Q115,73 122,77" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><path d="M82,81 L80,79 M118,81 L120,79" stroke="#eae6d8" stroke-width="1.4" stroke-linecap="round"/><path d="M100,91 L98,99 L102,99" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,107 Q100,114 110,107" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g>
+    </g>
+
+    <rect width="1600" height="900" fill="url(#licht)" pointer-events="none"/>
+  </svg>
+
+  <div id="gehirn-hud" title="Energie"><div class="hud-label">ENERGIE</div><div id="hud-energie"></div></div>
+
+  <!-- Dialogbox -->
+  <div id="dialog" hidden role="dialog" aria-live="polite">
+    <div class="portrait">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#131c3d"/>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M58,84 Q54,36 100,36 Q146,36 142,84 L150,170 Q136,180 124,168 L120,114 L80,114 L76,168 Q64,180 50,170Z" fill="#7a4a2a"/></g>
+        <path d="M20,100 L26,72 Q50,60 74,72 L80,100Z" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="1.5"/>
+        <path d="M42,66 L50,79 L58,66" fill="none" stroke="#9fe59f" stroke-width="2"/>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M54,152 Q60,174 52,206 M146,152 Q140,174 148,206" fill="none" stroke="#7a4a2a" stroke-width="10" stroke-linecap="round"/></g>
+        <circle cx="50" cy="40" r="19" fill="#0b0f1f" stroke="#8f7a3f" stroke-width="1.5"/>
+        <g class="nur-c1"><path d="M30,40 Q29,20 50,20 Q71,20 70,40 Q64,29 50,28 Q36,29 30,40Z" fill="#3a4a7a"/><g transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M78,76 Q85,72 92,75 M108,75 Q115,72 122,76" fill="none" stroke="#3a4a7a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="86" rx="3.2" ry="4" fill="#eae6d8"/><path d="M100,90 L98,98 L102,98" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,106 Q100,113 110,106" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g></g>
+        <g class="nur-c2" transform="translate(50,40) scale(.475) translate(-100,-84)"><path d="M60,86 Q56,42 100,42 Q144,42 140,86 Q136,62 112,56 Q92,54 80,64 Q68,72 60,86Z" fill="#7a4a2a"/><path d="M78,77 Q85,73 92,76 M108,76 Q115,73 122,77" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linecap="round"/><ellipse cx="86" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><ellipse cx="114" cy="87" rx="3.2" ry="4" fill="#eae6d8"/><path d="M82,81 L80,79 M118,81 L120,79" stroke="#eae6d8" stroke-width="1.4" stroke-linecap="round"/><path d="M100,91 L98,99 L102,99" fill="none" stroke="#8f7a3f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M90,107 Q100,114 110,107" fill="none" stroke="#eae6d8" stroke-width="2.2" stroke-linecap="round"/></g></svg>
+    </div>
+    <div class="rede">
+      <div class="name">Du</div>
+      <p class="text"></p>
+      <span class="weiter">Weiter ▸</span>
+    </div>
+  </div>
+</div>
+
+<script src="spielstand.js"></script>
+<script>document.getElementById('buehne').classList.add('c' + Spiel.charakter());</script>
+<script>
+/* ============================================================
+   HAUPTZENTRALE — hier wählt man die Sidequests einer Station.
+   Man kommt über das grüne Gehirn auf der Kampagnenkarte hierher (Adresse …#z=<Szene>) und geht durch die Tür zurück.
+   Pro Szene steht unten, welche Sidequests es gibt (Info · Üben · Neu). Eine neue Szene = ein Eintrag.
+   ============================================================ */
+var SIDEQUESTS = {
+  1: [ { id:'1.1', symbol:'i',      art:'INFO', titel:'SQL verstehen',        datei:'sidequest_1_1.html' },
+       { id:'1.2', symbol:'\u21BB', art:'ÜBEN', titel:'Üben',                 datei:'sidequest_1_2.html' } ],
+  2: [ { id:'2.1', symbol:'i',      art:'INFO', titel:'Fehler finden',        datei:'sidequest_2_1.html' },
+       { id:'2.2', symbol:'\u21BB', art:'ÜBEN', titel:'Personen suchen',      datei:'sidequest_2_2.html' },
+       { id:'2.3', symbol:'\u2605', art:'NEU',  titel:'Neu: !=',              datei:'sidequest_2_3.html' } ],
+  3: [ { id:'3.1', symbol:'i',      art:'INFO', titel:'OR, AND, Klammern',    datei:'sidequest_3_1.html' },
+       { id:'3.2', symbol:'\u21BB', art:'ÜBEN', titel:'OR und AND üben',      datei:'sidequest_3_2.html' },
+       { id:'3.3', symbol:'\u2605', art:'NEU',  titel:'Neu: IN',              datei:'sidequest_3_3.html' } ],
+  4: [ { id:'4.1', symbol:'i',      art:'INFO', titel:'Kleiner / grösser',    datei:'sidequest_4_1.html' },
+       { id:'4.2', symbol:'\u21BB', art:'ÜBEN', titel:'Vergleichen üben',     datei:'sidequest_4_2.html' },
+       { id:'4.3', symbol:'\u2605', art:'NEU',  titel:'Neu: >= und <=',       datei:'sidequest_4_3.html' } ],
+  5: [ { id:'5.1', symbol:'i',      art:'INFO', titel:'Fehler im BETWEEN',    datei:'sidequest_5_1.html' },
+       { id:'5.2', symbol:'\u21BB', art:'ÜBEN', titel:'id und BETWEEN üben',  datei:'sidequest_5_2.html' },
+       { id:'5.3', symbol:'\u2605', art:'NEU',  titel:'Neu: Rechnen',         datei:'sidequest_5_3.html' } ]
+};
+
+var $ = function(id){ return document.getElementById(id); };
+var NS = 'http://www.w3.org/2000/svg';
+function svg(tag, attr, eltern){ var e = document.createElementNS(NS, tag); for (var k in attr) e.setAttribute(k, attr[k]); eltern.appendChild(e); return e; }
+var RUHIG = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+var SZENE = parseInt(hash.get('z'), 10) || 1;
+var LISTE = SIDEQUESTS[SZENE] || [];
+var KEHRT_ZURUECK = hash.get('r') === '1';        // kommt von einer Sidequest: der Avatar spricht nicht noch einmal
+function zurKarte(){ location.href = Spiel.url('kampagnenkarte.html'); }
+if (!Spiel.sidequestFrei(SZENE) || !LISTE.length) zurKarte();      // die Zentrale gibt es erst nach der Szene
+
+Spiel.zeichneEnergie($('hud-energie'));
+
+/* ---- Ton (kleiner Klick) ---- */
+var ctx = null;
+try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+function klick(){ if (!ctx || ctx.state !== 'running') return;
+  var t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(900, t); g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.07); }
+document.addEventListener('pointerdown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+
+/* ---- Raum ---- */
+(function regal(){
+  var farben = ['#6b2d2d','#2d4a6b','#6b5a2d','#2d6b4a','#4a2d6b','#7a4a2a','#3d3d3d'], g = $('buecher');
+  [250,340,430,520,610,700].forEach(function(y){ svg('rect', { x:40, y:y, width:250, height:10, fill:'#1a110b' }, g); });
+  [160,250,340,430,520,610].forEach(function(y0){
+    var x = 52;
+    while (x < 270) {
+      var w = 14 + Math.floor(Math.random()*14), h = 60 + Math.floor(Math.random()*24);
+      if (x + w > 278) break;
+      svg('rect', { x:x, y:y0 + 90 - h, width:w, height:h, fill:farben[Math.floor(Math.random()*farben.length)] }, g);
+      x += w + 2;
+    }
+  });
+})();
+(function emblem(){
+  var g = $('emblem-striche');
+  for (var t = 0; t < 60; t++) {
+    var w = t / 60 * Math.PI * 2, lang = t % 5 === 0, r1 = 128, r2 = lang ? 110 : 118;
+    svg('line', { x1:Math.cos(w)*r1, y1:Math.sin(w)*r1, x2:Math.cos(w)*r2, y2:Math.sin(w)*r2,
+      stroke:'#d4af37', 'stroke-opacity':lang ? .6 : .3, 'stroke-width':lang ? 3 : 1.5 }, g);
+  }
+  if (!RUHIG) { var grad = 0; setInterval(function(){ grad = (grad + 6) % 360; $('emblem-zeiger').setAttribute('transform', 'rotate(' + grad + ')'); }, 1000); }
+})();
+
+/* ---- Sidequest-Bildschirme auf dem Konsolentisch ---- */
+var aktiv = false;
+function bildschirme(){
+  var g = $('bildschirme'), n = LISTE.length;
+  LISTE.forEach(function(sq, i){
+    var x = 700 + (i - (n - 1) / 2) * (n > 2 ? 260 : 290), fertig = Spiel.sidequestErledigt(sq.id);
+    var h = svg('g', { class:'hs', role:'button', tabindex:'-1', 'aria-label':'Sidequest ' + sq.id + ': ' + sq.titel }, g);
+    svg('rect', { class:'glanz', x:x - 118, y:392, width:236, height:178, rx:12 }, h);
+    svg('rect', { x:x - 20, y:556, width:40, height:34, fill:'#2b1d14' }, h);
+    svg('rect', { class:'schirm-rahmen', x:x - 105, y:400, width:210, height:160, rx:10, fill:'#0f1a2e', stroke:'#8f7a3f', 'stroke-width':4 }, h);
+    svg('rect', { x:x - 93, y:412, width:186, height:136, rx:4, fill:'url(#schirm)' }, h);
+    svg('circle', { cx:x, cy:468, r:42, fill:'#0b1020', stroke: fertig ? '#d4af37' : '#9fe59f', 'stroke-width':3 }, h);
+    var t = svg('text', { x:x, y:468, 'text-anchor':'middle', 'dominant-baseline':'central', 'font-family':'Georgia, serif', 'font-size':50, 'font-weight':'bold', fill: fertig ? '#d4af37' : '#9fe59f' }, h);
+    t.textContent = sq.symbol;
+    svg('text', { x:x, y:538, 'text-anchor':'middle', 'font-family':'Georgia, serif', 'font-size':15, 'letter-spacing':4, fill:'#9fe59f', opacity:.85 }, h).textContent = sq.art;
+    if (fertig) {
+      svg('circle', { cx:x + 82, cy:428, r:15, fill:'#d4af37' }, h);
+      svg('path', { d:'M' + (x + 74) + ',428 L' + (x + 80) + ',435 L' + (x + 91) + ',421', fill:'none', stroke:'#0b1020', 'stroke-width':3.5, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, h);
+    }
+    svg('text', { x:x, y:664, 'text-anchor':'middle', 'font-family':'Georgia, serif', 'font-size':n > 2 ? 21 : 24, 'font-weight':'bold', fill:'#e8dcc0' }, h).textContent = sq.titel;
+    svg('title', {}, h).textContent = 'Sidequest ' + sq.id + ': ' + sq.titel + (fertig ? ' (geschafft)' : ' – gibt dir einen Energiebalken');
+    var los = function(){ if (!aktiv) return; klick(); location.href = Spiel.url(sq.datei, { q:sq.id }); };
+    h.addEventListener('click', los);
+    h.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); los(); } });
+  });
+}
+bildschirme();
+var tuer = $('hs-tuer');
+tuer.addEventListener('click', function(){ if (!aktiv) return; klick(); zurKarte(); });
+tuer.addEventListener('keydown', function(e){ if (aktiv && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); zurKarte(); } });
+function freigeben(){
+  aktiv = true;
+  Array.prototype.forEach.call(document.querySelectorAll('.hs'), function(h){ h.classList.add('aktiv'); h.setAttribute('tabindex', '0'); });
+}
+
+/* ---- Dialog: Der Avatar spricht beim Betreten kurz, nach einer Sidequest nicht noch einmal ---- */
+var dlg = $('dialog'), dlgText = dlg.querySelector('.text'), tippTimer = null, tipptGerade = false, ganzerText = '';
+function sprechen(text, danach){
+  dlg.hidden = false; $('fig-du').classList.add('spricht');
+  ganzerText = text; clearInterval(tippTimer);
+  function schliessen(){ dlg.hidden = true; $('fig-du').classList.remove('spricht'); dlg.onclick = null; danach(); }
+  if (RUHIG) { dlgText.textContent = text; tipptGerade = false; }
+  else {
+    var i = 0; tipptGerade = true; dlgText.textContent = '';
+    tippTimer = setInterval(function(){ i++; dlgText.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(tippTimer); tipptGerade = false; } }, 26);
+  }
+  dlg.onclick = function(){
+    if (tipptGerade) { clearInterval(tippTimer); tipptGerade = false; dlgText.textContent = ganzerText; }
+    else schliessen();
+  };
+  document.addEventListener('keydown', function weiter(e){
+    if (dlg.hidden) { document.removeEventListener('keydown', weiter); return; }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dlg.onclick && dlg.onclick(); }
+  });
+}
+if (KEHRT_ZURUECK) freigeben();
+else setTimeout(function(){ sprechen('Wir sind allein. Eine gute Gelegenheit, um neue Energie zu tanken.', freigeben); }, 500);
+</script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+id,name,geschlecht,geburtsjahr,todesjahr,epoche,herkunft,kontinent,wirkungsbereich,taetigkeit,bekanntes_werk,todesursache
+1,Ramses II.,männlich,,,Antike,Ägypten,Afrika,Politik,Pharao,Schlacht von Kadesch; Tempel von Abu Simbel,Alter
+2,Tutanchamun,männlich,,,Antike,Ägypten,Afrika,Politik,Pharao,Grab im Tal der Könige (1922 entdeckt),unbekannt
+3,Sappho,weiblich,,,Antike,Antikes Griechenland,Europa,Literatur,Dichterin,Liebesgedichte; sapphische Strophe,unbekannt
+4,Buddha (Siddhartha Gautama),männlich,,,Antike,Indien,Asien,Religion,Religionsstifter,Begründer des Buddhismus,Krankheit
+5,Konfuzius,männlich,,-479,Antike,China,Asien,Philosophie,Philosoph,Gespräche (Lunyu),Alter
+6,Sokrates,männlich,,-399,Antike,Antikes Griechenland,Europa,Philosophie,Philosoph,Sokratische Gesprächsführung,Hingerichtet
+7,Hippokrates,männlich,,,Antike,Antikes Griechenland,Europa,Wissenschaft,Arzt,Hippokratischer Eid (zugeschrieben),unbekannt
+8,Platon,männlich,,,Antike,Antikes Griechenland,Europa,Philosophie,Philosoph,Der Staat; Gründung der Akademie,Alter
+9,Aristoteles,männlich,-384,-322,Antike,Antikes Griechenland,Europa,Philosophie,Philosoph,Nikomachische Ethik; Begründung der Logik,Krankheit
+10,Alexander der Grosse,männlich,-356,-323,Antike,Makedonien,Europa,Militär,Feldherr,Eroberung des Perserreichs,Krankheit
+11,Archimedes,männlich,,-212,Antike,Antikes Griechenland,Europa,Wissenschaft,Mathematiker,Hebelgesetz; Auftriebsgesetz,Krieg
+12,Hannibal,männlich,-247,,Antike,Karthago,Afrika,Militär,Feldherr,Alpenüberquerung im Zweiten Punischen Krieg,Suizid
+13,Ashoka,männlich,,-232,Antike,Indien,Asien,Politik,Kaiser,Ashoka-Edikte; Förderung des Buddhismus,Alter
+14,Qin Shi Huang,männlich,-259,-210,Antike,China,Asien,Politik,Kaiser,Einigung Chinas; Terrakotta-Armee,Krankheit
+15,Gaius Julius Cäsar,männlich,-100,-44,Antike,Römische Republik,Europa,Politik,Feldherr,Eroberung Galliens; Julianischer Kalender,Ermordet
+16,Kleopatra VII.,weiblich,-69,-30,Antike,Ägypten,Afrika,Politik,Pharaonin,Letzte Herrscherin des ptolemäischen Ägypten,Suizid
+17,Augustus,männlich,-63,14,Antike,Römisches Reich,Europa,Politik,Kaiser,Begründer des Kaiserreichs; Pax Romana,Alter
+18,Hypatia,weiblich,,415,Antike,Römisches Reich,Afrika,Wissenschaft,Mathematikerin,Kommentare zu Diophant und Apollonios,Ermordet
+19,Wu Zetian,weiblich,,705,Mittelalter,China,Asien,Politik,Kaiserin,Einzige Kaiserin in der Geschichte Chinas,Alter
+20,Karl der Grosse,männlich,,814,Mittelalter,Fränkisches Reich,Europa,Politik,Kaiser,Kaiserkrönung im Jahr 800; Karolingische Renaissance,Krankheit
+21,Murasaki Shikibu,weiblich,,,Mittelalter,Japan,Asien,Literatur,Schriftstellerin,Die Geschichte vom Prinzen Genji,unbekannt
+22,Ibn Sina (Avicenna),männlich,980,1037,Mittelalter,Persien,Asien,Wissenschaft,Arzt,Der Kanon der Medizin,Krankheit
+23,Saladin,männlich,,1193,Mittelalter,Ayyubidenreich,Asien,Militär,Sultan,Rückeroberung Jerusalems 1187,Krankheit
+24,Hildegard von Bingen,weiblich,1098,1179,Mittelalter,Deutschland,Europa,Religion,Äbtissin,Scivias; Schriften zur Heilkunde,Alter
+25,Dschingis Khan,männlich,,1227,Mittelalter,Mongolei,Asien,Militär,Herrscher,Gründer des Mongolenreichs,unbekannt
+26,Rumi,männlich,1207,1273,Mittelalter,Persien,Asien,Literatur,Dichter,Masnavi,Krankheit
+27,Marco Polo,männlich,1254,1324,Mittelalter,Republik Venedig,Europa,Entdeckung,Kaufmann,Reisebericht über China (Il Milione),Krankheit
+28,Dante Alighieri,männlich,1265,1321,Mittelalter,Italien,Europa,Literatur,Dichter,Die Göttliche Komödie,Krankheit
+29,Mansa Musa,männlich,,,Mittelalter,Mali,Afrika,Politik,Herrscher,Pilgerreise nach Mekka 1324; sagenhafter Reichtum,unbekannt
+30,Ibn Battuta,männlich,1304,,Mittelalter,Marokko,Afrika,Entdeckung,Reisender,Rihla (Reisebericht),unbekannt
+31,Zheng He,männlich,,,Mittelalter,China,Asien,Entdeckung,Admiral,Schatzflotten-Expeditionen bis nach Afrika,unbekannt
+32,Johannes Gutenberg,männlich,,1468,Mittelalter,Deutschland,Europa,Technik und Wirtschaft,Erfinder,Buchdruck mit beweglichen Lettern,unbekannt
+33,Jeanne dArc,weiblich,,1431,Mittelalter,Frankreich,Europa,Militär,Heerführerin,Befreiung von Orléans 1429,Hingerichtet
+34,Christoph Kolumbus,männlich,,1506,Frühe Neuzeit,Republik Genua,Europa,Entdeckung,Seefahrer,Fahrt nach Amerika 1492,Krankheit
+35,Leonardo da Vinci,männlich,1452,1519,Frühe Neuzeit,Italien,Europa,Kunst,Universalgelehrter,Mona Lisa; Die Felsgrottenmadonna,Krankheit
+36,Nikolaus Kopernikus,männlich,1473,1543,Frühe Neuzeit,Polen,Europa,Wissenschaft,Astronom,Heliozentrisches Weltbild,Krankheit
+37,Michelangelo,männlich,1475,1564,Frühe Neuzeit,Italien,Europa,Kunst,Bildhauer,David; Decke der Sixtinischen Kapelle,Alter
+38,Martin Luther,männlich,1483,1546,Frühe Neuzeit,Deutschland,Europa,Religion,Reformator,95 Thesen; Bibelübersetzung ins Deutsche,Krankheit
+39,Suleiman der Prächtige,männlich,1494,1566,Frühe Neuzeit,Osmanisches Reich,Asien,Politik,Sultan,Höhepunkt des Osmanischen Reichs,Krankheit
+40,Elisabeth I.,weiblich,1533,1603,Frühe Neuzeit,England,Europa,Politik,Königin,Sieg über die spanische Armada 1588,Krankheit
+41,Akbar der Grosse,männlich,1542,1605,Frühe Neuzeit,Indien,Asien,Politik,Herrscher,Ausbau des Mogulreichs; religiöse Toleranz,Krankheit
+42,Tokugawa Ieyasu,männlich,1543,1616,Frühe Neuzeit,Japan,Asien,Politik,Shogun,Begründer des Tokugawa-Shogunats,Krankheit
+43,Galileo Galilei,männlich,1564,1642,Frühe Neuzeit,Italien,Europa,Wissenschaft,Astronom,Teleskopbeobachtungen; Fallgesetze,Krankheit
+44,William Shakespeare,männlich,1564,1616,Frühe Neuzeit,England,Europa,Literatur,Dramatiker,Hamlet; Romeo und Julia,unbekannt
+45,Nzinga von Ndongo und Matamba,weiblich,1583,1663,Frühe Neuzeit,Angola,Afrika,Politik,Königin,Widerstand gegen die portugiesische Kolonialherrschaft,Alter
+46,Isaac Newton,männlich,1643,1727,Frühe Neuzeit,England,Europa,Wissenschaft,Physiker,Gravitationsgesetz; Principia Mathematica,Krankheit
+47,Johann Sebastian Bach,männlich,1685,1750,Frühe Neuzeit,Deutschland,Europa,Musik,Komponist,Matthäus-Passion; Brandenburgische Konzerte,Krankheit
+48,Maria Theresia,weiblich,1717,1780,Frühe Neuzeit,Österreich,Europa,Politik,Herrscherin,Einführung der Schulpflicht,Krankheit
+49,James Cook,männlich,1728,1779,Frühe Neuzeit,Grossbritannien,Europa,Entdeckung,Seefahrer,Erkundung des Pazifiks; Kartierung Neuseelands,Ermordet
+50,Katharina die Grosse,weiblich,1729,1796,Frühe Neuzeit,Russland,Europa,Politik,Zarin,Ausbau Russlands zur Grossmacht,Krankheit
+51,Toussaint Louverture,männlich,1743,1803,Frühe Neuzeit,Haiti,Nordamerika,Politik,Revolutionär,Führer der Haitianischen Revolution,Krankheit
+52,Wolfgang Amadeus Mozart,männlich,1756,1791,Frühe Neuzeit,Österreich,Europa,Musik,Komponist,Die Zauberflöte; Requiem,Krankheit
+53,Marie Antoinette,weiblich,1755,1793,Frühe Neuzeit,Österreich,Europa,Politik,Königin,Königin von Frankreich; Symbolfigur der Revolution,Hingerichtet
+54,Napoleon Bonaparte,männlich,1769,1821,19. Jahrhundert,Frankreich,Europa,Politik,Kaiser,Code civil; Eroberungen in Europa,Krankheit
+55,Ludwig van Beethoven,männlich,1770,1827,19. Jahrhundert,Deutschland,Europa,Musik,Komponist,9. Sinfonie; Mondscheinsonate,Krankheit
+56,Johann Wolfgang von Goethe,männlich,1749,1832,19. Jahrhundert,Deutschland,Europa,Literatur,Dichter,Faust; Die Leiden des jungen Werthers,Krankheit
+57,Jane Austen,weiblich,1775,1817,19. Jahrhundert,Grossbritannien,Europa,Literatur,Schriftstellerin,Stolz und Vorurteil,Krankheit
+58,Simón Bolívar,männlich,1783,1830,19. Jahrhundert,Venezuela,Südamerika,Politik,Freiheitskämpfer,Befreiung mehrerer südamerikanischer Länder,Krankheit
+59,Shaka,männlich,,1828,19. Jahrhundert,Zulu-Reich,Afrika,Militär,Herrscher,Gründer des Zulu-Reichs,Ermordet
+60,Ada Lovelace,weiblich,1815,1852,19. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Mathematikerin,Erstes Programm für eine Rechenmaschine,Krankheit
+61,Charles Darwin,männlich,1809,1882,19. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Naturforscher,Über die Entstehung der Arten,Krankheit
+62,Abraham Lincoln,männlich,1809,1865,19. Jahrhundert,USA,Nordamerika,Politik,Präsident,Abschaffung der Sklaverei,Ermordet
+63,Victoria,weiblich,1819,1901,19. Jahrhundert,Grossbritannien,Europa,Politik,Königin,Viktorianisches Zeitalter,Alter
+64,Karl Marx,männlich,1818,1883,19. Jahrhundert,Deutschland,Europa,Philosophie,Philosoph,Das Kapital,Krankheit
+65,Florence Nightingale,weiblich,1820,1910,19. Jahrhundert,Grossbritannien,Europa,Gesellschaft,Krankenschwester,Begründerin der modernen Krankenpflege,Alter
+66,Louis Pasteur,männlich,1822,1895,19. Jahrhundert,Frankreich,Europa,Wissenschaft,Mikrobiologe,Tollwutimpfung; Pasteurisierung,Krankheit
+67,Harriet Tubman,weiblich,,1913,19. Jahrhundert,USA,Nordamerika,Gesellschaft,Aktivistin,Fluchthilfe über die Underground Railroad,Krankheit
+68,Leo Tolstoi,männlich,1828,1910,19. Jahrhundert,Russland,Europa,Literatur,Schriftsteller,Krieg und Frieden; Anna Karenina,Krankheit
+69,Rani Lakshmibai,weiblich,,1858,19. Jahrhundert,Indien,Asien,Militär,Königin,Anführerin im indischen Aufstand von 1857,Krieg
+70,Sitting Bull,männlich,,1890,19. Jahrhundert,Lakota,Nordamerika,Politik,Häuptling,Sieg in der Schlacht am Little Bighorn 1876,Ermordet
+71,Thomas Edison,männlich,1847,1931,19. Jahrhundert,USA,Nordamerika,Technik und Wirtschaft,Erfinder,Praxistaugliche Glühlampe; Phonograph,Krankheit
+72,Vincent van Gogh,männlich,1853,1890,19. Jahrhundert,Niederlande,Europa,Kunst,Maler,Sternennacht; Sonnenblumen,Suizid
+73,Sigmund Freud,männlich,1856,1939,20. Jahrhundert,Österreich,Europa,Wissenschaft,Psychoanalytiker,Die Traumdeutung,Krankheit
+74,Rabindranath Tagore,männlich,1861,1941,20. Jahrhundert,Indien,Asien,Literatur,Dichter,Gitanjali; Literaturnobelpreis 1913,Krankheit
+75,Marie Curie,weiblich,1867,1934,20. Jahrhundert,Polen,Europa,Wissenschaft,Physikerin,Entdeckung von Polonium und Radium; zwei Nobelpreise,Krankheit
+76,Mahatma Gandhi,männlich,1869,1948,20. Jahrhundert,Indien,Asien,Politik,Freiheitskämpfer,Gewaltloser Widerstand; Salzmarsch,Ermordet
+77,Winston Churchill,männlich,1874,1965,20. Jahrhundert,Grossbritannien,Europa,Politik,Premierminister,Führung Grossbritanniens im Zweiten Weltkrieg,Krankheit
+78,Albert Einstein,männlich,1879,1955,20. Jahrhundert,Deutschland,Europa,Wissenschaft,Physiker,Relativitätstheorie,Krankheit
+79,Pablo Picasso,männlich,1881,1973,20. Jahrhundert,Spanien,Europa,Kunst,Maler,Guernica,Krankheit
+80,Duke Kahanamoku,männlich,1890,1968,20. Jahrhundert,Hawaii,Ozeanien,Sport,Schwimmer,Olympiasieger im Schwimmen; Verbreitung des Surfens,Krankheit
+81,Mao Zedong,männlich,1893,1976,20. Jahrhundert,China,Asien,Politik,Staatsgründer,Ausrufung der Volksrepublik China 1949,Krankheit
+82,Amelia Earhart,weiblich,1897,,20. Jahrhundert,USA,Nordamerika,Entdeckung,Pilotin,Erster Alleinflug einer Frau über den Atlantik,unbekannt
+83,Frida Kahlo,weiblich,1907,1954,20. Jahrhundert,Mexiko,Nordamerika,Kunst,Malerin,Selbstbildnisse; Die zwei Fridas,Krankheit
+84,Mutter Teresa,weiblich,1910,1997,20. Jahrhundert,Indien,Asien,Religion,Ordensschwester,Gründung der Missionarinnen der Nächstenliebe,Krankheit
+85,Alan Turing,männlich,1912,1954,20. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Mathematiker,Turingmaschine; Entschlüsselung der Enigma,Suizid
+86,Rosa Parks,weiblich,1913,2005,20. Jahrhundert,USA,Nordamerika,Gesellschaft,Bürgerrechtlerin,Busboykott von Montgomery 1955,Alter
+87,Nelson Mandela,männlich,1918,2013,20. Jahrhundert,Südafrika,Afrika,Politik,Präsident,Ende der Apartheid,Krankheit
+88,Che Guevara,männlich,1928,1967,20. Jahrhundert,Argentinien,Südamerika,Politik,Revolutionär,Kubanische Revolution,Hingerichtet
+89,Anne Frank,weiblich,1929,1945,20. Jahrhundert,Deutschland,Europa,Literatur,Tagebuchschreiberin,Das Tagebuch der Anne Frank,Krankheit
+90,Martin Luther King Jr.,männlich,1929,1968,20. Jahrhundert,USA,Nordamerika,Gesellschaft,Bürgerrechtler,Rede «I Have a Dream»,Ermordet
+91,Neil Armstrong,männlich,1930,2012,20. Jahrhundert,USA,Nordamerika,Entdeckung,Astronaut,Erster Mensch auf dem Mond 1969,Krankheit
+92,Wangari Maathai,weiblich,1940,2011,20. Jahrhundert,Kenia,Afrika,Gesellschaft,Umweltaktivistin,Green Belt Movement; Friedensnobelpreis 2004,Krankheit
+93,Muhammad Ali,männlich,1942,2016,20. Jahrhundert,USA,Nordamerika,Sport,Boxer,Weltmeister im Schwergewicht,Krankheit
+94,Steve Jobs,männlich,1955,2011,20. Jahrhundert,USA,Nordamerika,Technik und Wirtschaft,Unternehmer,Apple; iPhone,Krankheit
+95,Malala Yousafzai,weiblich,1997,,Gegenwart,Pakistan,Asien,Gesellschaft,Aktivistin,Einsatz für Mädchenbildung; Friedensnobelpreis 2014,lebt noch
+96,Hammurabi,männlich,,,Antike,Babylonien,Asien,Politik,König,Codex Hammurapi (eines der ältesten Gesetzbücher),unbekannt
+97,Hatschepsut,weiblich,,,Antike,Ägypten,Afrika,Politik,Pharaonin,Totentempel von Deir el-Bahari; Handelsexpedition nach Punt,unbekannt
+98,Echnaton,männlich,,,Antike,Ägypten,Afrika,Politik,Pharao,Einführung des Aton-Kults,unbekannt
+99,Nofretete,weiblich,,,Antike,Ägypten,Afrika,Politik,Königin,Berühmte Büste im Neuen Museum Berlin,unbekannt
+100,Nebukadnezar II.,männlich,,-562,Antike,Babylonien,Asien,Politik,König,Ausbau Babylons; Eroberung Jerusalems 587 v. Chr.,unbekannt
+101,Kyros der Grosse,männlich,,-530,Antike,Persien,Asien,Politik,König,Gründer des Perserreichs; Kyros-Zylinder,Krieg
+102,Leonidas I.,männlich,,-480,Antike,Antikes Griechenland,Europa,Militär,König,Schlacht bei den Thermopylen,Krieg
+103,Perikles,männlich,,-429,Antike,Antikes Griechenland,Europa,Politik,Staatsmann,Blütezeit Athens; Bau des Parthenon,Krankheit
+104,Herodot,männlich,,,Antike,Antikes Griechenland,Europa,Literatur,Geschichtsschreiber,Historien (erste grosse Geschichtsdarstellung),unbekannt
+105,Demosthenes,männlich,-384,-322,Antike,Antikes Griechenland,Europa,Politik,Redner,Philippische Reden gegen Philipp II.,Suizid
+106,Cicero,männlich,-106,-43,Antike,Römische Republik,Europa,Politik,Redner,Reden gegen Catilina,Ermordet
+107,Spartacus,männlich,,-71,Antike,Thrakien,Europa,Militär,Gladiator,Sklavenaufstand gegen Rom 73–71 v. Chr.,Krieg
+108,Vergil,männlich,-70,-19,Antike,Römische Republik,Europa,Literatur,Dichter,Aeneis,Krankheit
+109,Nero,männlich,37,68,Antike,Römisches Reich,Europa,Politik,Kaiser,Grosser Brand Roms im Jahr 64,Suizid
+110,Marc Aurel,männlich,121,180,Antike,Römisches Reich,Europa,Philosophie,Kaiser,Selbstbetrachtungen,Krankheit
+111,Ptolemäus,männlich,,,Antike,Römisches Reich,Afrika,Wissenschaft,Astronom,Almagest (geozentrisches Weltbild),unbekannt
+112,Zenobia,weiblich,,,Antike,Palmyra,Asien,Politik,Königin,Reich von Palmyra; Aufstand gegen Rom,unbekannt
+113,Cai Lun,männlich,,121,Antike,China,Asien,Technik und Wirtschaft,Hofbeamter,Verbesserung der Papierherstellung,Suizid
+114,Konstantin der Grosse,männlich,,337,Antike,Römisches Reich,Europa,Politik,Kaiser,Gründung Konstantinopels; Mailänder Vereinbarung,Krankheit
+115,Augustinus,männlich,354,430,Antike,Römisches Reich,Afrika,Religion,Kirchenlehrer,Bekenntnisse; Der Gottesstaat,Krankheit
+116,Attila,männlich,,453,Antike,Hunnenreich,Europa,Militär,Herrscher,Hunnenreich; Schlacht auf den Katalaunischen Feldern,unbekannt
+117,Aryabhata,männlich,476,,Antike,Indien,Asien,Wissenschaft,Mathematiker,Aryabhatiya,unbekannt
+118,Justinian I.,männlich,482,565,Mittelalter,Byzantinisches Reich,Europa,Politik,Kaiser,Corpus Iuris Civilis; Hagia Sophia,Alter
+119,Theodora,weiblich,,548,Mittelalter,Byzantinisches Reich,Europa,Politik,Kaiserin,Mitregentin Justinians; Reformen zum Schutz von Frauen,Krankheit
+120,Harun al-Raschid,männlich,766,809,Mittelalter,Abbasidenreich,Asien,Politik,Kalif,Blütezeit Bagdads; Rahmen der Erzählungen aus 1001 Nacht,Krankheit
+121,Al-Chwarizmi,männlich,,,Mittelalter,Persien,Asien,Wissenschaft,Mathematiker,Begründer der Algebra; Namensgeber des Algorithmus,unbekannt
+122,Erik der Rote,männlich,,,Mittelalter,Norwegen,Europa,Entdeckung,Wikinger,Besiedlung Grönlands,Krankheit
+123,Leif Eriksson,männlich,,,Mittelalter,Island,Europa,Entdeckung,Seefahrer,Erste Europäer in Nordamerika (Vinland),unbekannt
+124,Wilhelm der Eroberer,männlich,1028,1087,Mittelalter,Normandie,Europa,Politik,König,Schlacht bei Hastings 1066,Unfall
+125,Ibn al-Haytham,männlich,965,,Mittelalter,Abbasidenreich,Asien,Wissenschaft,Physiker,Buch der Optik,unbekannt
+126,Omar Chayyam,männlich,1048,1131,Mittelalter,Persien,Asien,Wissenschaft,Mathematiker,Rubaiyat; Algebra der kubischen Gleichungen,unbekannt
+127,Richard Löwenherz,männlich,1157,1199,Mittelalter,England,Europa,Militär,König,Dritter Kreuzzug,Krieg
+128,Eleonore von Aquitanien,weiblich,1122,1204,Mittelalter,Frankreich,Europa,Politik,Königin,Königin von Frankreich und England,Alter
+129,Franz von Assisi,männlich,,1226,Mittelalter,Italien,Europa,Religion,Ordensgründer,Gründung des Franziskanerordens; Sonnengesang,Krankheit
+130,Thomas von Aquin,männlich,,1274,Mittelalter,Italien,Europa,Philosophie,Theologe,Summa theologiae,Krankheit
+131,Kublai Khan,männlich,1215,1294,Mittelalter,Mongolei,Asien,Politik,Grosskhan,Gründung der Yuan-Dynastie in China,Krankheit
+132,Timur,männlich,1336,1405,Mittelalter,Timuridenreich,Asien,Militär,Herrscher,Grossreich in Zentralasien; Ausbau von Samarkand,Krankheit
+133,Jan Hus,männlich,,1415,Mittelalter,Böhmen,Europa,Religion,Theologe,Kritik an der Kirche; Vorläufer der Reformation,Hingerichtet
+134,Ulugh Beg,männlich,1394,1449,Mittelalter,Timuridenreich,Asien,Wissenschaft,Astronom,Sternenkatalog von Samarkand,Ermordet
+135,Vlad III. Drăculea,männlich,1431,1476,Mittelalter,Walachei,Europa,Militär,Fürst,Vorbild für die Romanfigur Dracula,Krieg
+136,Pachacútec,männlich,,,Mittelalter,Inka-Reich,Südamerika,Politik,Herrscher,Ausbau des Inka-Reichs; Machu Picchu,unbekannt
+137,Sundiata Keita,männlich,,,Mittelalter,Mali,Afrika,Politik,Herrscher,Gründer des Mali-Reichs,unbekannt
+138,Averroes,männlich,1126,1198,Mittelalter,Al-Andalus,Europa,Philosophie,Philosoph,Kommentare zu Aristoteles,unbekannt
+139,Minamoto no Yoritomo,männlich,1147,1199,Mittelalter,Japan,Asien,Politik,Shogun,Begründer des Kamakura-Shogunats,Unfall
+140,Lalibela,männlich,,,Mittelalter,Äthiopien,Afrika,Politik,Kaiser,Felsenkirchen von Lalibela,unbekannt
+141,Christine de Pizan,weiblich,,,Mittelalter,Italien,Europa,Literatur,Schriftstellerin,Das Buch von der Stadt der Frauen,unbekannt
+142,Sejong der Grosse,männlich,1397,1450,Mittelalter,Korea,Asien,Politik,König,Erfindung der Hangul-Schrift,Krankheit
+143,Ferdausi,männlich,,,Mittelalter,Persien,Asien,Literatur,Dichter,Schahname (Buch der Könige),unbekannt
+144,Hafis,männlich,,,Mittelalter,Persien,Asien,Literatur,Dichter,Diwan,unbekannt
+145,Ibn Chaldun,männlich,1332,1406,Mittelalter,Tunesien,Afrika,Wissenschaft,Geschichtsschreiber,Muqaddima (Einleitung in die Weltgeschichte),unbekannt
+146,Mehmed II.,männlich,1432,1481,Mittelalter,Osmanisches Reich,Asien,Politik,Sultan,Eroberung Konstantinopels 1453,unbekannt
+147,Razia Sultana,weiblich,1205,1240,Mittelalter,Indien,Asien,Politik,Sultanin,Einzige Herrscherin des Sultanats von Delhi,Ermordet
+148,Moctezuma II.,männlich,1466,1520,Frühe Neuzeit,Aztekenreich,Nordamerika,Politik,Herrscher,Herrscher der Azteken bei der Ankunft von Cortés,unbekannt
+149,Hernán Cortés,männlich,1485,1547,Frühe Neuzeit,Spanien,Europa,Militär,Konquistador,Eroberung des Aztekenreichs,Krankheit
+150,Francisco Pizarro,männlich,,1541,Frühe Neuzeit,Spanien,Europa,Militär,Konquistador,Eroberung des Inka-Reichs,Ermordet
+151,Atahualpa,männlich,,1533,Frühe Neuzeit,Inka-Reich,Südamerika,Politik,Herrscher,Letzter unabhängiger Herrscher der Inka,Hingerichtet
+152,Ferdinand Magellan,männlich,1480,1521,Frühe Neuzeit,Portugal,Europa,Entdeckung,Seefahrer,Erste Weltumsegelung (begonnen 1519),Krieg
+153,Vasco da Gama,männlich,,1524,Frühe Neuzeit,Portugal,Europa,Entdeckung,Seefahrer,Seeweg nach Indien 1498,Krankheit
+154,Leonhard Euler,männlich,1707,1783,Frühe Neuzeit,Schweiz,Europa,Wissenschaft,Mathematiker,Eulersche Zahl; Eulersche Formel,Krankheit
+155,Johannes Calvin,männlich,1509,1564,Frühe Neuzeit,Frankreich,Europa,Religion,Reformator,Institutio Christianae Religionis; Reformation in Genf,Krankheit
+156,Ulrich Zwingli,männlich,1484,1531,Frühe Neuzeit,Schweiz,Europa,Religion,Reformator,Reformation in Zürich,Krieg
+157,Paracelsus,männlich,1493,1541,Frühe Neuzeit,Schweiz,Europa,Wissenschaft,Arzt,«Die Dosis macht das Gift»; chemische Medizin,unbekannt
+158,Albrecht Dürer,männlich,1471,1528,Frühe Neuzeit,Deutschland,Europa,Kunst,Maler,Feldhase; Melencolia I,Krankheit
+159,Raffael,männlich,1483,1520,Frühe Neuzeit,Italien,Europa,Kunst,Maler,Die Schule von Athen,Krankheit
+160,Johannes Kepler,männlich,1571,1630,Frühe Neuzeit,Deutschland,Europa,Wissenschaft,Astronom,Keplersche Gesetze der Planetenbewegung,Krankheit
+161,Giordano Bruno,männlich,1548,1600,Frühe Neuzeit,Italien,Europa,Philosophie,Philosoph,Lehre vom unendlichen Universum,Hingerichtet
+162,Miguel de Cervantes,männlich,1547,1616,Frühe Neuzeit,Spanien,Europa,Literatur,Schriftsteller,Don Quijote,Krankheit
+163,Émilie du Châtelet,weiblich,1706,1749,Frühe Neuzeit,Frankreich,Europa,Wissenschaft,Physikerin,Französische Übersetzung von Newtons Principia,Krankheit
+164,Ludwig XIV.,männlich,1638,1715,Frühe Neuzeit,Frankreich,Europa,Politik,König,Schloss Versailles; «Sonnenkönig»,Krankheit
+165,Peter der Grosse,männlich,1672,1725,Frühe Neuzeit,Russland,Europa,Politik,Zar,Gründung von Sankt Petersburg,Krankheit
+166,Voltaire,männlich,1694,1778,Frühe Neuzeit,Frankreich,Europa,Philosophie,Philosoph,Candide; Abhandlung über die Toleranz,Krankheit
+167,Immanuel Kant,männlich,1724,1804,Frühe Neuzeit,Deutschland,Europa,Philosophie,Philosoph,Kritik der reinen Vernunft,Alter
+168,Maria Sibylla Merian,weiblich,1647,1717,Frühe Neuzeit,Deutschland,Europa,Wissenschaft,Naturforscherin,Metamorphosis insectorum Surinamensium,Krankheit
+169,George Washington,männlich,1732,1799,Frühe Neuzeit,USA,Nordamerika,Politik,Präsident,Erster Präsident der USA,Krankheit
+170,Olympe de Gouges,weiblich,1748,1793,Frühe Neuzeit,Frankreich,Europa,Gesellschaft,Frauenrechtlerin,Erklärung der Rechte der Frau und Bürgerin,Hingerichtet
+171,Mary Wollstonecraft,weiblich,1759,1797,Frühe Neuzeit,Grossbritannien,Europa,Gesellschaft,Philosophin,Verteidigung der Rechte der Frau,Krankheit
+172,Pocahontas,weiblich,,1617,Frühe Neuzeit,Powhatan,Nordamerika,Gesellschaft,Vermittlerin,Vermittlung zwischen den Powhatan und den Siedlern von Jamestown,Krankheit
+173,Oda Nobunaga,männlich,1534,1582,Frühe Neuzeit,Japan,Asien,Militär,Feldherr,Beginn der Einigung Japans,Suizid
+174,Toyotomi Hideyoshi,männlich,1537,1598,Frühe Neuzeit,Japan,Asien,Militär,Feldherr,Einigung Japans 1590,Krankheit
+175,Yi Sun-sin,männlich,1545,1598,Frühe Neuzeit,Korea,Asien,Militär,Admiral,Schildkrötenschiffe; Seesiege gegen Japan,Krieg
+176,Matsuo Bashō,männlich,1644,1694,Frühe Neuzeit,Japan,Asien,Literatur,Dichter,Haiku; Auf schmalen Pfaden durchs Hinterland,Krankheit
+177,Tipu Sultan,männlich,1751,1799,Frühe Neuzeit,Indien,Asien,Militär,Herrscher,Mysore-Kriege gegen die Briten,Krieg
+178,Olaudah Equiano,männlich,,1797,Frühe Neuzeit,Nigeria,Afrika,Literatur,Autor,Autobiografie über Versklavung und Freiheit,unbekannt
+179,Phillis Wheatley,weiblich,,1784,Frühe Neuzeit,USA,Nordamerika,Literatur,Dichterin,"Poems on Various Subjects, Religious and Moral",Krankheit
+180,Túpac Amaru II.,männlich,1738,1781,Frühe Neuzeit,Peru,Südamerika,Politik,Rebellenführer,Grosser Aufstand gegen die spanische Herrschaft 1780,Hingerichtet
+181,Artemisia Gentileschi,weiblich,1593,,Frühe Neuzeit,Italien,Europa,Kunst,Malerin,Judith enthauptet Holofernes,unbekannt
+182,Caravaggio,männlich,1571,1610,Frühe Neuzeit,Italien,Europa,Kunst,Maler,Berufung des Matthäus,Krankheit
+183,Isabella I. von Kastilien,weiblich,1451,1504,Frühe Neuzeit,Spanien,Europa,Politik,Königin,Unterstützung der Reise des Kolumbus; Vereinigung Spaniens,Krankheit
+184,Antonio Vivaldi,männlich,1678,1741,Frühe Neuzeit,Italien,Europa,Musik,Komponist,Die vier Jahreszeiten,Krankheit
+185,Maria Stuart,weiblich,1542,1587,Frühe Neuzeit,Schottland,Europa,Politik,Königin,Königin von Schottland; Rivalin Elisabeths I.,Hingerichtet
+186,Johann Heinrich Pestalozzi,männlich,1746,1827,Frühe Neuzeit,Schweiz,Europa,Gesellschaft,Pädagoge,Lienhard und Gertrud; Erziehungsanstalt in Yverdon,Krankheit
+187,Pemulwuy,männlich,,1802,Frühe Neuzeit,Australien,Ozeanien,Militär,Widerstandskämpfer,Widerstand gegen die britische Besiedlung um Sydney,Ermordet
+188,Alexander von Humboldt,männlich,1769,1859,19. Jahrhundert,Deutschland,Europa,Wissenschaft,Naturforscher,Kosmos; Forschungsreise durch Amerika,Alter
+189,Carl Friedrich Gauss,männlich,1777,1855,19. Jahrhundert,Deutschland,Europa,Wissenschaft,Mathematiker,Disquisitiones Arithmeticae; Normalverteilung,Krankheit
+190,Mary Anning,weiblich,1799,1847,19. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Paläontologin,Fossilienfunde in Lyme Regis,Krankheit
+191,Charles Dickens,männlich,1812,1870,19. Jahrhundert,Grossbritannien,Europa,Literatur,Schriftsteller,Oliver Twist; Eine Weihnachtsgeschichte,Krankheit
+192,Victor Hugo,männlich,1802,1885,19. Jahrhundert,Frankreich,Europa,Literatur,Schriftsteller,Die Elenden; Der Glöckner von Notre-Dame,Krankheit
+193,Fjodor Dostojewski,männlich,1821,1881,19. Jahrhundert,Russland,Europa,Literatur,Schriftsteller,Schuld und Sühne; Die Brüder Karamasow,Krankheit
+194,Mark Twain,männlich,1835,1910,19. Jahrhundert,USA,Nordamerika,Literatur,Schriftsteller,Die Abenteuer des Tom Sawyer,Krankheit
+195,Mary Shelley,weiblich,1797,1851,19. Jahrhundert,Grossbritannien,Europa,Literatur,Schriftstellerin,Frankenstein,Krankheit
+196,Gregor Mendel,männlich,1822,1884,19. Jahrhundert,Österreich,Europa,Wissenschaft,Naturforscher,Mendelsche Vererbungsregeln,Krankheit
+197,Robert Koch,männlich,1843,1910,19. Jahrhundert,Deutschland,Europa,Wissenschaft,Arzt,Entdeckung des Tuberkulose-Erregers,Krankheit
+198,Nikola Tesla,männlich,1856,1943,19. Jahrhundert,Serbien,Europa,Technik und Wirtschaft,Erfinder,Wechselstrom-Induktionsmotor,Alter
+199,Henri Dunant,männlich,1828,1910,19. Jahrhundert,Schweiz,Europa,Gesellschaft,Philanthrop,Gründung des Roten Kreuzes; Friedensnobelpreis 1901,Alter
+200,Friedrich Nietzsche,männlich,1844,1900,19. Jahrhundert,Deutschland,Europa,Philosophie,Philosoph,Also sprach Zarathustra,Krankheit
+201,Richard Wagner,männlich,1813,1883,19. Jahrhundert,Deutschland,Europa,Musik,Komponist,Der Ring des Nibelungen,Krankheit
+202,Frédéric Chopin,männlich,1810,1849,19. Jahrhundert,Polen,Europa,Musik,Komponist,Nocturnes; Polonaisen,Krankheit
+203,Clara Schumann,weiblich,1819,1896,19. Jahrhundert,Deutschland,Europa,Musik,Pianistin,Klavierkonzert a-Moll,Krankheit
+204,Claude Monet,männlich,1840,1926,19. Jahrhundert,Frankreich,Europa,Kunst,Maler,"Impression, Sonnenaufgang; Seerosen",Krankheit
+205,Francisco de Goya,männlich,1746,1828,19. Jahrhundert,Spanien,Europa,Kunst,Maler,Der 3. Mai 1808,Krankheit
+206,Katsushika Hokusai,männlich,1760,1849,19. Jahrhundert,Japan,Asien,Kunst,Maler,Die grosse Welle vor Kanagawa,Alter
+207,Cixi,weiblich,1835,1908,19. Jahrhundert,China,Asien,Politik,Kaiserinwitwe,Faktische Herrscherin Chinas in der späten Qing-Zeit,Krankheit
+208,Swami Vivekananda,männlich,1863,1902,19. Jahrhundert,Indien,Asien,Religion,Mönch,Rede vor dem Weltparlament der Religionen 1893,Krankheit
+209,Menelik II.,männlich,1844,1913,19. Jahrhundert,Äthiopien,Afrika,Politik,Kaiser,Sieg bei Adua 1896,Krankheit
+210,Yaa Asantewaa,weiblich,,1921,19. Jahrhundert,Ghana,Afrika,Militär,Königinmutter,Anführerin im Aschanti-Aufstand 1900,unbekannt
+211,Frederick Douglass,männlich,1818,1895,19. Jahrhundert,USA,Nordamerika,Gesellschaft,Abolitionist,Autobiografie; Kampf gegen die Sklaverei,Krankheit
+212,Crazy Horse,männlich,,1877,19. Jahrhundert,Lakota,Nordamerika,Militär,Kriegshäuptling,Sieg am Little Bighorn 1876,Ermordet
+213,José de San Martín,männlich,1778,1850,19. Jahrhundert,Argentinien,Südamerika,Militär,Freiheitskämpfer,"Befreiung von Argentinien, Chile und Peru",Krankheit
+214,José Martí,männlich,1853,1895,19. Jahrhundert,Kuba,Nordamerika,Politik,Freiheitskämpfer,Kubanische Unabhängigkeitsbewegung; Versos sencillos,Krieg
+215,Machado de Assis,männlich,1839,1908,19. Jahrhundert,Brasilien,Südamerika,Literatur,Schriftsteller,Die nachträglichen Memoiren des Bras Cubas,Krankheit
+216,Benito Juárez,männlich,1806,1872,19. Jahrhundert,Mexiko,Nordamerika,Politik,Präsident,Reformgesetze; Widerstand gegen die französische Intervention,Krankheit
+217,Truganini,weiblich,,1876,19. Jahrhundert,Australien,Ozeanien,Gesellschaft,Zeitzeugin,Symbolfigur des Widerstands der tasmanischen Aborigines,Krankheit
+218,Te Rauparaha,männlich,,1849,19. Jahrhundert,Neuseeland,Ozeanien,Militär,Häuptling,Musketenkriege; Haka «Ka Mate»,Krankheit
+219,Liliʻuokalani,weiblich,1838,1917,19. Jahrhundert,Hawaii,Ozeanien,Politik,Königin,Letzte Monarchin Hawaiis; Lied «Aloha ʻOe»,Krankheit
+220,Kate Sheppard,weiblich,1847,1934,19. Jahrhundert,Neuseeland,Ozeanien,Gesellschaft,Frauenrechtlerin,Frauenwahlrecht in Neuseeland 1893,Alter
+221,Kamehameha I.,männlich,,1819,19. Jahrhundert,Hawaii,Ozeanien,Politik,König,Einigung der Hawaii-Inseln,unbekannt
+222,José Rizal,männlich,1861,1896,19. Jahrhundert,Philippinen,Asien,Literatur,Schriftsteller,Noli me tangere,Hingerichtet
+223,Raden Ajeng Kartini,weiblich,1879,1904,19. Jahrhundert,Indonesien,Asien,Gesellschaft,Frauenrechtlerin,Briefe zur Mädchenbildung,Krankheit
+224,Wladimir Lenin,männlich,1870,1924,20. Jahrhundert,Russland,Europa,Politik,Revolutionär,Oktoberrevolution 1917; Gründung der Sowjetunion,Krankheit
+225,Franklin D. Roosevelt,männlich,1882,1945,20. Jahrhundert,USA,Nordamerika,Politik,Präsident,New Deal; Führung der USA im Zweiten Weltkrieg,Krankheit
+226,Mustafa Kemal Atatürk,männlich,1881,1938,20. Jahrhundert,Türkei,Asien,Politik,Staatsgründer,Gründung der Republik Türkei 1923,Krankheit
+227,Indira Gandhi,weiblich,1917,1984,20. Jahrhundert,Indien,Asien,Politik,Premierministerin,Erste Premierministerin Indiens,Ermordet
+228,Golda Meir,weiblich,1898,1978,20. Jahrhundert,Israel,Asien,Politik,Premierministerin,Premierministerin Israels 1969–1974,Krankheit
+229,Margaret Thatcher,weiblich,1925,2013,20. Jahrhundert,Grossbritannien,Europa,Politik,Premierministerin,Erste Premierministerin Grossbritanniens (1979–1990),Krankheit
+230,Kwame Nkrumah,männlich,1909,1972,20. Jahrhundert,Ghana,Afrika,Politik,Präsident,Unabhängigkeit Ghanas 1957,Krankheit
+231,Patrice Lumumba,männlich,1925,1961,20. Jahrhundert,Kongo,Afrika,Politik,Premierminister,Unabhängigkeit des Kongo 1960,Ermordet
+232,Sun Yat-sen,männlich,1866,1925,20. Jahrhundert,China,Asien,Politik,Revolutionär,Sturz der Qing-Dynastie; Gründung der Republik China,Krankheit
+233,Salvador Allende,männlich,1908,1973,20. Jahrhundert,Chile,Südamerika,Politik,Präsident,Erster demokratisch gewählter marxistischer Präsident Chiles,Suizid
+234,Rosa Luxemburg,weiblich,1871,1919,20. Jahrhundert,Polen,Europa,Politik,Revolutionärin,Spartakusbund; Sozialreform oder Revolution?,Ermordet
+235,Rachel Carson,weiblich,1907,1964,20. Jahrhundert,USA,Nordamerika,Wissenschaft,Biologin,Der stumme Frühling,Krankheit
+236,Lise Meitner,weiblich,1878,1968,20. Jahrhundert,Österreich,Europa,Wissenschaft,Physikerin,Erklärung der Kernspaltung,Alter
+237,Rosalind Franklin,weiblich,1920,1958,20. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Chemikerin,Röntgenaufnahme «Photo 51» der DNA,Krankheit
+238,Stephen Hawking,männlich,1942,2018,20. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Physiker,Hawking-Strahlung; Eine kurze Geschichte der Zeit,Krankheit
+239,Katherine Johnson,weiblich,1918,2020,20. Jahrhundert,USA,Nordamerika,Wissenschaft,Mathematikerin,Flugbahnberechnungen für die NASA-Missionen,Alter
+240,Alexander Fleming,männlich,1881,1955,20. Jahrhundert,Grossbritannien,Europa,Wissenschaft,Bakteriologe,Entdeckung des Penicillins 1928,Krankheit
+241,Emmy Noether,weiblich,1882,1935,20. Jahrhundert,Deutschland,Europa,Wissenschaft,Mathematikerin,Noether-Theorem,Krankheit
+242,Srinivasa Ramanujan,männlich,1887,1920,20. Jahrhundert,Indien,Asien,Wissenschaft,Mathematiker,Formeln zur Zahlentheorie; Zusammenarbeit mit G. H. Hardy,Krankheit
+243,Chien-Shiung Wu,weiblich,1912,1997,20. Jahrhundert,China,Asien,Wissenschaft,Physikerin,Wu-Experiment zur Paritätsverletzung,Krankheit
+244,Grace Hopper,weiblich,1906,1992,20. Jahrhundert,USA,Nordamerika,Wissenschaft,Informatikerin,Erster Compiler; Programmiersprache COBOL,Alter
+245,Ernest Rutherford,männlich,1871,1937,20. Jahrhundert,Neuseeland,Ozeanien,Wissenschaft,Physiker,Entdeckung des Atomkerns,Krankheit
+246,Juri Gagarin,männlich,1934,1968,20. Jahrhundert,Sowjetunion,Europa,Entdeckung,Kosmonaut,Erster Mensch im Weltraum 1961,Unfall
+247,Walentina Tereschkowa,weiblich,1937,,20. Jahrhundert,Sowjetunion,Europa,Entdeckung,Kosmonautin,Erste Frau im Weltraum 1963,lebt noch
+248,Roald Amundsen,männlich,1872,1928,20. Jahrhundert,Norwegen,Europa,Entdeckung,Polarforscher,Erreichen des Südpols 1911,Unfall
+249,Edmund Hillary,männlich,1919,2008,20. Jahrhundert,Neuseeland,Ozeanien,Entdeckung,Bergsteiger,Erstbesteigung des Mount Everest 1953,Krankheit
+250,Tenzing Norgay,männlich,1914,1986,20. Jahrhundert,Nepal,Asien,Entdeckung,Bergsteiger,Erstbesteigung des Mount Everest 1953 (mit Edmund Hillary),Krankheit
+251,Pelé,männlich,1940,2022,20. Jahrhundert,Brasilien,Südamerika,Sport,Fussballer,"Drei WM-Titel (1958, 1962, 1970)",Krankheit
+252,Jesse Owens,männlich,1913,1980,20. Jahrhundert,USA,Nordamerika,Sport,Leichtathlet,Vier Goldmedaillen bei den Olympischen Spielen 1936,Krankheit
+253,Nadia Comăneci,weiblich,1961,,20. Jahrhundert,Rumänien,Europa,Sport,Turnerin,Erste perfekte 10 bei Olympischen Spielen 1976,lebt noch
+254,Abebe Bikila,männlich,1932,1973,20. Jahrhundert,Äthiopien,Afrika,Sport,Marathonläufer,Olympiasieger im Marathon 1960 (barfuss) und 1964,Krankheit
+255,Don Bradman,männlich,1908,2001,20. Jahrhundert,Australien,Ozeanien,Sport,Cricketspieler,"Testdurchschnitt von 99,94",Alter
+256,Jonah Lomu,männlich,1975,2015,20. Jahrhundert,Neuseeland,Ozeanien,Sport,Rugbyspieler,Rugby-Weltmeisterschaft 1995,Krankheit
+257,Ella Fitzgerald,weiblich,1917,1996,20. Jahrhundert,USA,Nordamerika,Musik,Sängerin,«First Lady of Song»; Song-Book-Aufnahmen,Krankheit
+258,John Lennon,männlich,1940,1980,20. Jahrhundert,Grossbritannien,Europa,Musik,Musiker,The Beatles; Imagine,Ermordet
+259,Bob Marley,männlich,1945,1981,20. Jahrhundert,Jamaika,Nordamerika,Musik,Musiker,"No Woman, No Cry; Redemption Song",Krankheit
+260,Maria Callas,weiblich,1923,1977,20. Jahrhundert,Griechenland,Europa,Musik,Sängerin,Norma; Tosca,Krankheit
+261,Miriam Makeba,weiblich,1932,2008,20. Jahrhundert,Südafrika,Afrika,Musik,Sängerin,Pata Pata,Krankheit
+262,Víctor Jara,männlich,1932,1973,20. Jahrhundert,Chile,Südamerika,Musik,Liedermacher,Te recuerdo Amanda,Ermordet
+263,Nellie Melba,weiblich,1861,1931,20. Jahrhundert,Australien,Ozeanien,Musik,Sängerin,Weltberühmte Opernsopranistin,Krankheit
+264,Franz Kafka,männlich,1883,1924,20. Jahrhundert,Österreich-Ungarn,Europa,Literatur,Schriftsteller,Die Verwandlung; Der Prozess,Krankheit
+265,Virginia Woolf,weiblich,1882,1941,20. Jahrhundert,Grossbritannien,Europa,Literatur,Schriftstellerin,Mrs Dalloway; Ein Zimmer für sich allein,Suizid
+266,George Orwell,männlich,1903,1950,20. Jahrhundert,Grossbritannien,Europa,Literatur,Schriftsteller,1984; Farm der Tiere,Krankheit
+267,Astrid Lindgren,weiblich,1907,2002,20. Jahrhundert,Schweden,Europa,Literatur,Schriftstellerin,Pippi Langstrumpf,Alter
+268,Gabriel García Márquez,männlich,1927,2014,20. Jahrhundert,Kolumbien,Südamerika,Literatur,Schriftsteller,Hundert Jahre Einsamkeit,Krankheit
+269,Pablo Neruda,männlich,1904,1973,20. Jahrhundert,Chile,Südamerika,Literatur,Dichter,Zwanzig Liebesgedichte und ein Lied der Verzweiflung,Krankheit
+270,Chinua Achebe,männlich,1930,2013,20. Jahrhundert,Nigeria,Afrika,Literatur,Schriftsteller,Things Fall Apart (Alles zerfällt),Krankheit
+271,Lu Xun,männlich,1881,1936,20. Jahrhundert,China,Asien,Literatur,Schriftsteller,Tagebuch eines Verrückten,Krankheit
+272,Charlie Chaplin,männlich,1889,1977,20. Jahrhundert,Grossbritannien,Europa,Kunst,Schauspieler,Moderne Zeiten; Der grosse Diktator,Alter
+273,Salvador Dalí,männlich,1904,1989,20. Jahrhundert,Spanien,Europa,Kunst,Maler,Die Beständigkeit der Erinnerung,Krankheit
+274,Käthe Kollwitz,weiblich,1867,1945,20. Jahrhundert,Deutschland,Europa,Kunst,Künstlerin,Zyklus «Ein Weberaufstand»,Krankheit
+275,Hilma af Klint,weiblich,1862,1944,20. Jahrhundert,Schweden,Europa,Kunst,Künstlerin,Frühe abstrakte Malerei; Gemälde für den Tempel,Unfall
+276,Akira Kurosawa,männlich,1910,1998,20. Jahrhundert,Japan,Asien,Kunst,Regisseur,Die sieben Samurai; Rashomon,Krankheit
+277,Diego Rivera,männlich,1886,1957,20. Jahrhundert,Mexiko,Nordamerika,Kunst,Maler,Wandgemälde in Mexiko-Stadt,Krankheit
+278,Eleanor Roosevelt,weiblich,1884,1962,20. Jahrhundert,USA,Nordamerika,Gesellschaft,Menschenrechtlerin,Allgemeine Erklärung der Menschenrechte 1948,Krankheit
+279,Janusz Korczak,männlich,1878,1942,20. Jahrhundert,Polen,Europa,Gesellschaft,Pädagoge,Wie man ein Kind lieben soll; Begleitung der Waisenkinder in den Tod,Ermordet
+280,Steve Biko,männlich,1946,1977,20. Jahrhundert,Südafrika,Afrika,Gesellschaft,Aktivist,Black-Consciousness-Bewegung,Ermordet
+281,Sophie Scholl,weiblich,1921,1943,20. Jahrhundert,Deutschland,Europa,Gesellschaft,Widerstandskämpferin,Widerstandsgruppe Weisse Rose,Hingerichtet
+282,Chico Mendes,männlich,1944,1988,20. Jahrhundert,Brasilien,Südamerika,Gesellschaft,Umweltaktivist,Kampf für den Schutz des Regenwalds,Ermordet
+283,Desmond Tutu,männlich,1931,2021,20. Jahrhundert,Südafrika,Afrika,Religion,Erzbischof,Kampf gegen die Apartheid; Friedensnobelpreis 1984,Krankheit
+284,Dalai Lama,männlich,1935,,20. Jahrhundert,Tibet,Asien,Religion,Geistliches Oberhaupt,Friedensnobelpreis 1989,lebt noch
+285,Alberto Santos-Dumont,männlich,1873,1932,20. Jahrhundert,Brasilien,Südamerika,Technik und Wirtschaft,Flugpionier,Öffentlicher Motorflug mit der «14-bis» 1906,Suizid
+286,Simone de Beauvoir,weiblich,1908,1986,20. Jahrhundert,Frankreich,Europa,Philosophie,Philosophin,Das andere Geschlecht,Krankheit
+287,Angela Merkel,weiblich,1954,,Gegenwart,Deutschland,Europa,Politik,Bundeskanzlerin,Erste Bundeskanzlerin Deutschlands (2005–2021),lebt noch
+288,Greta Thunberg,weiblich,2003,,Gegenwart,Schweden,Europa,Gesellschaft,Klimaaktivistin,Schulstreik für das Klima 2018,lebt noch
+289,Lionel Messi,männlich,1987,,Gegenwart,Argentinien,Südamerika,Sport,Fussballer,Weltmeister 2022,lebt noch
+290,Serena Williams,weiblich,1981,,Gegenwart,USA,Nordamerika,Sport,Tennisspielerin,23 Grand-Slam-Einzeltitel,lebt noch
+291,Usain Bolt,männlich,1986,,Gegenwart,Jamaika,Nordamerika,Sport,Sprinter,Weltrekorde über 100 m und 200 m,lebt noch
+292,Roger Federer,männlich,1981,,Gegenwart,Schweiz,Europa,Sport,Tennisspieler,20 Grand-Slam-Titel,lebt noch
+293,Simone Biles,weiblich,1997,,Gegenwart,USA,Nordamerika,Sport,Turnerin,Rekordweltmeisterin im Turnen,lebt noch
+294,Barack Obama,männlich,1961,,Gegenwart,USA,Nordamerika,Politik,Präsident,Erster afroamerikanischer Präsident der USA,lebt noch
+295,Michelle Obama,weiblich,1964,,Gegenwart,USA,Nordamerika,Gesellschaft,Juristin,First Lady der USA; Kampagne «Let's Move!»,lebt noch
+296,Ellen Johnson Sirleaf,weiblich,1938,,Gegenwart,Liberia,Afrika,Politik,Präsidentin,Erste gewählte Präsidentin Afrikas; Friedensnobelpreis 2011,lebt noch
+297,Jacinda Ardern,weiblich,1980,,Gegenwart,Neuseeland,Ozeanien,Politik,Premierministerin,Premierministerin Neuseelands 2017–2023,lebt noch
+298,Ngozi Okonjo-Iweala,weiblich,1954,,Gegenwart,Nigeria,Afrika,Technik und Wirtschaft,Ökonomin,Erste Frau an der Spitze der Welthandelsorganisation,lebt noch
+299,Katalin Karikó,weiblich,1955,,Gegenwart,Ungarn,Europa,Wissenschaft,Biochemikerin,Grundlagen der mRNA-Impfstoffe; Nobelpreis 2023,lebt noch
+300,Ai Weiwei,männlich,1957,,Gegenwart,China,Asien,Kunst,Künstler,Vogelnest-Stadion in Peking; Sunflower Seeds,lebt noch
+301,Johanna Spyri,weiblich,1827,1901,19. Jahrhundert,Schweiz,Europa,Literatur,Schriftstellerin,Heidi,unbekannt
+302,Alberto Giacometti,männlich,1901,1966,20. Jahrhundert,Schweiz,Europa,Kunst,Bildhauer,Schreitender Mann; Der Platz,Krankheit
+303,Carl Gustav Jung,männlich,1875,1961,20. Jahrhundert,Schweiz,Europa,Wissenschaft,Psychiater,Analytische Psychologie; Archetypen,Alter
+304,Le Corbusier,männlich,1887,1965,20. Jahrhundert,Schweiz,Europa,Kunst,Architekt,Villa Savoye; Unité d'Habitation,Unfall
+305,Rembrandt,männlich,1606,1669,Frühe Neuzeit,Niederlande,Europa,Kunst,Maler,Die Nachtwache,unbekannt
+306,"Diana, Prinzessin von Wales",weiblich,1961,1997,20. Jahrhundert,Grossbritannien,Europa,Gesellschaft,Prinzessin,Einsatz für Aidskranke und gegen Landminen,Unfall
+307,Carl Lewis,männlich,1961,,20. Jahrhundert,USA,Nordamerika,Sport,Leichtathlet,Neun olympische Goldmedaillen,lebt noch
+308,Wynton Marsalis,männlich,1961,,20. Jahrhundert,USA,Nordamerika,Musik,Trompeter,Pulitzer-Preis für Musik 1997 (Blood on the Fields),lebt noch
+309,George Clooney,männlich,1961,,Gegenwart,USA,Nordamerika,Kunst,Schauspieler,Ocean's Eleven; Oscar für Syriana,lebt noch
+310,HBI Keller,männlich,1111,,Mittelalter,Heiliges Römisches Reich,Europa,Technik und Wirtschaft,Agent,Zeitverbrecher,unbekannt
+311,Rossi HBI,weiblich,1111,,Mittelalter,Heiliges Römisches Reich,Europa,Technik und Wirtschaft,Agentin,Zeitverbrecher,unbekannt
+312,Direktorin Vogt HBI,weiblich,1111,,Mittelalter,Heiliges Römisches Reich,Europa,Technik und Wirtschaft,Direktorin,Zeitverbrecher,unbekannt

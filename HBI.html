@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Das HBI — Historical Bureau of Investigation</title>
+<style>
+  :root{
+    --bg1: #0a0f24;
+    --bg2: #131c3d;
+    --gold: #d4af37;
+    --gold-dim: #8f7a3f;
+    --fg: #eae6d8;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  html{font-size:clamp(16px, min(1.25vw, 2.2vh), 44px);}  /* Skalierung: im Vollbild werden alle rem-Masse grösser */
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 50% -10%, var(--bg2), var(--bg1) 60%);
+    color: var(--fg);
+    font-family: Georgia, "Times New Roman", serif;
+    padding: 1.5rem;
+  }
+  .buehne{
+    width:min(47.5rem, 100%);
+    text-align:center;
+  }
+  .kicker{
+    letter-spacing: 0.35em;
+    font-size: 0.7rem;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.625rem;
+  }
+  h1{
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 1.125rem rgba(212,175,55,0.25);
+  }
+  .untertitel{
+    margin: 0 0 2.75rem;
+    color: #b9b6ad;
+    font-size: 0.95rem;
+  }
+  .portale{
+    display:flex;
+    gap: 2.5rem;
+    justify-content:center;
+    flex-wrap: wrap;
+  }
+  button.portal{
+    font-family: inherit;
+    cursor:pointer;
+    width: 13.75rem;
+    height: 13.75rem;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(212,175,55,0.10), transparent 60%),
+      var(--bg2);
+    border: 2px solid var(--gold-dim);
+    color: var(--fg);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    position: relative;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  button.portal::before{
+    content:"";
+    position:absolute;
+    inset: 0.625rem;
+    border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.25);
+  }
+  button.portal .titel{
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: var(--gold);
+    max-width: 14ch;
+  }
+  button.portal:hover, button.portal:focus-visible{
+    border-color: var(--gold);
+    box-shadow: 0 0 1.875rem rgba(212,175,55,0.25);
+    transform: translateY(-4px);
+    outline:none;
+  }
+  button.portal:focus-visible{
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+  }
+  .status{
+    margin-top: 2.125rem;
+    min-height: 1.4em;
+    font-size: 0.9rem;
+    color: var(--gold);
+  }
+  footer{
+    margin-top: 1.875rem;
+    font-size: 0.68rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.08em;
+  }
+  @media (max-width: 520px){
+    button.portal{ width: 11.25rem; height: 11.25rem; }
+  }
+  /* Spielstand-Datei laden (Teil A): unauffälliger Link unter den Portalen */
+  .laden{
+    margin-top: 1.875rem; padding: 4px 0.5rem;
+    font-family: inherit; font-size: 0.85rem; cursor:pointer;
+    background: none; border: none; color: var(--gold-dim);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .laden:hover, .laden:focus-visible{ color: var(--gold); outline:none; }
+  .status.fehler{ color: #e0735f; }
+  .laden + .status{ margin-top: 0.875rem; }
+
+  /* Auswahl für Teil A, wenn ein Spielstand im Browser liegt: weiterspielen oder neu beginnen */
+  .wahl{
+    position: fixed; inset: 0; z-index: 5;
+    display:flex; align-items:center; justify-content:center; padding: 1.5rem;
+    background: rgba(5,7,15,0.82);
+  }
+  .wahl[hidden]{ display:none; }
+  .wahl .karte{
+    width: min(27.5rem, 100%); padding: 1.875rem 1.75rem 1.5rem; text-align:center;
+    background: var(--bg1); border: 1px solid var(--gold-dim);
+    box-shadow: 0 0.75rem 2.5rem rgba(0,0,0,0.6);
+  }
+  .wahl h2{ margin: 0 0 1.125rem; color: var(--gold); font-size: 1.4rem; }
+  .wahl button{
+    display:block; width:100%; margin-top: 0.625rem; padding: 0.75rem 1rem;
+    font-family: inherit; font-size: 1rem; cursor:pointer;
+    background: none; color: var(--fg); border: 1px solid var(--gold-dim);
+  }
+  .wahl button:hover, .wahl button:focus-visible{ border-color: var(--gold); color: var(--gold); outline:none; }
+  .wahl button.haupt{ background: var(--gold); color: #0b1020; border-color: var(--gold); font-weight: bold; }
+  .wahl button.haupt:hover, .wahl button.haupt:focus-visible{ color:#0b1020; box-shadow: 0 0 1.25rem rgba(212,175,55,0.35); }
+  .wahl button small{ display:block; margin-top: 4px; font-weight: normal; font-size: 0.78rem; opacity: 0.85; }
+  .wahl button.leise{ border:none; color: var(--gold-dim); font-size: 0.85rem; margin-top: 0.875rem; }
+
+  .buehne{ transition: opacity .7s ease; }
+  body.weg .buehne{ opacity: 0; }
+  @media (prefers-reduced-motion: reduce){
+    button.portal, .buehne{ transition:none; }
+  }
+</style>
+</head>
+<body>
+  <main class="buehne" role="main">
+    <div class="kicker">Historical Bureau of Investigation</div>
+    <h1>Das HBI</h1>
+    <p class="untertitel">Wähle den Spielmodus.</p>
+
+    <nav class="portale" aria-label="Spielteil wählen">
+      <button class="portal" data-teil="a" onclick="waehle(this)">
+        <span class="titel">Storymodus</span>
+      </button>
+      <button class="portal" data-teil="b" onclick="waehle(this)">
+        <span class="titel">Wer bin ich?</span>
+      </button>
+    </nav>
+
+    <button type="button" class="laden" id="datei-laden" title="z. B. HBI-Spielstand_….json aus dem Download-Ordner">📂 Spielstand-Datei laden</button>
+    <input type="file" id="datei" accept=".json,application/json" hidden>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <footer>DOMINIK MÜHLEBACH & ANDRIN SJARDIJN · PH LUZERN 2026 · CC BY-SA 4.0</footer>
+  </main>
+
+  <div class="wahl" id="wahl" hidden role="dialog" aria-modal="true" aria-labelledby="wahl-titel">
+    <div class="karte">
+      <h2 id="wahl-titel">Storymodus</h2>
+      <button type="button" class="haupt" id="weiterspielen">Weiterspielen<small id="stand-info"></small></button>
+      <button type="button" id="neu-beginnen">Neu beginnen</button>
+      <button type="button" class="leise" id="abbrechen">Abbrechen</button>
+    </div>
+  </div>
+
+  <script src="spiel/spielstand.js" data-startseite></script>
+  <script>
+    var $ = function(id){ return document.getElementById(id); };
+
+    function gehe(ziel){
+      // Bildschirm ausblenden, dann zum gewählten Teil wechseln
+      $('wahl').hidden = true;
+      document.body.classList.add('weg');
+      setTimeout(function(){ location.href = ziel; }, 700);
+    }
+    var TEIL_A_NEU = 'spiel/charakterwahl.html';   // neues Spiel: zuerst den Charakter wählen, dann Aufnahmeprüfung
+    function waehle(btn){
+      // (Sperre „Teil B erst nach Teil A“ folgt, sobald der Fortschritt dafür genutzt wird)
+      if (btn.getAttribute('data-teil') === 'b') { gehe('spiel/wer_bin_ich.html'); return; }
+      // Teil A: ohne gespeicherten Stand direkt los, sonst Weiterspielen anbieten
+      var st = Spiel.gesichert();
+      if (st) zeigeWahl(st); else gehe(TEIL_A_NEU);
+    }
+
+    /* ---- Teil A: gesicherten Spielstand anbieten (siehe spiel/spielstand.js) ---- */
+    function zeigeWahl(st){
+      var wann = new Date(st.gespeichert);
+      $('stand-info').textContent = st.titel + ' · Energie ' + st.e + '/' + Spiel.MAX +
+        (isNaN(wann) ? '' : ' · gespeichert am ' + wann.toLocaleDateString('de-CH') + ', ' +
+          wann.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' }));
+      $('wahl').hidden = false;
+      $('weiterspielen').focus();
+    }
+    $('weiterspielen').onclick = function(){ gehe(Spiel.adresseVon(Spiel.gesichert())); };
+    $('neu-beginnen').onclick = function(){ gehe(TEIL_A_NEU); };
+
+    /* ---- Spielstand-Datei laden: z. B. auf einem anderen Gerät ---- */
+    function meldeFehler(text){ $('status').textContent = text; $('status').classList.toggle('fehler', !!text); }
+    $('datei-laden').onclick = function(){ meldeFehler(''); $('datei').click(); };
+    $('datei').onchange = function(){
+      var f = this.files[0]; this.value = '';
+      if (!f) return;
+      var leser = new FileReader();
+      leser.onload = function(){
+        var st = Spiel.ausDatei(leser.result);
+        if (st) gehe(Spiel.adresseVon(st));
+        else meldeFehler('Diese Datei ist kein Spielstand von Teil A.');
+      };
+      leser.readAsText(f);
+    };
+    $('abbrechen').onclick = function(){ $('wahl').hidden = true; };
+    $('wahl').onclick = function(e){ if (e.target === this) this.hidden = true; };
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') $('wahl').hidden = true; });
+  </script>
+</body>
+</html>

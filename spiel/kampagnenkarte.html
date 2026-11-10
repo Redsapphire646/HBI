@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Kampagnenkarte</title>
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --papier:#efe6cf; --tinte:#2b1d14; --gruen:#9fe59f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;background:#05070f;}
+  body{display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--fg);}
+
+  /* Die Bühne hat immer 16:9 und skaliert mit dem Fenster — gleiche Rahmung wie die Szenen */
+  #buehne{
+    position:relative; width:min(100vw, 177.78vh); aspect-ratio:16/9; overflow:hidden;
+    container-type:inline-size; background:var(--bg1);
+  }
+  #karte{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  #kopf{position:absolute;top:4%;left:0;right:0;text-align:center;pointer-events:none;}
+  #kopf .kicker{letter-spacing:.35em;font-size:max(10px,.95cqw);color:var(--gold-dim);text-transform:uppercase;}
+  #kopf h1{margin:.2em 0 0;color:var(--gold);font-size:max(20px,2.6cqw);text-shadow:0 0 18px rgba(212,175,55,.3);}
+
+  /* Gehirn links oben: zeigt die Energie */
+  #gehirn-hud{position:absolute;top:3.5%;left:2.5%;z-index:5;display:flex;flex-direction:column;gap:.35cqw;
+    background:rgba(10,15,36,.8);border:1px solid var(--gold-dim);padding:.6cqw 1.1cqw;font-size:max(15px,1.9cqw);}
+  #gehirn-hud .hud-label{font-size:max(9px,.8cqw);letter-spacing:.25em;color:var(--gold-dim);}
+
+  #ton{
+    position:absolute;top:4%;right:3%;z-index:5;font-family:var(--serif);font-size:max(11px,1cqw);
+    background:rgba(10,15,36,.8);color:var(--gold);border:1px solid var(--gold-dim);
+    padding:.4cqw .9cqw;cursor:pointer;
+  }
+
+  /* Stationen: Kreis + Titel darunter */
+  .station{cursor:default;outline:none;}
+  .station.klickbar{cursor:pointer;}
+  .station .ring{fill:none;stroke-width:5;}
+  .station .kern{stroke-width:3;}
+  .station .haken{stroke:#0b1020;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+  .station .titel-text{font-family:var(--serif);text-anchor:middle;}
+  .station .nr-text{font-family:var(--mono);font-weight:bold;text-anchor:middle;dominant-baseline:central;}
+  .station .glanz{fill:none;stroke:var(--gold);stroke-width:4;opacity:0;}
+  .station.klickbar:hover .ring,.station.klickbar:focus-visible .ring{stroke:var(--gold);stroke-width:8;}
+  .station.klickbar:hover .titel-text,.station.klickbar:focus-visible .titel-text{fill:var(--gold);}
+
+  .station.fertig .ring{stroke:var(--gold-dim);}
+  .station.fertig .kern{fill:var(--gold);stroke:var(--gold);}
+  .station.fertig .nr-text{fill:#0b1020;}
+  .station.fertig .titel-text{fill:var(--fg);}
+  .station.fertig .ort-text{fill:#b9b6ad;}
+
+  .station.gesperrt{opacity:.45;}
+  .station.gesperrt .ring{stroke:#3a3f55;}
+  .station.gesperrt .kern{fill:#1a2138;stroke:#3a3f55;}
+  .station.gesperrt .nr-text{fill:#7a8099;}
+  .station.gesperrt .titel-text{fill:#7a8099;}
+  .station.gesperrt .ort-text{fill:#5a6079;}
+
+  /* nächste Station: erst grau, wird beim Freischalten golden */
+  .station.neu .kern{fill:#1a2138;stroke:#3a3f55;}
+  .station.neu .ring{stroke:#3a3f55;}
+  .station.neu .nr-text{fill:#7a8099;}
+  .station.neu .titel-text{fill:var(--fg);}
+  .station.neu .ort-text{fill:#b9b6ad;}
+  .station.neu.aufgedeckt .kern{fill:var(--gold);stroke:var(--gold);transition:fill .5s ease,stroke .5s ease;}
+  .station.neu.aufgedeckt .ring{stroke:var(--gold-dim);transition:stroke .5s ease;}
+  .station.neu.aufgedeckt .nr-text{fill:#0b1020;transition:fill .5s ease;}
+  .station.neu.aufgedeckt.frisch .glanz{animation:aufblitzen 1.1s ease-out;}
+  .station.neu.aufgedeckt.klickbar:not(.frisch) .glanz{animation:puls 1.8s ease-in-out infinite;}
+  @keyframes puls{0%,100%{opacity:.1}50%{opacity:.8}}
+  @keyframes aufblitzen{
+    0%{opacity:0;stroke-width:4;transform:scale(1);}
+    35%{opacity:.9;stroke-width:7;}
+    100%{opacity:0;stroke-width:2;transform:scale(1.5);transform-origin:center;}
+  }
+  .station .neu-marke{opacity:0;font-family:var(--mono);font-size:max(9px,.85cqw);letter-spacing:.15em;fill:var(--gold);text-anchor:middle;}
+  .station.neu.aufgedeckt.frisch .neu-marke{animation:einblenden .6s ease .55s both;}
+  @keyframes einblenden{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Sidequests: drei kleine Kreise (Monde) um jede Station */
+  .sq{outline:none;}
+  .sq .kreis{fill:#1a2138;stroke:#3a3f55;stroke-width:3;}
+  .sq .blitz{fill:#5a6079;}
+  .sq .badge{fill:#1a2138;stroke:#5a6079;stroke-width:1.6;}
+  .sq .symbol{fill:#5a6079;font-family:var(--serif);font-weight:bold;font-size:12.5px;text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+  .sq.offen .badge{fill:#0b1020;stroke:var(--gold);}
+  .sq.offen .symbol{fill:var(--gold);}
+  .sq.erledigt .badge{fill:var(--gold);stroke:#0b1020;}
+  .sq.erledigt .symbol{fill:#0b1020;}
+  .sq.offen{cursor:pointer;}
+  .sq.offen .kreis{stroke:var(--gold-dim);}
+  .sq.offen .blitz{fill:var(--gold);}
+  .sq.offen:hover .kreis,.sq.offen:focus-visible .kreis{stroke:var(--gold);stroke-width:5;fill:#26305a;}
+  .sq.erledigt{cursor:pointer;}
+  .sq.erledigt .kreis{fill:var(--gold);stroke:var(--gold);}
+  .sq.erledigt .blitz{fill:#0b1020;}
+  .sq.frisch .kreis{animation:sqblitz 1.2s ease-out .4s both;}
+  /* Hauptzentrale: ein grünes Gehirn steht für alle Sidequests der Station */
+  .sq.zentrale .hirn{fill:#5a6079;}
+  .sq.zentrale .adern{fill:none;stroke:#1a2138;stroke-width:1.1;stroke-linecap:round;opacity:.7;}
+  .sq.zentrale.offen .hirn{fill:#9fe59f;}
+  .sq.zentrale.offen .kreis{stroke:#9fe59f;}
+  .sq.zentrale.offen:hover .kreis,.sq.zentrale.offen:focus-visible .kreis{stroke:#9fe59f;stroke-width:5;fill:#26305a;}
+  .sq.zentrale.erledigt .hirn{fill:#0b1020;}
+  .sq.zentrale.erledigt .adern{stroke:var(--gold);}
+  /* Sprechblase beim Darüberfahren */
+  .sq .blase{opacity:0;pointer-events:none;transition:opacity .18s ease;}
+  .sq .blase rect{fill:rgba(10,15,36,.96);stroke:var(--gold-dim);stroke-width:2;}
+  .sq .blase path{fill:rgba(10,15,36,.96);stroke:var(--gold-dim);stroke-width:2;}
+  .sq .blase text{fill:var(--papier);font-family:var(--serif);font-size:19px;text-anchor:middle;}
+  .sq.zentrale:hover .blase,.sq.zentrale:focus-visible .blase{opacity:1;}
+  @keyframes sqblitz{0%{stroke:#3a3f55;}40%{stroke:var(--gold);stroke-width:6;}100%{stroke:var(--gold-dim);stroke-width:3;}}
+
+  .pfad-fertig{fill:none;stroke:var(--gold-dim);stroke-width:5;stroke-linecap:round;}
+  .pfad-neu{fill:none;stroke:var(--gold);stroke-width:5;stroke-linecap:round;
+    stroke-dasharray:var(--laenge); stroke-dashoffset:var(--laenge);}
+  .pfad-neu.zeichnen{animation:zeichnen 1s ease-out forwards;}
+  @keyframes zeichnen{to{stroke-dashoffset:0;}}
+  .pfad-gesperrt{fill:none;stroke:#3a3f55;stroke-width:4;stroke-linecap:round;stroke-dasharray:2 14;}
+
+  #fuss{position:absolute;bottom:4%;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:.8cqw;}
+  #fuss .tipp{color:#b9b6ad;font-size:max(11px,1.1cqw);font-style:italic;}
+  #fuss .knoepfe{display:flex;gap:1.6cqw;}
+  #fuss button{font-family:var(--serif);font-size:max(12px,1.2cqw);cursor:pointer;padding:.6cqw 1.6cqw;
+    border:1px solid var(--gold-dim);background:rgba(10,15,36,.8);color:var(--fg);}
+  #fuss button:hover{background:rgba(212,175,55,.12);}
+  #fuss #neustart{color:#b9b6ad;border-color:#3a3f55;}
+
+  .titelkarte{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 60%);gap:1.2cqw;
+    transition:opacity .8s ease;}
+  .titelkarte.weg{opacity:0;pointer-events:none;}
+  .titelkarte .kicker{letter-spacing:.35em;font-size:max(10px,.9cqw);color:var(--gold-dim);}
+  .titelkarte h1{margin:0;color:var(--gold);font-size:4.2cqw;text-shadow:0 0 18px rgba(212,175,55,.3);}
+  .titelkarte p{margin:0;color:#b9b6ad;font-size:max(13px,1.5cqw);}
+
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;transition-duration:0s !important;} }
+</style>
+</head>
+<body>
+<div id="buehne">
+
+  <!-- ===== Kampagnenkarte: der Reiseweg durch die Zeit ===== -->
+  <svg id="karte" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="false">
+    <defs>
+      <linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#131c3d"/><stop offset="1" stop-color="#0a0f24"/></linearGradient>
+      <radialGradient id="licht" cx="0.5" cy="0.15" r="0.7"><stop offset="0" stop-color="#ffe9b8" stop-opacity=".12"/><stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#hg)"/>
+
+    <!-- Pfad zwischen den Stationen: wird per JS befuellt -->
+    <g id="pfade"></g>
+
+    <!-- Stationen mit ihren Sidequests: werden per JS aus STATIONEN aufgebaut -->
+    <g id="stationen"></g>
+
+    <rect width="1600" height="900" fill="url(#licht)" pointer-events="none"/>
+  </svg>
+
+  <div id="kopf">
+    <div class="kicker">HBI</div>
+    <h1>Deine Reise durch die Zeit</h1>
+  </div>
+
+  <div id="gehirn-hud" title="Energie: Hinweise kosten einen Punkt, eine Sidequest füllt wieder auf">
+    <div class="hud-label">ENERGIE</div>
+    <div id="hud-energie"></div>
+  </div>
+
+  <button id="ton" type="button">Ton: an</button>
+
+  <!-- Titelkarte: erscheint nur, wenn gerade eine Szene geschafft wurde -->
+  <div id="start" class="titelkarte">
+    <div class="kicker">ZWISCHENSTATION</div>
+    <h1>Kampagnenkarte</h1>
+    <p>Wo stehst du in deiner Ausbildung?</p>
+  </div>
+</div>
+
+<script src="spielstand.js"></script>
+<script>
+/* ============================================================
+   STATIONEN — ein Eintrag pro Szene (x/y auf der 1600x900-Karte).
+   Neue Szene: hier einen Eintrag anhaengen. Pro Station gibt es SQ_ANZAHL (Standard SQ_PRO_SZENE) Sidequests (Platzhalter,
+   sidequest.html); sie werden frei, sobald die Szene geschafft ist.
+   ============================================================ */
+var STATIONEN = [
+  { nr:1, titel:'Die Aufnahmeprüfung', ort:'HBI-Empfangshalle',   datei:'szene_aufnahmepruefung.html', x:170,  y:660 },
+  { nr:2, titel:'Die Geburt',          ort:'Honolulu · 1961',     datei:'szene_spital.html',           x:440,  y:390 },
+  { nr:3, titel:'Der Kunstraub',       ort:'Louvre, Paris · 1911', datei:'szene_louvre.html',          x:720,  y:620 },
+  { nr:4, titel:'Der erste Kaiser',    ort:'China · vor Christus', datei:'szene_china.html',           x:1000, y:340 },
+  { nr:5, titel:'Die Vermittlung',     ort:'Stockholm · 2026',    datei:'szene_schweden.html',         x:1250, y:620 },
+  { nr:6, titel:'Die Zeitverbrecher',  ort:'HBI-Zentrale · 1111', datei:'szene_zeitverbrecher.html',   x:1470, y:360 }
+];
+/* Monde über der Station: Anzahl pro Szene (Standard 3, Szene 1 hat nur 2), Positionen je nach Anzahl */
+/* Stationen mit Hauptzentrale: ein einziges grünes Gehirn führt in den Raum, dort wählt man die Sidequest (Info, Üben, Neu) */
+var ZENTRALE = { 1: true, 2: true, 3: true, 4: true, 5: true };      // Szene 6 (Finale) hat keine Sidequests
+var SQ_ANZAHL = { 1: 2, 6: 0 };                 // Szene 1: 2 Sidequests · Szene 6 (Finale): keine
+var SQ_POSITIONEN = {
+  2: [ { x:-52, y:-80 }, { x:52, y:-80 } ],
+  3: [ { x:-82, y:-46 }, { x:0, y:-96 }, { x:82, y:-46 } ]
+};
+/* Symbole im Blitz: 1. Sidequest = i (Info: verstehen), 2. = ↻ (Üben: wiederholen), 3. = ★ (Neu: ein neuer, ähnlicher Befehl).
+   Provisorisch für alle Szenen nach Position; mit SQ_SYMBOL[id] lässt sich eine einzelne Sidequest abweichend festlegen. */
+var SQ_SYMBOL_STANDARD = [ 'i', '↻', '★' ];
+var SQ_SYMBOL = {};
+/* Fertige Sidequests: eigene Seite und Name. Alle übrigen sind noch Platzhalter (sidequest.html). */
+var SQ_DATEI  = { '1.1': 'sidequest_1_1.html', '1.2': 'sidequest_1_2.html', '2.1': 'sidequest_2_1.html', '2.2': 'sidequest_2_2.html', '2.3': 'sidequest_2_3.html',
+  '3.1': 'sidequest_3_1.html', '3.2': 'sidequest_3_2.html', '3.3': 'sidequest_3_3.html',
+  '4.1': 'sidequest_4_1.html', '4.2': 'sidequest_4_2.html', '4.3': 'sidequest_4_3.html',
+  '5.1': 'sidequest_5_1.html', '5.2': 'sidequest_5_2.html', '5.3': 'sidequest_5_3.html' };
+var SQ_TITEL  = { '1.1': 'SQL verstehen', '1.2': 'Üben', '2.1': 'Fehler finden', '2.2': 'Personen suchen', '2.3': 'Neu: !=',
+  '3.1': 'OR, AND und Klammern', '3.2': 'OR und AND üben', '3.3': 'Neu: IN',
+  '4.1': 'Kleiner oder grösser?', '4.2': 'Vergleichen üben', '4.3': 'Neu: >= und <=',
+  '5.1': 'Fehler im BETWEEN', '5.2': 'Üben mit id und BETWEEN', '5.3': 'Neu: Rechnen' };
+
+/* ---- Ton (wie in den Szenen: Platzhalter-Klänge) ---- */
+var ctx = null, master = null, stumm = false;
+function tonStart(){ if (ctx) return; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination); }
+function ton(freq, dauer, typ, laut, verz){ if (!ctx || stumm || ctx.state !== 'running') return;
+  var t = ctx.currentTime + (verz || 0), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = typ || 'sine'; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(laut || 0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dauer);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dauer + 0.02); }
+var SYNTH = { klick: function(){ ton(900, 0.05, 'triangle', 0.15); },
+  erfolg: function(){ ton(523, 0.3, 'sine', 0.2); ton(659, 0.3, 'sine', 0.2, 0.1); ton(784, 0.5, 'sine', 0.2, 0.2); } };
+SYNTH.geschafft = function(){     // „Erreicht“-Klang: aufsteigender Dur-Akkord mit Glitzern (überall derselbe)
+  [523, 659, 784, 1047].forEach(function(f, i){ ton(f, 0.28, 'triangle', 0.2, i * 0.11); });
+  ton(1047, 0.9, 'sine', 0.16, 0.44); ton(1319, 0.9, 'sine', 0.12, 0.44); ton(1568, 0.9, 'sine', 0.1, 0.44);
+  ton(2093, 0.18, 'sine', 0.07, 0.6); ton(2637, 0.18, 'sine', 0.06, 0.7);
+};
+function klang(name){ if (stumm) return; var fertig = false, a = new Audio('../media/' + name + '.mp3');
+  function ersatz(){ if (fertig) return; fertig = true; SYNTH[name] && SYNTH[name](); }
+  a.onerror = ersatz; a.play().catch(ersatz); }
+tonStart();
+document.addEventListener('pointerdown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+document.addEventListener('keydown', function(){ if (ctx && ctx.state !== 'running') ctx.resume(); });
+
+var $ = function(id){ return document.getElementById(id); };
+var RUHIG = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+Spiel.zeichneEnergie($('hud-energie'));
+
+/* ---- Zustand ---- */
+var f = Spiel.fortschritt();                         // höchste geschaffte Szene
+var animation = Spiel.neu() > 0 && Spiel.neu() === f && f < STATIONEN.length;   // gerade geschafft -> nächste Station wird freigeschaltet
+var neuSzene = Spiel.neu();
+function zustand(nr){ if (nr <= f) return 'fertig'; if (nr === f + 1) return 'neu'; return 'gesperrt'; }
+Spiel.neuGesehen();                                  // beim Neuladen nicht noch einmal animieren
+var naechsteStation = STATIONEN.filter(function(s){ return s.nr === f + 1; })[0] || null;
+if (!naechsteStation && f >= STATIONEN.length) document.querySelector('#kopf h1').textContent = 'Alle Zeitreisen gemeistert';
+
+var NS = 'http://www.w3.org/2000/svg';
+function svg(tag, attr, eltern){ var e = document.createElementNS(NS, tag); for (var k in attr) e.setAttribute(k, attr[k]); eltern.appendChild(e); return e; }
+
+(function pfadeZeichnen(){
+  var g = $('pfade');
+  for (var i = 0; i < STATIONEN.length - 1; i++) {
+    var a = STATIONEN[i], b = STATIONEN[i + 1];
+    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - 60;
+    var d = 'M' + a.x + ',' + a.y + ' Q' + mx + ',' + my + ' ' + b.x + ',' + b.y;
+    var klasse = (b.nr <= f) ? 'pfad-fertig' : (b.nr === f + 1 ? (animation ? 'pfad-neu' : 'pfad-fertig') : 'pfad-gesperrt');
+    var p = svg('path', { d:d, class:klasse }, g);
+    if (klasse === 'pfad-neu') p.style.setProperty('--laenge', p.getTotalLength());
+  }
+})();
+
+function geheZuSzene(s){ klang('klick'); location.href = Spiel.url(s.datei); }
+function geheZuSidequest(id){ klang('klick'); location.href = Spiel.url(SQ_DATEI[id] || 'sidequest.html', { q:id }); }
+function klickbar(el, aktion, beschriftung){
+  el.setAttribute('role', 'button'); el.setAttribute('tabindex', '0'); el.setAttribute('aria-label', beschriftung);
+  el.addEventListener('click', function(e){ e.stopPropagation(); aktion(); });
+  el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); aktion(); } });
+}
+
+function zentraleSymbol(s, knoten){
+  var anzahl = SQ_ANZAHL.hasOwnProperty(s.nr) ? SQ_ANZAHL[s.nr] : Spiel.SQ_PRO_SZENE, alle = anzahl > 0;
+  for (var i = 1; i <= anzahl; i++) if (!Spiel.sidequestErledigt(s.nr + '.' + i)) alle = false;
+  var offen = Spiel.sidequestFrei(s.nr);
+  var sq = svg('g', { class:'sq zentrale ' + (alle ? 'erledigt' : (offen ? 'offen' : 'gesperrt')), transform:'translate(0,-98)' }, knoten);
+  svg('circle', { class:'kreis', r:28 }, sq);
+  var hirn = svg('g', { transform:'translate(-21,-17) scale(1.05)' }, sq);
+  svg('path', { class:'hirn', d:'M20,4 C14,1 7,3 6,9 C2,10 1,16 4,19 C2,23 5,28 10,28 C13,31 18,30 20,27 Z' }, hirn);
+  svg('path', { class:'hirn', d:'M20,4 C26,1 33,3 34,9 C38,10 39,16 36,19 C38,23 35,28 30,28 C27,31 22,30 20,27 Z' }, hirn);
+  svg('path', { class:'adern adern', d:'M12,10 C14,12 14,15 11,16 M28,10 C26,12 26,15 29,16 M14,22 C16,20 18,21 18,23 M26,22 C24,20 22,21 22,23 M20,6 V26' }, hirn);
+  var blase = svg('g', { class:'blase' }, sq);                                       // Text beim Darüberfahren (oder Fokus)
+  svg('rect', { x:-142, y:-104, width:284, height:64, rx:8 }, blase);
+  svg('path', { d:'M-12,-40 L0,-28 L12,-40 Z' }, blase);
+  svg('rect', { x:-14, y:-42, width:28, height:4, stroke:'none', fill:'rgba(10,15,36,.96)' }, blase);
+  var zeilen = offen ? ['Erledige Sidequests', 'und tanke neue Energie.'] : ['Schliesse zuerst die', 'Szene ab.'];
+  svg('text', { x:0, y:-76 }, blase).textContent = zeilen[0];
+  svg('text', { x:0, y:-52 }, blase).textContent = zeilen[1];
+  if (offen && animation && s.nr === neuSzene) sq.classList.add('frisch');
+  if (offen) klickbar(sq, function(){ klang('klick'); location.href = Spiel.url('zentrale.html', { z:s.nr }); }, 'HBI-Hauptzentrale: Erledige Sidequests und tanke neue Energie');
+}
+
+(function stationenZeichnen(){
+  var g = $('stationen');
+  STATIONEN.forEach(function(s){
+    var stand = zustand(s.nr);
+    var knoten = svg('g', { class:'station ' + stand, transform:'translate(' + s.x + ',' + s.y + ')' }, g);
+    var frei = Spiel.szeneFrei(s.nr);
+    svg('circle', { class:'ring', r:54 }, knoten);
+    svg('circle', { class:'glanz', r:54 }, knoten);
+    svg('circle', { class:'kern', r:44 }, knoten);
+    if (stand === 'fertig') svg('path', { class:'haken', d:'M-16,2 L-4,16 L20,-14' }, knoten);
+    else svg('text', { class:'nr-text', y:2, 'font-size':32 }, knoten).textContent = s.nr;
+    svg('text', { class:'titel-text', y:82, 'font-size':22, 'font-weight':'bold' }, knoten).textContent = s.titel;
+    var ort = svg('text', { class:'ort-text titel-text', y:106, 'font-size':16 }, knoten);
+    ort.setAttribute('fill', '#b9b6ad'); ort.textContent = s.ort;
+    svg('title', {}, knoten).textContent = frei ? 'Szene ' + s.nr + ': ' + s.titel + ' – klicken zum Spielen' : 'Szene ' + s.nr + ' ist noch gesperrt';
+    if (stand === 'neu') {
+      if (animation) knoten.classList.add('frisch');       // Freischalten zeigt die Animation: Pfad zeichnet sich, Station leuchtet auf
+      else knoten.classList.add('aufgedeckt');             // schon länger offen: gleich golden, ohne Animation
+    }
+    if (frei && !(stand === 'neu' && animation)) { knoten.classList.add('klickbar'); klickbar(knoten, function(){ geheZuSzene(s); }, 'Szene ' + s.nr + ': ' + s.titel); }
+
+    /* Sidequests: drei Monde, frei sobald die Szene geschafft ist */
+    if (ZENTRALE[s.nr]) { zentraleSymbol(s, knoten); return; }
+    var anzahl = SQ_ANZAHL.hasOwnProperty(s.nr) ? SQ_ANZAHL[s.nr] : Spiel.SQ_PRO_SZENE;
+    (SQ_POSITIONEN[anzahl] || []).forEach(function(pos, k){
+      var id = s.nr + '.' + (k + 1), symbol = SQ_SYMBOL[id] || SQ_SYMBOL_STANDARD[k];
+      var offen = Spiel.sidequestFrei(s.nr), erledigt = Spiel.sidequestErledigt(id);
+      var sq = svg('g', { class:'sq ' + (erledigt ? 'erledigt' : (offen ? 'offen' : 'gesperrt')), transform:'translate(' + pos.x + ',' + pos.y + ')' }, knoten);
+      svg('circle', { class:'kreis', r:23 }, sq);
+      svg('path', { class:'blitz', d:'M-3,-18 L-15,5 L-3,5 L-6,19 L15,-8 L3,-8 L6,-18 Z' }, sq);
+      if (symbol) {                                                       // Symbol im Blitz (i = Info, ↻ = Üben, ★ = Neu)
+        svg('circle', { class:'badge', cx:0, cy:1, r:7.6 }, sq);
+        svg('text', { class:'symbol', x:0, y:1.5 }, sq).textContent = symbol;
+      }
+      var name = SQ_TITEL[id] ? ': ' + SQ_TITEL[id] : '';
+      svg('title', {}, sq).textContent = offen ? 'Sidequest ' + id + name + (erledigt ? ' (geschafft)' : ' – füllt deine Energie auf') : 'Sidequest ' + id + ': wird frei, wenn du die Szene geschafft hast';
+      if (offen && animation && s.nr === neuSzene) sq.classList.add('frisch');
+      if (offen) klickbar(sq, function(){ geheZuSidequest(id); }, 'Sidequest ' + id);
+    });
+  });
+})();
+
+/* ---- Freischalt-Animation (nur direkt nach einer geschafften Szene) ---- */
+setTimeout(function(){
+  $('start').classList.add('weg');
+  setTimeout(freischalten, RUHIG ? 0 : 900);
+}, animation ? 1600 : 0);
+if (!animation) $('start').hidden = true;
+
+function freischalten(){
+  $('start').hidden = true;
+  if (!animation || !naechsteStation) return;
+  var neuKnoten = document.querySelector('.station.neu');
+  var neuPfad = document.querySelector('.pfad-neu');
+  if (neuPfad) neuPfad.classList.add('zeichnen');
+  setTimeout(function(){
+    neuKnoten.classList.add('aufgedeckt');
+    klang('geschafft');
+    setTimeout(function(){
+      neuKnoten.classList.add('klickbar');
+      klickbar(neuKnoten, function(){ geheZuSzene(naechsteStation); }, 'Szene ' + naechsteStation.nr + ': ' + naechsteStation.titel);
+    }, RUHIG ? 0 : 500);
+  }, RUHIG ? 0 : 900);
+}
+
+var tonKnopf = $('ton');
+tonKnopf.onclick = function(){ stumm = !stumm; tonKnopf.textContent = 'Ton: ' + (stumm ? 'aus' : 'an'); if (master) master.gain.value = stumm ? 0 : 0.8; };
+</script>
+</body>
+</html>

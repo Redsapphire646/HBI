@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBI — Wer bin ich?</title>
+<!-- Modus „geteilter Bildschirm“ (02.11.): zwei Spieler abwechselnd an einem Gerät,
+     umschaltbar mit dem runden Knopf unten rechts auf dem Startbildschirm. Alles dazu ist mit GETEILT markiert.
+     Die Testfassung wer_bin_ich_geteilt.html bleibt daneben bestehen. -->
+<style>
+  :root{
+    --bg1:#0a0f24; --bg2:#131c3d; --gold:#d4af37; --gold-dim:#8f7a3f;
+    --fg:#eae6d8; --grau:#b9b6ad; --papier:#efe6cf; --tinte:#2b1d14;
+    --gruen:#9fe59f; --rot:#e0735f;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;height:100%;}
+  html{font-size:clamp(16px, min(1.25vw, 2.2vh), 44px);}  /* Skalierung: im Vollbild werden alle rem-Masse grösser */
+  body{
+    display:flex;flex-direction:column;min-height:100vh;
+    background:radial-gradient(circle at 50% -10%, var(--bg2), var(--bg1) 60%) fixed;
+    color:var(--fg);font-family:var(--serif);
+  }
+  button{font-family:inherit;}
+
+  /* ---------- Kopfleiste ---------- */
+  .leiste{
+    position:sticky;top:0;z-index:10;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;
+    padding:0.625rem 1.25rem;min-height:3.75rem;background:rgba(10,15,36,.92);
+    border-bottom:1px solid rgba(143,122,63,.5);
+  }
+  .leiste .titel{text-align:center;}
+  .leiste .titel b{color:var(--gold);letter-spacing:.04em;font-size:1.1rem;}
+  .leiste .titel span{display:block;font-size:.72rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;}
+  .knopf{
+    background:none;color:var(--gold);border:1px solid var(--gold-dim);padding:0.4375rem 0.875rem;cursor:pointer;font-size:.9rem;
+  }
+  .knopf:hover,.knopf:focus-visible{border-color:var(--gold);outline:none;box-shadow:0 0 0.75rem rgba(212,175,55,.25);}
+  .knopf.voll{background:var(--gold);color:#0b1020;font-weight:bold;border-color:var(--gold);}
+  .knopf:disabled{opacity:.4;cursor:default;box-shadow:none;}
+
+  .menue{position:relative;justify-self:start;}
+  .menue ul{position:absolute;top:calc(100% + 0.375rem);left:0;margin:0;padding:0.375rem 0;list-style:none;min-width:13.125rem;
+    background:#0b1020;border:1px solid var(--gold-dim);box-shadow:0 0.5rem 1.5rem rgba(0,0,0,.5);}
+  .menue li button{width:100%;text-align:left;background:none;border:none;color:var(--fg);padding:0.5625rem 1rem;cursor:pointer;font-size:.92rem;}
+  .menue li button:hover,.menue li button:focus-visible{background:rgba(212,175,55,.12);color:var(--gold);outline:none;}
+
+  /* Die eingeloggte Person — bleibt oben rechts fest */
+  /* GETEILT: zwei Kästchen nebeneinander (Spieler 1 | Spieler 2), sonst nur eines */
+  .geheim{display:flex;gap:0.5rem;justify-self:end;text-align:right;}
+  .geheim-feld{position:relative;}
+  .geheim-feld > button{
+    background:rgba(212,175,55,.08);border:1px solid var(--gold);color:var(--fg);padding:0.375rem 0.875rem;cursor:pointer;text-align:right;
+  }
+  .geheim small{display:block;font-size:.65rem;letter-spacing:.2em;color:var(--gold-dim);white-space:nowrap;}
+  .geheim strong{color:var(--gold);}
+  .geheim .details{position:absolute;right:0;top:calc(100% + 0.375rem);width:min(21.25rem,90vw);padding:0.875rem 1rem;text-align:left;
+    background:var(--papier);color:var(--tinte);box-shadow:0 0.5rem 1.5rem rgba(0,0,0,.5);border-top:4px solid #b0463a;font-size:.88rem;}
+  .details table{border-collapse:collapse;width:100%;}
+  .details td{padding:3px 0;vertical-align:top;}
+  .details td:first-child{font-family:var(--mono);font-size:.8rem;color:#6b5a45;padding-right:0.625rem;white-space:nowrap;}
+
+  main{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .mitte{width:min(68.75rem,100%);margin:0 auto;padding:2.5rem 1rem;text-align:center;}
+  .kicker{letter-spacing:.35em;font-size:.7rem;color:var(--gold-dim);text-transform:uppercase;margin-bottom:0.625rem;}
+  h1{margin:0 0 0.5rem;font-size:clamp(1.8rem,5vw,2.6rem);color:var(--gold);letter-spacing:.04em;text-shadow:0 0 1.125rem rgba(212,175,55,.25);}
+  h2{margin:0 0 0.375rem;color:var(--gold);font-size:clamp(1.3rem,3.5vw,1.8rem);}
+  h3{margin:2rem 0 0.75rem;color:var(--gold);font-size:1.15rem;}
+  .untertitel{margin:0 0 2rem;color:var(--grau);}
+
+  /* ---------- Schwierigkeitsgrad ---------- */
+  .wahl-titel{font-size:.7rem;letter-spacing:.3em;color:var(--gold-dim);text-transform:uppercase;margin:0 0 0.75rem;}
+  .stufen{display:inline-flex;border:1px solid var(--gold-dim);margin-bottom:2.25rem;}
+  .stufe{background:none;border:none;color:var(--fg);padding:0.625rem 1.625rem;min-width:10.625rem;cursor:pointer;font-size:1rem;}
+  .stufe + .stufe{border-left:1px solid var(--gold-dim);}
+  .stufe small{display:block;margin-top:2px;font-size:.72rem;color:var(--grau);}
+  .stufe:hover{background:rgba(212,175,55,.1);}
+  .stufe[aria-checked="true"]{background:var(--gold);color:#0b1020;font-weight:bold;}
+  .stufe[aria-checked="true"] small{color:#3a3016;font-weight:normal;}
+  .stufe:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  /* Drei Stufen (Leicht | Normal | Schwer) passen sonst nicht aufs Handy */
+  @media (max-width: 560px){ .stufe{min-width:0;flex:1;padding:0.625rem 0.875rem;} .stufen{display:flex;} }
+
+  /* ---------- Kategorien ---------- */
+  .kategorien{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;}
+  .kategorie{
+    width:16.25rem;padding:1.625rem 1.375rem;cursor:pointer;color:var(--fg);text-align:center;
+    background:radial-gradient(circle at 50% 30%, rgba(212,175,55,.10), transparent 65%), var(--bg2);
+    border:2px solid var(--gold-dim);transition:border-color .18s, box-shadow .18s, transform .18s;
+  }
+  .kategorie:hover,.kategorie:focus-visible{border-color:var(--gold);box-shadow:0 0 1.875rem rgba(212,175,55,.25);transform:translateY(-4px);outline:none;}
+  .kategorie b{display:block;color:var(--gold);font-size:1.15rem;margin-bottom:0.375rem;}
+  .kategorie span{font-size:.85rem;color:var(--grau);}
+
+  /* ---------- Karteikarten ---------- */
+  /* Jede Karte belegt zwei Rasterzeilen (Name | Angaben) und teilt sie per Subgrid mit ihren
+     Nachbarn: Die Namenszeile ist so hoch wie der längste Name der Reihe → Angaben fluchten. */
+  .karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.625rem,1fr));column-gap:0.75rem;row-gap:0;text-align:left;}
+  .karte{
+    display:grid;grid-template-rows:subgrid;grid-row:span 2;row-gap:3px;align-content:start;margin-bottom:0.75rem;
+    background:var(--papier);color:var(--tinte);padding:0.625rem 0.75rem;border-top:4px solid #b0463a;
+    box-shadow:0 3px 0.5rem rgba(0,0,0,.4);font-size:.85rem;line-height:1.35;animation:rein .25s ease-out both;
+  }
+  .karte strong{display:block;font-size:1rem;margin-bottom:3px;}
+  /* Name: höchstens zwei Zeilen; passt er so nicht, wird er leicht verkleinert (passeTitelAn) */
+  .karte strong.titel{margin:0;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;}
+  .karte span{display:block;opacity:.8;}
+  /* Angaben als CSS-Text (02.11.): sehen gleich aus, aber die Browsersuche (Ctrl + F) findet sie nicht —
+     sonst wäre sie ein Gratis-COUNT. Siehe karte(). */
+  .karte .angaben span::before{content:attr(data-text);}
+  @keyframes rein{from{opacity:0;transform:translateY(0.375rem)}to{opacity:1;transform:none}}
+  button.karte{font:inherit;font-size:.85rem;text-align:left;cursor:pointer;border-left:none;border-right:none;border-bottom:none;
+    outline:3px solid transparent;outline-offset:2px;transition:outline-color .15s, transform .15s;}
+  button.karte:hover{transform:translateY(-2px);}
+  button.karte.gewaehlt{outline-color:var(--gold);transform:translateY(-2px);box-shadow:0 0 1.375rem rgba(212,175,55,.45);}
+  .aktionen{display:flex;gap:0.75rem;justify-content:center;margin-top:1.75rem;flex-wrap:wrap;}
+  /* Geheime Auswahl: feste Spaltenzahl, die 15 ohne Rest teilt → keine halbleere letzte Reihe */
+  #auswahl{grid-template-columns:repeat(5,1fr);}
+  @media (max-width: 900px){ #auswahl{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width: 520px){ #auswahl{grid-template-columns:1fr;} }
+
+  /* ---------- Spiel: Terminal | Karten | Schalter ---------- */
+  .spiel{flex:1;display:grid;grid-template-columns:minmax(18.75rem,34%) 1fr 11.875rem;min-height:0;}
+  .terminal{
+    display:flex;flex-direction:column;gap:0.75rem;padding:1.125rem 1.25rem;background:#0b1020;
+    border-right:1px solid rgba(143,122,63,.5);font-family:var(--mono);font-size:.9rem;
+  }
+  .terminal .kopf{display:flex;justify-content:space-between;gap:0.75rem;color:var(--gold);letter-spacing:.08em;font-size:.8rem;}
+  .schema{color:var(--grau);line-height:1.8;font-size:.82rem;}
+  .chip{display:inline-block;margin:.1em .15em;padding:0 .5em;border:1px solid var(--gold-dim);color:var(--gold);cursor:pointer;background:none;font:inherit;}
+  .chip:hover{background:rgba(212,175,55,.15);}
+  /* Satzbausteine (nur Modus Leicht): Kategorien zum Auf-/Zuklappen, Bausteine wie bei Scratch —
+     eine Farbe pro Kategorie (--farbe, siehe BAUSTEIN_GRUPPEN) */
+  .bausteine{display:flex;flex-direction:column;gap:0.375rem;border-top:1px solid rgba(143,122,63,.35);padding-top:0.625rem;}
+  .bausteine .kopf{margin-bottom:2px;}
+  .bausteine .tipp{margin:0 0 4px;color:var(--grau);font-size:.78rem;line-height:1.45;}
+  .bausteine .tipp code{color:var(--gruen);}
+  .bausteine details{border-left:3px solid var(--farbe);padding:2px 0 2px 0.625rem;}
+  .bausteine summary{cursor:pointer;color:var(--farbe);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;padding:3px 0;user-select:none;}
+  .bausteine summary:focus-visible{outline:1px solid var(--farbe);outline-offset:2px;}
+  .bausteine .reihe{display:flex;flex-wrap:wrap;gap:0.375rem;padding:0.375rem 0 0.5rem;}
+  .baustein{background:var(--farbe);color:#0b1020;border:none;border-radius:0.375rem;padding:4px 0.625rem;cursor:pointer;
+    font:inherit;font-weight:bold;font-size:.85rem;box-shadow:0 2px 0 rgba(0,0,0,.45), inset 0 -2px 0 rgba(0,0,0,.18);}
+  .baustein:hover,.baustein:focus-visible{filter:brightness(1.15);outline:none;}
+  .baustein:focus-visible{box-shadow:0 0 0 2px var(--fg);}
+  .baustein:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.45);}
+  #eingabe{width:100%;min-height:7em;resize:vertical;background:#050810;color:var(--gruen);border:1px solid #2c3a2c;
+    font:inherit;font-size:1.05em;padding:.6em;caret-color:var(--gruen);}
+  #eingabe:focus{outline:1px solid var(--gruen);}
+  #meldung{min-height:1.4em;line-height:1.45;}
+  #meldung.fehler{color:var(--rot);}
+  #meldung.ok{color:var(--gruen);}
+  .ergebnis{padding:1.125rem 1.25rem;overflow:auto;}
+  .treffer{color:var(--gold);letter-spacing:.08em;margin-bottom:0.75rem;font-family:var(--mono);}
+  .leer{color:var(--grau);font-style:italic;}
+
+  .schalter{padding:1.125rem 1rem;border-left:1px solid rgba(143,122,63,.5);background:rgba(10,15,36,.6);}
+  .schalter .kopf{font-size:.7rem;letter-spacing:.2em;color:var(--gold-dim);margin-bottom:0.75rem;}
+  .schalter label{display:flex;align-items:center;justify-content:space-between;gap:0.625rem;padding:0.375rem 0;cursor:pointer;font-size:.9rem;}
+  .schalter .bez{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .schalter .luecken{font-size:.7rem;color:var(--grau);line-height:1.3;}
+  .schalter input{position:absolute;opacity:0;pointer-events:none;}
+  .schalter .regler{flex:none;width:2.125rem;height:1.125rem;border-radius:0.5625rem;background:#2a3150;border:1px solid var(--gold-dim);position:relative;transition:background .15s;}
+  .schalter .regler::after{content:"";position:absolute;top:2px;left:2px;width:0.75rem;height:0.75rem;border-radius:50%;background:var(--grau);transition:transform .15s, background .15s;}
+  .schalter input:checked + .regler{background:rgba(212,175,55,.35);}
+  .schalter input:checked + .regler::after{transform:translateX(1rem);background:var(--gold);}
+  .schalter input:focus-visible + .regler{outline:2px solid var(--gold);outline-offset:2px;}
+  .schalter.aus label{opacity:.4;cursor:default;}
+  .schalter .notiz{font-size:.75rem;color:var(--grau);line-height:1.4;margin-top:0.625rem;}
+
+  /* Nur noch ein Treffer */
+  .einer{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;padding:0.875rem 1rem;
+    border:1px solid var(--gold);background:rgba(212,175,55,.08);}
+  .einer p{margin:0;flex:1;min-width:13.75rem;line-height:1.45;}
+  .einer b{color:var(--gold);}
+  .hinweis-falsch{margin:0 0 1rem;padding:0.625rem 0.875rem;border-left:3px solid var(--rot);color:#f0c9bf;background:rgba(224,115,95,.08);}
+  /* Fehlende Angaben sind herausgefallen — ein Hinweis, kein Fehler: Gold statt Rot */
+  .hinweis-null{margin:0 0 1rem;padding:0.625rem 0.875rem;border-left:3px solid var(--gold-dim);color:#ece0bb;
+    background:rgba(212,175,55,.07);line-height:1.5;}
+  .hinweis-null code{font-family:var(--mono);color:var(--gold);white-space:nowrap;}
+
+  /* ---------- Auswertung ---------- */
+  .auswertung{text-align:left;}
+  .auswertung .gross{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1.5rem 0 0.5rem;}
+  .kennzahl{min-width:9.375rem;padding:0.875rem 1.125rem;border:1px solid var(--gold-dim);background:var(--bg2);text-align:center;}
+  .kennzahl b{display:block;font-size:2rem;color:var(--gold);}
+  .kennzahl span{font-size:.8rem;color:var(--grau);letter-spacing:.1em;}
+  .liste{width:100%;border-collapse:collapse;font-size:.9rem;}
+  .liste th{text-align:left;font-weight:normal;font-size:.72rem;letter-spacing:.15em;color:var(--gold-dim);padding:0.375rem 0.5rem;border-bottom:1px solid var(--gold-dim);}
+  .liste td{padding:0.5rem;border-bottom:1px solid rgba(143,122,63,.25);vertical-align:top;}
+  .liste code{font-family:var(--mono);color:var(--gruen);font-size:.85rem;word-break:break-word;}
+  .liste .zahl{white-space:nowrap;font-family:var(--mono);}
+  .marke{display:inline-block;margin:0 4px 4px 0;padding:1px 0.5rem;font-size:.72rem;border:1px solid;white-space:nowrap;}
+  .marke.gewoehnlich{color:var(--grau);border-color:#555c78;}
+  .marke.selten{color:#8fc7ff;border-color:#4f7fae;}
+  .marke.speziell{color:var(--gold);border-color:var(--gold);}
+  .marke.joker{color:#cfa8ff;border-color:#8a63b8;}
+  .marke.nichts{color:#8b8b95;border-color:#555c78;border-style:dashed;}
+  /* Medaillen Gold / Silber / Bronze (SVG: Band + Münze mit Stern, siehe medailleSvg) */
+  .medaille{display:inline-block;width:1.375rem;height:1.75rem;vertical-align:-9px;margin-left:0.625rem;cursor:help;
+    filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7));}
+  /* Einordnung (letzte Spalte der Auswertung): Medaille mittig */
+  #s-ende .liste th:last-child, #s-ende .liste td:last-child{text-align:center;}
+  #s-ende .liste td:last-child .medaille{margin-left:0;}
+  .medaille svg{display:block;width:100%;height:100%;}
+  .medaille.leer{width:auto;height:auto;filter:none;color:var(--grau);vertical-align:0;margin-left:0.625rem;}
+  #s-ende .liste td:last-child .medaille.leer{margin-left:0;}
+  .rechnung{margin:4px 0 0.5rem;text-align:center;color:var(--grau);font-size:.9rem;}
+  .liste .keine-neue{color:var(--grau);font-style:italic;}
+  .liste tr.start td{color:var(--grau);}
+  .liste tr.start code{color:var(--gruen);opacity:.75;}
+  .beste{display:grid;gap:0.625rem;}
+  .beste div{padding:0.625rem 0.875rem;border-left:3px solid var(--gold);background:rgba(212,175,55,.06);line-height:1.5;}
+  .beste code{font-family:var(--mono);color:var(--gruen);word-break:break-word;}
+
+  /* ---------- Joker (violett wie die Marke „Joker“) ---------- */
+  .joker-knopf{margin-left:0.5rem;color:#cfa8ff;border-color:#8a63b8;}
+  .joker-knopf:hover,.joker-knopf:focus-visible{border-color:#cfa8ff;box-shadow:0 0 0.75rem rgba(138,99,184,.4);}
+  .joker-hinter{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,.55);}
+  .joker-fenster{width:min(38.75rem,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:0.75rem;padding-bottom:1.125rem;
+    background:#0b1020;border:2px solid #8a63b8;box-shadow:0 0 2.5rem rgba(138,99,184,.35);font-family:var(--mono);font-size:.9rem;}
+  .joker-fenster header{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1.125rem;border-bottom:1px solid #8a63b8;
+    color:#cfa8ff;letter-spacing:.12em;font-size:.85rem;}
+  .joker-fenster header button{background:none;border:1px solid #8a63b8;color:#cfa8ff;cursor:pointer;padding:3px 0.625rem;font-size:.9rem;}
+  .joker-fenster > :not(header){margin-left:1.125rem;margin-right:1.125rem;}
+  .joker-text{margin-top:0;margin-bottom:0;color:var(--grau);line-height:1.5;font-family:var(--serif);font-size:.95rem;}
+  .joker-text code{font-family:var(--mono);color:var(--gruen);}
+  #joker-eingabe{min-height:5em;resize:vertical;background:#050810;color:var(--gruen);border:1px solid #3d2f55;
+    font:inherit;font-size:1.05em;padding:.6em;caret-color:var(--gruen);}
+  #joker-eingabe:focus{outline:1px solid #cfa8ff;}
+  #joker-eingabe:disabled{opacity:.75;}
+  .joker-los{background:#8a63b8;border-color:#8a63b8;color:#fff;font-weight:bold;}
+  #joker-meldung{min-height:1.2em;line-height:1.45;}
+  #joker-meldung.fehler{color:var(--rot);}
+  #joker-meldung.ok{color:#cfa8ff;}
+  #joker-ergebnis .zahl{font-size:2.4rem;color:#cfa8ff;font-family:var(--serif);font-weight:bold;}
+  #joker-ergebnis .liste td{color:var(--fg);}
+  .joker-info{margin:0 0 0.5rem;text-align:center;color:#cfa8ff;line-height:1.5;}
+  .joker-info code{font-family:var(--mono);color:var(--gruen);word-break:break-word;}
+
+  /* ---------- SQL-Spickzettel (Seitenleiste rechts) ---------- */
+  .spick{
+    position:fixed;top:3.75rem;right:0;bottom:0;z-index:9;width:min(26.875rem,100%);display:flex;flex-direction:column;
+    background:var(--bg1);border-left:1px solid var(--gold-dim);box-shadow:-10px 0 1.875rem rgba(0,0,0,.5);
+    animation:reinRechts .2s ease-out;
+  }
+  @keyframes reinRechts{from{transform:translateX(1.875rem);opacity:0}to{transform:none;opacity:1}}
+  .spick header{display:flex;justify-content:space-between;align-items:center;padding:0.875rem 1.125rem;border-bottom:1px solid rgba(143,122,63,.5);
+    color:var(--gold);letter-spacing:.15em;font-size:.85rem;}
+  .spick header button{background:none;border:1px solid var(--gold-dim);color:var(--gold);cursor:pointer;padding:3px 0.625rem;font-size:.9rem;}
+  .spick .inhalt{flex:1;overflow:auto;padding:0.375rem 1.125rem 1.5rem;}
+  .spick .inhalt p{line-height:1.6;font-size:.92rem;}
+  .spick .inhalt p b{color:var(--gold);}
+  .spick .inhalt a{color:var(--gold);}
+  .spick .inhalt .klein{font-size:.8rem;color:var(--grau);line-height:1.5;}
+  .eigen-schritt{display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;margin:0.875rem 0 0.5rem;}
+  .eigen-schritt > b{display:inline-flex;width:1.5rem;height:1.5rem;border-radius:50%;align-items:center;justify-content:center;
+    background:var(--gold);color:#0b1020;font-size:.8rem;flex:none;}
+  .bericht{list-style:none;margin:0.625rem 0;padding:0;font-size:.86rem;line-height:1.5;}
+  .bericht li{padding:0.375rem 0.625rem;margin-bottom:0.375rem;border-left:3px solid var(--grau);background:rgba(255,255,255,.03);}
+  .bericht li.fehler{border-color:var(--rot);color:#f0c9bf;}
+  .bericht li.hinweis{border-color:var(--gold-dim);color:#ece0bb;}
+  .bericht li.gut{border-color:var(--gruen);color:var(--gruen);}
+  .kategorie .marke-eigen{display:block;margin-top:0.375rem;font-size:.72rem;letter-spacing:.08em;color:var(--gruen);}
+  .spick .spick-ohne{font-size:.82rem;color:var(--grau);font-style:italic;line-height:1.5;margin:0.75rem 0 0;}
+  .spick .gruppe{margin:1.125rem 0 0.5rem;font-size:.7rem;letter-spacing:.25em;color:var(--gold-dim);text-transform:uppercase;}
+  .spick .gruppe small{display:block;letter-spacing:0;text-transform:none;font-size:.78rem;color:var(--grau);font-style:italic;margin-top:3px;}
+  .spick .eintrag{margin-bottom:0.625rem;padding:0.625rem 0.75rem;background:var(--papier);color:var(--tinte);border-top:4px solid #b0463a;
+    box-shadow:0 3px 0.5rem rgba(0,0,0,.4);font-size:.86rem;line-height:1.4;}
+  .spick .eintrag .kopf{display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;margin-bottom:4px;}
+  .spick .eintrag code{font-family:var(--mono);font-weight:bold;font-size:.9rem;}
+  .spick .eintrag pre{margin:0.5rem 0 0;padding:0.5rem 0.625rem;background:#0b1020;color:var(--gruen);font-family:var(--mono);font-size:.8rem;
+    white-space:pre-wrap;word-break:break-word;}
+  .spick .eintrag .hinweis{margin-top:0.375rem;font-size:.8rem;font-style:italic;color:#6b4a2a;}
+  /* Einordnungs-Marken auf Papier (dunklere Farben als in der Auswertung) */
+  .marke.papier{margin:0;}
+  .marke.papier.gewoehnlich{color:#5d5d66;border-color:#9a9aa6;}
+  .marke.papier.selten{color:#2d5c8a;border-color:#6d95bd;}
+  .marke.papier.speziell{color:#7d600c;border-color:#b8962e;}
+  .marke.papier.joker{color:#5f3b8c;border-color:#9a7cc4;}
+
+  @media (max-width: 1000px){
+    .spiel{grid-template-columns:minmax(17.5rem,40%) 1fr;}
+    .schalter{grid-column:1 / -1;border-left:none;border-top:1px solid rgba(143,122,63,.5);display:flex;flex-wrap:wrap;gap:4px 1.125rem;align-items:center;order:3;}
+    .schalter .kopf,.schalter .notiz{width:100%;margin:0;}
+    /* In der umbrechenden Zeile stoeren die Unterzeilen — die Zahlen stehen dann im title */
+    .schalter .luecken{display:none;}
+  }
+  @media (max-width: 800px){
+    .spiel{grid-template-columns:1fr;}
+    .terminal{border-right:none;border-bottom:1px solid rgba(143,122,63,.5);}
+    .schalter{order:0;}
+    .leiste{grid-template-columns:auto 1fr;}
+    .leiste .titel{text-align:right;}
+    .geheim{grid-column:1 / -1;}
+  }
+  /* ---------- GETEILT: Modus-Knopf (Startbildschirm unten rechts) ---------- */
+  .modus{position:fixed;right:1.25rem;bottom:1.25rem;z-index:5;width:2.75rem;height:2.75rem;padding:0;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gold);
+    background:rgba(10,15,36,.92);border:1px solid var(--gold-dim);transition:border-color .15s, box-shadow .15s;}
+  .modus:hover,.modus:focus-visible{border-color:var(--gold);outline:none;box-shadow:0 0 0.75rem rgba(212,175,55,.25);}
+  .modus[aria-pressed="true"]{border-color:var(--gold);background:rgba(212,175,55,.12);}
+  .modus svg{width:1.35rem;height:1.35rem;display:block;}
+  .modus .icon-zwei, .modus.geteilt .icon-ein{display:none;}
+  .modus.geteilt .icon-zwei{display:block;}
+  /* Wem gehört der Datensatz gerade? */
+  .spieler-kopf{color:var(--gold);letter-spacing:.08em;font-size:.8rem;font-family:var(--mono);margin-bottom:0.625rem;}
+  /* Duell-Auswertung: beide Spieler oben, darunter die Auswertung des gewählten Spielers */
+  .duell-zahlen{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1.5rem 0 0.5rem;}
+  .kennzahl.sieger{border-color:var(--gold);box-shadow:0 0 1.25rem rgba(212,175,55,.25);}
+  #ende-duell{padding-bottom:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid rgba(143,122,63,.35);}
+  #ende-duell .stufen{margin-bottom:0.5rem;}
+
+  /* Modus Leicht (03.11.): Das Spielfeld ist genau fensterhoch, nur die Satzbausteine scrollen — so bleiben
+     Eingabefeld und Datensatz im Blick, während man einen Baustein sucht. Klassen setzen zeige() und
+     setzeSchwierigkeit(). Nicht auf schmalen Bildschirmen: Dort stehen die Spalten untereinander, die Seite scrollt. */
+  @media (min-width: 801px){
+    body.im-spiel.stufe-leicht{height:100vh;}
+    body.im-spiel.stufe-leicht main{min-height:0;}
+    body.im-spiel.stufe-leicht .spiel{grid-template-rows:minmax(0,1fr) auto;}
+    body.im-spiel.stufe-leicht .terminal{min-height:0;overflow-y:auto;}   /* nur bei sehr niedrigem Fenster */
+    body.im-spiel.stufe-leicht .bausteine{flex:1 1 0;min-height:10rem;overflow-y:auto;padding-right:0.375rem;}
+    body.im-spiel.stufe-leicht .bausteine > *{flex-shrink:0;}
+    body.im-spiel.stufe-leicht .schalter{overflow-y:auto;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important;transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header class="leiste">
+  <div class="menue">
+    <button type="button" class="knopf" id="menue-knopf" aria-haspopup="true" aria-expanded="false">☰ Menü</button>
+    <ul id="menue" hidden>
+      <li><button type="button" id="neustart">Neu starten</button></li>
+      <li><button type="button" id="spick-knopf">📇 SQL-Spickzettel</button></li>
+      <li><button type="button" id="anleitung-knopf">📖 Spielanleitung</button></li>
+      <li><button type="button" id="eigen-knopf">📂 Eigene Datenbank</button></li>
+      <li><button type="button" id="zum-start">Zum Startbildschirm</button></li>
+    </ul>
+  </div>
+  <div class="titel"><b>Wer bin ich?</b><span id="kat-name"></span></div>
+  <div class="geheim">
+    <div class="geheim-feld">
+      <button type="button" id="geheim-knopf" hidden aria-expanded="false" title="Angaben anzeigen">
+        <small id="geheim-label">DEINE PERSON 🔒</small><strong id="geheim-name"></strong>
+      </button>
+      <div class="details" id="geheim-details" hidden></div>
+    </div>
+    <!-- GETEILT: Kästchen für Spieler 2 -->
+    <div class="geheim-feld" id="geheim2-feld" hidden>
+      <button type="button" id="geheim2-knopf" aria-expanded="false" title="Angaben anzeigen">
+        <small id="geheim2-label"></small><strong id="geheim2-name"></strong>
+      </button>
+      <div class="details" id="geheim2-details" hidden></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 1. Kategorie wählen -->
+  <section id="s-kategorie" class="mitte">
+    <div class="kicker">Historical Bureau of Investigation</div>
+    <h1>Wer bin ich?</h1>
+    <p class="untertitel" id="start-text">Wähle zuerst die Einstellungen, dann eine Kategorie.</p>
+    <div class="wahl-titel">Schwierigkeitsgrad</div>
+    <div class="stufen" data-wahl="schwierigkeit" role="radiogroup" aria-label="Schwierigkeitsgrad">
+      <button type="button" class="stufe" role="radio" data-stufe="leicht">Leicht</button>
+      <button type="button" class="stufe" role="radio" data-stufe="normal">Normal</button>
+      <button type="button" class="stufe" role="radio" data-stufe="schwer">Schwer</button>
+    </div>
+    <div class="wahl-titel">Joker</div>
+    <div class="stufen" data-wahl="joker" role="radiogroup" aria-label="Joker">
+      <button type="button" class="stufe" role="radio" data-joker="aus">Aus</button>
+      <button type="button" class="stufe" role="radio" data-joker="an">An</button>
+    </div>
+    <div class="wahl-titel">Kategorie</div>
+    <div class="kategorien" id="kategorien"></div>
+    <!-- GETEILT: Modus umstellen — ein Bildschirm pro Spieler | geteilter Bildschirm -->
+    <button type="button" class="modus" id="modus-knopf" aria-pressed="false">
+      <svg class="icon-ein" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8"/></svg>
+      <svg class="icon-zwei" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3.6" y="4.6" width="8.4" height="10.8" fill="currentColor" fill-opacity=".28" stroke="none"/>
+        <rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 4v12M12 16v4M8 20h8"/></svg>
+    </button>
+  </section>
+
+  <!-- GETEILT: Zwischenbildschirm (Wegschauen bei der Auswahl, wer beginnt) -->
+  <section id="s-wechsel" class="mitte" hidden>
+    <div class="kicker">Geteilter Bildschirm</div>
+    <h1 id="wechsel-titel"></h1>
+    <p class="untertitel" id="wechsel-text"></p>
+    <div class="aktionen"><button type="button" class="knopf voll" id="wechsel-weiter"></button></div>
+  </section>
+
+  <!-- 2. Geheime Auswahl -->
+  <section id="s-auswahl" class="mitte" hidden>
+    <h2 id="auswahl-titel">Wähle deine geheime Person</h2>
+    <p class="untertitel">Klicke eine Karte an und bestätige.</p>
+    <div class="karten" id="auswahl"></div>
+    <div class="aktionen">
+      <button type="button" class="knopf" id="andere">Andere Auswahl zeigen</button>
+      <button type="button" class="knopf voll" id="bestaetigen" disabled>Bestätigen</button>
+    </div>
+  </section>
+
+  <!-- 3. Spiel -->
+  <section id="s-spiel" class="spiel" hidden>
+    <div class="terminal">
+      <div class="kopf"><span id="term-titel">TERMINAL</span><span>Abfragen:&nbsp;<b id="zaehler">0</b></span></div>
+      <div class="schema" aria-label="Spalten zum Einfügen"><span id="chips"></span></div>
+      <textarea id="eingabe" spellcheck="false" aria-label="SQL-Abfrage"></textarea>
+      <div><button type="button" class="knopf voll" id="los">▶ Ausführen</button>
+        <button type="button" class="knopf voll" id="weiter" hidden></button>
+        <button type="button" class="knopf joker-knopf" id="joker-knopf" hidden>🃏 Joker (1×)</button></div>
+      <div id="meldung" role="status"></div>
+      <div id="bausteine" class="bausteine" hidden aria-label="Satzbausteine"></div>
+    </div>
+    <div class="ergebnis" id="ausgabe"></div>
+    <aside class="schalter" id="schalter" aria-label="Angaben auf den Karten">
+      <div class="kopf">AUF DEN KARTEN</div>
+      <div id="schalter-liste"></div>
+      <p class="notiz" id="schalter-notiz" hidden>Deine Abfrage wählt die Spalten selbst aus.</p>
+    </aside>
+  </section>
+
+  <!-- 4. Auswertung -->
+  <section id="s-ende" class="mitte" hidden>
+    <!-- GETEILT: Ergebnis des Duells, darunter die Auswertung des gewählten Spielers -->
+    <div id="ende-duell" hidden>
+      <div class="kicker">Duell beendet</div>
+      <h1 id="duell-titel"></h1>
+      <div class="duell-zahlen" id="duell-zahlen"></div>
+      <p class="rechnung" id="duell-notiz"></p>
+      <div class="wahl-titel">Auswertung von</div>
+      <div class="stufen" id="duell-wahl" role="radiogroup" aria-label="Auswertung von">
+        <button type="button" class="stufe" role="radio" data-spieler="0">Spieler 1</button>
+        <button type="button" class="stufe" role="radio" data-spieler="1">Spieler 2</button>
+      </div>
+    </div>
+    <div class="kicker" id="ende-kicker">Gefunden</div>
+    <h1 id="ende-titel"></h1>
+    <div class="auswertung">
+      <div class="gross">
+        <div class="kennzahl"><b id="ende-punkte"></b><span>PUNKTE</span></div>
+        <div class="kennzahl"><b id="ende-abfragen"></b><span>ABFRAGEN</span></div>
+        <div class="kennzahl"><b id="ende-stufe"></b><span>SCHWIERIGKEIT</span></div>
+      </div>
+      <p class="rechnung" id="ende-rechnung"></p>
+      <p class="joker-info" id="ende-joker" hidden></p>
+      <h3>Deine nützlichsten Abfragen</h3>
+      <div class="beste" id="ende-beste"></div>
+      <h3>Alle Abfragen</h3>
+      <table class="liste">
+        <thead><tr><th>#</th><th>ABFRAGE</th><th>TREFFER</th><th>SCHWIERIGKEITSGRAD</th></tr></thead>
+        <tbody id="ende-liste"></tbody>
+      </table>
+    </div>
+    <div class="aktionen">
+      <button type="button" class="knopf" id="ende-start">Zum Startbildschirm</button>
+      <button type="button" class="knopf voll" id="ende-neu">Neue Runde</button>
+    </div>
+  </section>
+</main>
+
+<!-- Farbverläufe der Medaillen (einmal definiert, von allen Medaillen genutzt) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="m-gold" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff7cf"/><stop offset=".45" stop-color="#e6c24c"/><stop offset="1" stop-color="#94700c"/></radialGradient>
+    <radialGradient id="m-silber" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#cfd4dc"/><stop offset="1" stop-color="#6e7480"/></radialGradient>
+    <radialGradient id="m-bronze" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffe3c4"/><stop offset=".45" stop-color="#cf8542"/><stop offset="1" stop-color="#6f3d12"/></radialGradient>
+  </defs>
+</svg>
+
+<!-- Joker: eigenes Eingabefeld, einmal pro Runde, zählt nicht als Abfrage -->
+<div class="joker-hinter" id="joker" hidden>
+  <div class="joker-fenster" role="dialog" aria-label="Joker">
+    <header><span>🃏 JOKER · EINMAL PRO RUNDE</span><button type="button" id="joker-zu" aria-label="Joker schliessen">✕</button></header>
+    <p class="joker-text">Eine Abfrage mit <code>COUNT(*)</code> oder <code>GROUP BY</code>, die <b>nicht als Abfrage zählt</b>
+      und die Auswahl nicht verändert. Nutze sie, um zu prüfen, ob sich eine Frage lohnt.
+      Ersetze die <code>...</code>: vorne und hinten dieselbe Spalte, in der Mitte eine Bedingung mit <code>WHERE</code> — oder lösche sie.</p>
+    <textarea id="joker-eingabe" spellcheck="false" aria-label="Joker-Abfrage"
+      placeholder="z. B. SELECT kontinent, COUNT(*) FROM personen GROUP BY kontinent"></textarea>
+    <div><button type="button" class="knopf joker-los" id="joker-los">🃏 Joker einsetzen</button></div>
+    <div id="joker-meldung" role="status"></div>
+    <div id="joker-ergebnis"></div>
+  </div>
+</div>
+
+<!-- SQL-Spickzettel: Seitenleiste, geöffnet über das Menü. Inhalt aus spickzettel.js -->
+<aside class="spick" id="spick" hidden role="dialog" aria-label="SQL-Spickzettel">
+  <header><span>📇 SQL-SPICKZETTEL</span><button type="button" id="spick-zu" aria-label="Spickzettel schliessen">✕</button></header>
+  <div class="inhalt" id="spick-inhalt"></div>
+</aside>
+
+<!-- Spielanleitung — bewusst im Menü und nicht im Terminal, damit beim Spielen
+     möglichst wenig Text ablenkt. Nutzt dieselbe Seitenleiste wie der Spickzettel. -->
+<aside class="spick" id="anleitung" hidden role="dialog" aria-label="Spielanleitung">
+  <header><span>📖 SPIELANLEITUNG</span><button type="button" id="anleitung-zu" aria-label="Spielanleitung schliessen">✕</button></header>
+  <div class="inhalt">
+    <p>Grenze mit deinen Abfragen die geheime Auswahl deines Gegenübers ein.
+      Jede Abfrage kostet 10 Punkte — grenzt du gut ein, bekommst du sie zurück.
+      Besonderes SQL gibt Extrapunkte.</p>
+    <p>Mit <b>Strg + Enter</b> führst du eine Abfrage aus. Die Spaltennamen über dem
+      Eingabefeld kannst du anklicken, dann werden sie eingefügt.</p>
+    <p id="anleitung-geteilt" hidden><b>Geteilter Bildschirm:</b> Ihr spielt abwechselnd an einem Gerät. Das Los
+      bestimmt, wer beginnt. Wer dran ist, stellt dem Gegenüber eine Frage, schreibt die passende Abfrage
+      und gibt danach mit <b>Weiter</b> ab. Bleibt nur noch eine Karte übrig, prüft das Spiel, ob sie stimmt.
+      Wer gefunden hat, wird übersprungen, bis beide fertig sind — dann entscheiden die Punkte.</p>
+  </div>
+</aside>
+
+<!-- Eigene Datenbank — für Lehrpersonen: Excel → Kategorie → ZIP mit dem ganzen Spiel.
+     Bewusst im Menü und nicht auf dem Startbildschirm. Die Werkzeuge (xlsx, datensatz, zip)
+     werden erst beim Öffnen nachgeladen, damit Teil B für die Klasse schnell startet. -->
+<aside class="spick" id="eigen" hidden role="dialog" aria-label="Eigene Datenbank">
+  <header><span>📂 EIGENE DATENBANK</span><button type="button" id="eigen-zu" aria-label="Eigene Datenbank schliessen">✕</button></header>
+  <div class="inhalt">
+    <p>Für Lehrpersonen: Aus einer Excel-Tabelle wird eine neue Kategorie für „Wer bin ich?“.
+      Am einfachsten mit der <a href="../anleitung/HBI-Vorlage-Datenbank.xlsx" download>Vorlage</a>
+      — ein ausgefülltes Beispiel ist <a href="../anleitung/Beispiel-Tiere.xlsx" download>Beispiel-Tiere.xlsx</a>.</p>
+    <p class="klein"><b>Bestehende Datenbank erweitern</b> (z. B. mehr Tiere): dasselbe Excel ergänzen, den
+      <b>Tabellennamen</b> im Blatt „Einstellungen“ gleich lassen und die Datei hier wählen. Das Spiel erkennt
+      am Tabellennamen, dass es die bisherige Datenbank aktualisieren soll — ein neuer Tabellenname gibt eine neue Datenbank.</p>
+    <div class="eigen-schritt"><b>1</b> <button type="button" class="knopf" id="eigen-waehlen">Excel-Datei wählen</button>
+      <input type="file" id="eigen-datei" accept=".xlsx,.xls,.ods" hidden></div>
+    <div id="eigen-bericht" aria-live="polite"></div>
+    <div id="eigen-weiter" hidden>
+      <div class="eigen-schritt"><b>2</b> <button type="button" class="knopf voll" id="eigen-spielen">Spielen</button>
+        <span class="klein">zum Ausprobieren — nur in diesem Browser</span></div>
+      <div class="eigen-schritt"><b>3</b> <button type="button" class="knopf" id="eigen-zip">Spiel für die Klasse erstellen</button>
+        <input type="file" id="eigen-ordner" webkitdirectory multiple hidden></div>
+      <p class="klein">Danach den <b>Spielordner</b> wählen — den Ordner, in dem <code>HBI.html</code> liegt.
+        Chrome fragt dann „Dateien hochladen?“: Keine Sorge, <b>die Dateien verlassen deinen Computer nicht</b>.
+        Das Spiel liest sie nur, um daraus eine ZIP mit dem ganzen Spiel und deiner Datenbank zu bauen.</p>
+      <div id="eigen-zip-meldung" aria-live="polite"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Echtes SQLite im Browser: sql.js 1.14.2 (MIT), Variante ohne .wasm → läuft auch per Doppelklick -->
+<script src="sql-asm.js" charset="utf-8"></script>
+<!-- Fehlermeldungen: dieselben wie in den Szenen von Teil A -->
+<script src="sql-meldungen.js" charset="utf-8"></script>
+<script src="spickzettel.js" charset="utf-8"></script>
+<script>
+/* ============================================================
+   KATEGORIEN — für eine neue Kategorie hier einen Eintrag ergänzen
+   und die Datendatei in ../daten/ legen. Die Datei muss SPALTEN
+   und DATEN festlegen (wie personen.js). Fehlende Werte = null.
+   „schalter“ = was auf den Karten ein-/ausgeblendet werden kann,
+   in der Reihenfolge, in der es auf den Karten steht.
+   „luecken“ = welche Spalten der Schalter abdeckt; nur nötig, wenn er
+   nicht genau einer Spalte entspricht (z. B. Alter = zwei Jahresspalten).
+   Daraus entsteht die Zeile „… ohne Angabe“ unter dem Schalter.
+   „ausblenden“ (optional) = function(zeile) → true, wenn eine Zeile zwar in
+   der Datendatei steht, im Spiel aber nicht vorkommen soll.
+   ============================================================ */
+var UNBEKANNT = 'NULL';   // Anzeige für fehlende Werte — auf '–' ändern, falls es unübersichtlich wird
+function leer(v){ return v === null || v === undefined; }
+function jahr(v){ return leer(v) ? UNBEKANNT : (v < 0 ? (-v) + ' v. Chr.' : String(v)); }
+
+var KATEGORIEN = [
+  {
+    id: 'personen',
+    titel: 'Persönlichkeiten der Geschichte',
+    datei: '../daten/personen.js',
+    tabelle: 'personen',
+    objekt: 'Person',                       // „Wähle deine geheime Person“
+    artikel: 'die',                         // für die Sätze — siehe ARTIKEL
+    kartentitel: 'name',
+    // Die HBI-Agenten aus Szene 6 stehen auch in personen.js, gehören aber nur ins Story-Spiel
+    ausblenden: function(z){ return z.bekanntes_werk === 'Zeitverbrecher'; },
+    schalter: [
+      { id:'geschlecht',      label:'Geschlecht' },
+      { id:'alter',           label:'Alter', luecken:['geburtsjahr', 'todesjahr'],
+        wert:function(z){ return jahr(z.geburtsjahr) + ' – ' + jahr(z.todesjahr); } },
+      { id:'epoche',          label:'Epoche' },
+      { id:'herkunft',        label:'Herkunft' },
+      { id:'kontinent',       label:'Kontinent' },
+      { id:'wirkungsbereich', label:'Wirkungsbereich' },
+      { id:'taetigkeit',      label:'Tätigkeit' },
+      { id:'bekanntes_werk',  label:'Bekanntes Werk' },
+      { id:'todesursache',    label:'Todesursache' }
+    ],
+    standard: ['alter', 'epoche', 'herkunft', 'taetigkeit'],  // beim Start eingeschaltet
+    // Eine Lücke, die nicht „unbekannt“ heisst, sondern „noch offen“: Wer lebt, hat kein
+    // Todesjahr — es liegt aber sicher in der Zukunft. „todesjahr > 2000“ ist für diese
+    // Personen also wahr, „todesjahr < 1900“ falsch. Die Warnung unten nutzt das.
+    offen: { spalte:'todesjahr',
+             wenn:function(z){ return z.todesursache === 'lebt noch'; },
+             zusatz:"todesursache = 'lebt noch'",
+             text:function(n){ return n === 1
+               ? 'Eine Person lebt noch und hat kein Todesjahr.'
+               : n + ' Personen leben noch und haben kein Todesjahr.'; } }
+  }
+];
+var AUSWAHL_ANZAHL = 15;   // 15 = 3 Reihen à 5 (bzw. 5 à 3) — Spaltenzahl siehe CSS #auswahl
+
+/* PUNKTE — vorläufig, hier anpassen: 1 Abfrage = start, jede weitere zieht proAbfrage ab */
+/* PUNKTE (Entscheid 21.09.): Start 100 · jede Abfrage −10.
+   Die TREFFER entscheiden, ob die 10 Punkte zurückkommen: Gold +10, Silber +6, Bronze +2.
+   Das SQL gibt einen BONUS obendrauf: Speziell (Gold) +3, Selten (Silber) +2, Gewöhnlich (Bronze) 0.
+   → Gut eingegrenzt mit einfachem SQL = ±0 (wird nicht bestraft), mit besonderem SQL = Plus.
+   Total mindestens 0 — seit 07.10. ohne Obergrenze (vorher höchstens 100), damit besonderes SQL
+   auch über 100 hinaus zählt. „Nichts Neues“ und Joker: keine Medaille.
+   Fehler, Joker und „Falsch“ kosten nichts. Leicht und Schwer zählen vorerst gleich wie Normal. */
+var PUNKTE = { start:100, proAbfrage:10, minimum:0,
+  treffer:{ gold:10, silber:6, bronze:2 }, sql:{ gold:3, silber:2, bronze:0 } };
+function punkteRechnung(){
+  var n = zustand.protokoll.length, treffer = 0, sql = 0;
+  zustand.protokoll.forEach(function(e){
+    var t = trefferArt(e), s = sprachArt(e);
+    if (t) treffer += PUNKTE.treffer[t];
+    if (s) sql += PUNKTE.sql[s];
+  });
+  var abzug = n * PUNKTE.proAbfrage, roh = PUNKTE.start - abzug + treffer + sql;
+  return { abfragen:n, abzug:abzug, treffer:treffer, sql:sql, roh:roh,
+           total:Math.max(PUNKTE.minimum, roh) };
+}
+
+/* ============================================================
+   EINORDNUNG DER ABFRAGEN — zwei Blickwinkel
+   ============================================================ */
+// Sprachmittel — Regeln (Entscheid 21.09.):
+//  1. Bewertet wird nur, was NEU dazugekommen ist, verglichen mit der letzten Abfrage, die Personen
+//     geliefert hat (COUNT, GROUP BY und Joker zählen nicht als Vorgänger).
+//  2. Die WHERE-Bedingung wird an den AND ausserhalb von Klammern in Teilbedingungen zerlegt.
+//     AND selbst zählt nie (verbindet nur). Das AND in „BETWEEN … AND …“ gehört zu BETWEEN.
+//  3. Mehrere neue Teilbedingungen in einem Schritt → die höchste zählt.
+//  4. (überarbeitet 07.10.) Jede Bedingung bekommt die Stufe ihrer EINFACHSTEN GLEICHWERTIGEN FORM:
+//     IN mit einem Wert, LIKE ohne % / _, BETWEEN 5 AND 5 und IS 'x' sind wie „=“; != und NOT x = …
+//     sind „ist nicht gleich“ — alles Gewöhnlich. Wer die umständliche Form wählt, obwohl es eine
+//     kürzere gibt, bekommt weniger: OR über dieselbe Spalte (IN wäre kürzer) und NOT ( … ) sind Selten.
+//     Gewöhnlich: = != IS · IN/LIKE/BETWEEN wie oben · IS NULL als einzige Bedingung
+//     Selten:     < > <= >= · BETWEEN · Spalte mit Spalte vergleichen · IS NULL zusammen mit anderem ·
+//                 OR (allein, über dieselbe Spalte oder ohne Klammer) · NOT ( … ) · Unterabfrage (= ihr Vergleich) ·
+//                 IN mit mehreren Werten (Kurzform von OR — Nachtrag 07.10.)
+//     Speziell:   IN-Liste zusammen mit einer weiteren NEUEN Bedingung im selben Schritt ·
+//                 Klammer mit OR über verschiedene Spalten, kombiniert ·
+//                 LIKE mit % oder _ · Rechnen mit Spalten · Funktionen wie LENGTH(…)
+//     Überflüssige Klammern werden weggelassen und ihr Inhalt normal bewertet.
+//  5. „Nichts Neues“ (Auswahl wird nicht kleiner) wird beim Ausführen vergeben, siehe ausfuehren().
+//  6. (07.10.) Grenzt die neue Bedingung nur über die id oder alphabetisch über den Kartentitel ein
+//     (id < 100, name < 'M'), gibt es keine Treffer-Medaille — das sagt nichts über die Karte aus.
+var RANG = { gewoehnlich:0, selten:1, speziell:2 };
+
+// Texte in '…' durch x ersetzen (gleiche Länge) → Struktur erkennen, ohne dass Inhalte stören
+function maskiere(s){ return s.replace(/'[^']*'/g, function(m){ return "'" + new Array(m.length - 1).join('x') + "'"; }); }
+function istWort(M, i, w){
+  return M.substr(i, w.length) === w && (i === 0 || !/[A-Z0-9_]/.test(M[i - 1])) && !/[A-Z0-9_]/.test(M[i + w.length] || ' ');
+}
+
+// WHERE-Teil einer Abfrage (ohne ORDER BY, GROUP BY, LIMIT …) als { text, maske }
+function whereTeil(q){
+  var m = maskiere(q), M = m.toUpperCase(), tiefe = 0, start = -1, ende = q.length;
+  for (var i = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++;
+    else if (M[i] === ')') tiefe--;
+    else if (tiefe === 0) {
+      if (start < 0 && istWort(M, i, 'WHERE')) { start = i + 5; i += 4; }
+      else if (start >= 0 && (/^(ORDER|GROUP)\s+BY\b/.test(M.slice(i)) || istWort(M, i, 'LIMIT') || istWort(M, i, 'HAVING'))
+               && /[^A-Z0-9_]/.test(M[i - 1])) { ende = i; break; }
+    }
+  }
+  if (start < 0) return null;
+  var t = q.slice(start, ende), k = m.slice(start, ende), s = t.search(/;\s*$/);
+  if (s >= 0) { t = t.slice(0, s); k = k.slice(0, s); }
+  return { text:t, maske:k };
+}
+
+// In Teilbedingungen zerlegen: an AND ausserhalb von Klammern; überflüssige Klammern auflösen
+function teileAuf(t){
+  var M = t.maske.toUpperCase(), tiefe = 0, between = false, oder = false, teile = [], ab = 0;
+  for (var i = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++;
+    else if (M[i] === ')') tiefe--;
+    else if (tiefe === 0) {
+      if (istWort(M, i, 'BETWEEN')) between = true;
+      else if (istWort(M, i, 'OR')) oder = true;
+      else if (istWort(M, i, 'AND')) {
+        if (between) between = false;               // gehört zu BETWEEN … AND …
+        else { teile.push({ text:t.text.slice(ab, i), maske:t.maske.slice(ab, i) }); ab = i + 3; }
+      }
+    }
+  }
+  teile.push({ text:t.text.slice(ab), maske:t.maske.slice(ab) });
+  if (oder) teile = [{ text:t.text, maske:t.maske }];   // OR ausserhalb von Klammern: als Ganzes lassen
+  var aus = [];
+  teile.forEach(function(p){
+    var text = p.text.trim(), maske = p.maske.trim();
+    if (!text) return;
+    if (ganzGeklammert(maske)) {
+      var innen = { text:text.slice(1, -1), maske:maske.slice(1, -1) };
+      if (!hatOderAussen(innen.maske)) { aus = aus.concat(teileAuf(innen)); return; }   // Klammer bewirkt nichts
+    }
+    aus.push({ text:text, maske:maske });
+  });
+  return aus;
+}
+function ganzGeklammert(m){
+  if (m[0] !== '(' || m[m.length - 1] !== ')') return false;
+  for (var i = 0, tiefe = 0; i < m.length; i++) {
+    if (m[i] === '(') tiefe++;
+    else if (m[i] === ')') { tiefe--; if (tiefe === 0 && i < m.length - 1) return false; }
+  }
+  return true;
+}
+function hatOderAussen(m){
+  var M = m.toUpperCase();
+  for (var i = 0, tiefe = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++; else if (M[i] === ')') tiefe--;
+    else if (tiefe === 0 && istWort(M, i, 'OR')) return true;
+  }
+  return false;
+}
+
+// An einem Wort (OR / AND) auf Klammertiefe 0 trennen; das AND von „BETWEEN … AND …“ bleibt
+function trenne(p, wort){
+  var M = p.maske.toUpperCase(), teile = [], ab = 0, tiefe = 0, between = false;
+  for (var i = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++;
+    else if (M[i] === ')') tiefe--;
+    else if (tiefe === 0) {
+      if (istWort(M, i, 'BETWEEN')) between = true;
+      else if (istWort(M, i, wort)) {
+        if (wort === 'AND' && between) { between = false; continue; }
+        teile.push({ text:p.text.slice(ab, i), maske:p.maske.slice(ab, i) }); ab = i + wort.length;
+      }
+    }
+  }
+  teile.push({ text:p.text.slice(ab), maske:p.maske.slice(ab) });
+  return teile.map(function(x){ return { text:x.text.trim(), maske:x.maske.trim() }; });
+}
+// Unterabfragen „(SELECT …)“ durch eine 0 ersetzen — gleiche Länge, Text und Maske bleiben deckungsgleich.
+// So zählt gewicht > (SELECT gewicht FROM tiere WHERE name = 'Wolf') wie der Vergleich gewicht > 40.
+function ohneUnterabfragen(p){
+  var text = p.text, maske = p.maske, M = maske.toUpperCase(), i;
+  while ((i = M.search(/\(\s*SELECT\b/)) >= 0) {
+    for (var j = i, tiefe = 0; j < M.length; j++) { if (M[j] === '(') tiefe++; else if (M[j] === ')' && --tiefe === 0) break; }
+    var fueller = '0' + new Array(j - i + 1).join(' ');
+    text = text.slice(0, i) + fueller + text.slice(j + 1);
+    maske = maske.slice(0, i) + fueller + maske.slice(j + 1);
+    M = maske.toUpperCase();
+  }
+  return { text:text, maske:maske };
+}
+// Spalten einer Bedingung (ohne SQL-Wörter, Funktionsnamen und Texte in '…'), klein geschrieben
+var SQL_WOERTER = /^(SELECT|FROM|WHERE|AND|OR|NOT|IN|LIKE|GLOB|BETWEEN|IS|NULL|ESCAPE|COLLATE|NOCASE|TRUE|FALSE|CASE|WHEN|THEN|ELSE|END|EXISTS|DISTINCT|AS)$/;
+function spaltenIn(maske){
+  var M = maske.toUpperCase().replace(/'[^']*'/g, ' '), s = [], m, re = /[A-Z_][A-Z0-9_]*/g;
+  while ((m = re.exec(M))) {
+    if (SQL_WOERTER.test(m[0]) || /^\s*\(/.test(M.slice(re.lastIndex))) continue;
+    if (s.indexOf(m[0].toLowerCase()) < 0) s.push(m[0].toLowerCase());
+  }
+  return s;
+}
+function hoeher(a, b){ return !a || (b && RANG[b.stufe] > RANG[a.stufe]) ? b : a; }
+
+// Einordnung einer Bedingung. allein = sie ist die einzige Bedingung der Abfrage.
+function bewerte(p, allein){
+  var M = p.maske.toUpperCase();
+  if (ganzGeklammert(M)) {                                    // ( … )
+    var innen = { text:p.text.slice(1, -1).trim(), maske:p.maske.slice(1, -1).trim() };
+    return hatOderAussen(innen.maske) ? bewerteOder(innen, allein, true) : bewerte(innen, allein);
+  }
+  var not = /^NOT\b\s*/.exec(M);
+  if (not) {                                                  // NOT …
+    var rest = { text:p.text.slice(not[0].length), maske:p.maske.slice(not[0].length) };
+    if (ganzGeklammert(rest.maske)) {
+      var drin = { text:rest.text.slice(1, -1).trim(), maske:rest.maske.slice(1, -1).trim() };
+      if (trenne(drin, 'OR').length > 1 || trenne(drin, 'AND').length > 1)   // NOT vor zusammengesetzter Bedingung
+        return hoeher({ stufe:'selten', text:'NOT vor einer Klammer' }, bewerte(drin, true));
+    }
+    return bewerte(rest, allein);                             // NOT x = … ist „ungleich“
+  }
+  if (trenne(p, 'OR').length > 1) return bewerteOder(p, allein, false);
+  var und = trenne(p, 'AND');                                 // nur innerhalb von Klammern oder OR-Teilen
+  if (und.length > 1) return und.reduce(function(best, x){ return hoeher(best, bewerte(x, false)); }, null);
+  return bewerteEinzeln(p, allein);
+}
+// OR: über dieselbe Spalte → Selten (IN wäre kürzer); über verschiedene Spalten in einer Klammer,
+// die mit anderen Bedingungen verbunden ist → Speziell; sonst Selten. Die OR-Teile zählen mit.
+function bewerteOder(p, allein, geklammert){
+  var teile = trenne(p, 'OR');
+  var spalten = teile.map(function(x){ return spaltenIn(ohneUnterabfragen(x).maske); });
+  var gleich = spalten.every(function(s){ return s.length === 1 && s[0] === spalten[0][0]; });
+  var oder = gleich ? { stufe:'selten', text:'OR mit derselben Spalte — IN wäre kürzer' }
+    : geklammert && !allein ? { stufe:'speziell', text:'Klammer mit OR über verschiedene Spalten' }
+    : { stufe:'selten', text:'OR' };
+  return teile.reduce(function(best, x){ return hoeher(best, bewerte(x, false)); }, oder);
+}
+function bewerteEinzeln(p, allein){
+  var u = ohneUnterabfragen(p), M = u.maske.toUpperCase(), spalten = spaltenIn(u.maske), m;
+  if (/\bIS\s+(NOT\s+)?NULL\b/.test(M)) return allein
+    ? { stufe:'gewoehnlich', text:'IS NULL als einzige Bedingung' }
+    : { stufe:'selten', text:'IS NULL zusammen mit anderen Bedingungen' };
+  var fn = /\b([A-Z_][A-Z0-9_]*)\s*\(/g;
+  while ((m = fn.exec(M))) if (!SQL_WOERTER.test(m[1])) return { stufe:'speziell', text:'Funktion ' + m[1] + '(…)' };
+  if (/\bLIKE\b/.test(M)) {
+    var muster = /\bLIKE\s+'([^']*)'/i.exec(u.text);
+    return muster && /[%_]/.test(muster[1]) ? { stufe:'speziell', text:'LIKE mit Platzhalter' }
+      : { stufe:'gewoehnlich', text:'LIKE ohne % oder _ — wie =' };
+  }
+  var werte = inWerte(M);
+  if (werte) return werte > 1 ? { stufe:'selten', text:'IN mit mehreren Werten' } : { stufe:'gewoehnlich', text:'IN mit einem Wert — wie =' };
+  if (/\bBETWEEN\b/.test(M)) {
+    var g = /\bBETWEEN\s+([\s\S]+?)\s+AND\s+([\s\S]+)$/i.exec(u.text);
+    return g && g[1].trim().toLowerCase() === g[2].trim().toLowerCase()
+      ? { stufe:'gewoehnlich', text:'BETWEEN mit gleichen Grenzen — wie =' } : { stufe:'selten', text:'BETWEEN (Bereich)' };
+  }
+  if (/[A-Z0-9_)]\s*[-+*\/]\s*[A-Z0-9_(]/.test(M) && spalten.length >= 2) return { stufe:'speziell', text:'Rechnen mit Spalten' };
+  var V = M.replace(/<>|!=/g, ' # ');
+  if (/[<>]/.test(V)) return { stufe:'selten', text:'Vergleich < >' };
+  if (spalten.length >= 2) return { stufe:'selten', text:'zwei Spalten verglichen' };
+  return /#/.test(V) ? { stufe:'gewoehnlich', text:'Bedingung mit != (ungleich)' } : { stufe:'gewoehnlich', text:'Bedingung mit =' };
+}
+// Anzahl Werte in der ersten IN-Liste (0 = kein IN)
+function inWerte(M){
+  var ab = M.search(/\bIN\s*\(/), werte = 1;
+  if (ab < 0) return 0;
+  for (var i = M.indexOf('(', ab), tiefe = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++;
+    else if (M[i] === ')') { if (--tiefe === 0) break; }
+    else if (M[i] === ',' && tiefe === 1) werte++;
+  }
+  return werte;
+}
+function hatInListe(p){ return inWerte(ohneUnterabfragen(p).maske.toUpperCase()) > 1; }
+// Nur über die id oder alphabetisch über den Kartentitel eingegrenzt? (keine Treffer-Medaille)
+function ohneMerkmal(p, titel){
+  var u = ohneUnterabfragen(p), spalten = spaltenIn(u.maske);
+  if (spalten.length !== 1) return false;
+  if (spalten[0] === 'id') return true;
+  return spalten[0] === titel && /[<>]|\bBETWEEN\b/.test(u.maske.toUpperCase().replace(/<>/g, ''));
+}
+// OR ohne Klammer zusammen mit AND: AND wird zuerst ausgewertet — meist nicht so gemeint
+function mitVorrang(p){ return trenne(p, 'OR').length > 1 && trenne(p, 'AND').length > 1; }
+// Joker = COUNT/SUM/AVG/MIN/MAX oder GROUP BY ausserhalb von Klammern (nicht in einer Unterabfrage)
+function jokerAbfrage(q){
+  var M = maskiere(q).toUpperCase();
+  for (var i = 0, tiefe = 0; i < M.length; i++) {
+    if (M[i] === '(') tiefe++;
+    else if (M[i] === ')') tiefe--;
+    else if (tiefe === 0 && (i === 0 || !/[A-Z0-9_]/.test(M[i - 1])) &&
+             (/^(COUNT|SUM|AVG|MIN|MAX)\s*\(/.test(M.slice(i)) || /^GROUP\s+BY\b/.test(M.slice(i)))) return true;
+  }
+  return false;
+}
+function normal(p){ return p.text.toLowerCase().replace(/\s+/g, ' ').replace(/\s*([=<>!,()]+)\s*/g, '$1').trim(); }
+
+// Einordnung einer Abfrage; bekannt = Teilbedingungen der letzten Personen-Abfrage
+function einordnung(q, bekannt){
+  if (jokerAbfrage(q)) return { stufe:'joker', text:'COUNT oder GROUP BY', teile:null, neu:[] };
+  var w = whereTeil(q), teile = w ? teileAuf(w) : [];
+  var neu = teile.filter(function(p){ return (bekannt || []).indexOf(normal(p)) < 0; });
+  var allein = teile.length === 1, best = null;
+  neu.forEach(function(p){ best = hoeher(best, bewerte(p, allein)); });
+  // IN-Liste allein = Selten; zusammen mit einer weiteren neuen Bedingung im selben Schritt = Speziell (07.10.)
+  if (neu.length >= 2 && neu.some(hatInListe))
+    best = hoeher(best, { stufe:'speziell', text:'IN-Liste zusammen mit einer weiteren neuen Bedingung' });
+  if (!best) best = { stufe:'gewoehnlich', text:'keine neue Bedingung' };
+  var titel = (typeof kat !== 'undefined' && kat && kat.kartentitel) || 'name';
+  return { stufe:best.stufe, text:best.text, teile:teile.map(normal),
+           neu:neu.map(function(p){ return p.text.trim().replace(/\s+/g, ' '); }),
+           ohneMerkmal: neu.length > 0 && neu.every(function(p){ return ohneMerkmal(p, titel); }),
+           vorrang: neu.some(mitVorrang) };
+}
+// Ohne Vorgänger (Spickzettel, Joker-Prüfung): die ganze Abfrage zählt als neu
+function sprachmittel(q){ return einordnung(q, []); }
+
+// Wirkung: wie stark wurde die bisherige Auswahl verkleinert? Halbieren = binäre Suche
+function wirkung(vorher, nachher){
+  var r = nachher / vorher;
+  if (r >= 0.35 && r <= 0.65) return { stufe:'speziell', text:'ungefähr halbiert' };
+  if (r < 0.35) return { stufe:'selten', text:'stark eingegrenzt' };
+  return { stufe:'gewoehnlich', text:'wenig eingegrenzt' };
+}
+var STUFE = { gewoehnlich:'Gewöhnlich', selten:'Selten', speziell:'Speziell', joker:'Joker', nichts:'Nichts Neues' };
+
+/* ============================================================
+   ZUSTAND — wird im Browser-Tab gemerkt, damit ein Neuladen der
+   Seite die eingeloggte Person nicht löscht (Schummelschutz).
+   ============================================================ */
+var SPEICHER = 'hbi-wer-bin-ich';
+function neuerZustand(){ return { kat:null, id:null, abfragen:0, protokoll:[], menge:null, schalter:null, ende:false,
+  schwierigkeit:'normal', joker:false, jokerEinsatz:null, letzteTeile:[], reihenfolge:null, offen:null,
+  // GETEILT: spieler = [Spieler 1, Spieler 2] (siehe SPIELER_FELDER), am = wer gerade dran ist (0/1),
+  // wahl = wer gerade die geheime Figur wählt, zugFertig = Abfrage dieses Zugs ist schon ausgeführt
+  geteilt:false, spieler:null, am:0, wahl:0, zugFertig:false, duellEnde:false, gefunden:null, eingabe:null, zuletzt:null }; }
+var zustand = neuerZustand();
+function speichern(){ try { sessionStorage.setItem(SPEICHER, JSON.stringify(zustand)); } catch (e) {} }
+function laden(){ try { return JSON.parse(sessionStorage.getItem(SPEICHER) || 'null'); } catch (e) { return null; } }
+function vergessen(){ try { sessionStorage.removeItem(SPEICHER); } catch (e) {} }
+
+var $ = function(id){ return document.getElementById(id); };
+var kat = null, markiert = null, letztes = null;
+
+function zeige(bildschirm){
+  ['s-kategorie','s-auswahl','s-wechsel','s-spiel','s-ende'].forEach(function(id){ $(id).hidden = id !== bildschirm; });
+  document.body.classList.toggle('im-spiel', bildschirm === 's-spiel');   // Leicht: Spielfeld fensterhoch (siehe CSS)
+  window.scrollTo(0, 0);
+  spaeterAnpassen();
+}
+
+/* ============================================================
+   DATENBANK — Datendatei per <script> nachladen (geht auch offline
+   per Doppelklick) und daraus eine echte SQLite-Tabelle bauen.
+   ============================================================ */
+var sqlBereit = initSqlJs();
+
+function ladeKategorie(k, fertig){
+  if (k.db) return fertig();
+  function bauen(){
+    sqlBereit.then(function(SQL){ k.sql = SQL; k.db = baueDatenbank(SQL, k); fertig(); })
+      .catch(function(e){ alert('Die Datenbank konnte nicht gestartet werden: ' + e.message); });
+  }
+  if (k.zeilen) return bauen();
+  var s = document.createElement('script');
+  s.src = k.datei; s.charset = 'utf-8';
+  s.onload = function(){ k.spalten = window.SPALTEN.slice(); k.zeilen = window.DATEN.filter(function(z){ return !(k.ausblenden && k.ausblenden(z)); }); bauen(); };
+  s.onerror = function(){ alert('Die Daten „' + k.datei + '“ konnten nicht geladen werden.'); };
+  document.head.appendChild(s);
+}
+
+/* „ersatz“ ist optional und nur für die Probe-Datenbanken (siehe NULL-FALLE weiter unten):
+   ersatz(spalte, zeile) liefert einen Wert für eine fehlende Angabe, sonst null.
+   Die Spaltentypen werden weiterhin aus den echten Werten abgelesen, nie aus dem Ersatz —
+   so hat die Probe garantiert dasselbe Schema wie die echte Tabelle. */
+function baueDatenbank(SQL, k, ersatz){
+  // Spaltentyp aus den Daten ablesen: nur ganze Zahlen → INTEGER, nur Zahlen → REAL, sonst TEXT
+  var typen = k.spalten.map(function(s){
+    var werte = k.zeilen.map(function(z){ return z[s]; }).filter(function(v){ return !leer(v); });
+    if (werte.length && werte.every(function(v){ return typeof v === 'number' && Math.floor(v) === v; })) return 'INTEGER';
+    if (werte.length && werte.every(function(v){ return typeof v === 'number'; })) return 'REAL';
+    return 'TEXT';
+  });
+  // Textspalten mit COLLATE NOCASE: Gross/Klein ist bei Textwerten egal ('schweiz' = 'Schweiz'),
+  // wie in Teil A. Gilt in SQLite nur für A–Z — 'österreich' findet „Österreich“ weiterhin nicht.
+  var db = new SQL.Database();
+  db.run('CREATE TABLE ' + k.tabelle + ' (' + k.spalten.map(function(s, i){
+    return s + ' ' + typen[i] + (s === 'id' ? ' PRIMARY KEY' : '') + (typen[i] === 'TEXT' ? ' COLLATE NOCASE' : '');
+  }).join(', ') + ')');
+  db.run('BEGIN');
+  var st = db.prepare('INSERT INTO ' + k.tabelle + ' VALUES (' + k.spalten.map(function(){ return '?'; }).join(', ') + ')');
+  k.zeilen.forEach(function(z){
+    st.run(k.spalten.map(function(s){
+      if (!leer(z[s])) return z[s];
+      return ersatz ? ersatz(s, z) : null;
+    }));
+  });
+  st.free();
+  db.run('COMMIT');
+  return db;
+}
+
+/* Abfrage in echtem SQLite ausführen. Nur SELECT — die Datenbank bleibt im Duell unverändert. */
+function sqlAbfrage(text){
+  var ohneTexte = text.replace(/'[^']*'/g, "''").replace(/--[^\n]*/g, '');
+  if (!text.trim()) throw { fehler:'Das Terminal wartet auf eine Abfrage. Sie beginnt mit SELECT.' };
+  if (/;\s*\S/.test(ohneTexte)) throw { fehler:'Bitte nur eine Abfrage auf einmal eingeben.' };
+  if (/^\s*(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|REPLACE|PRAGMA|ATTACH|DETACH|VACUUM|BEGIN|COMMIT)\b/i.test(ohneTexte))
+    throw { fehler:'Im Duell sind nur Abfragen mit SELECT erlaubt — die Datenbank bleibt unverändert.' };
+  if (!/^\s*SELECT\b/i.test(ohneTexte)) throw { fehler:'Eine Abfrage beginnt immer mit SELECT.' };
+  // "Schweiz" in doppelten Anführungszeichen: SQLite liesse es durchgehen, echtes SQL nicht
+  SqlMeldungen.pruefeAnfuehrungszeichen(text, kat.spalten);
+  var st;
+  try {
+    st = kat.db.prepare(text);
+    var spalten = st.getColumnNames(), zeilen = [];
+    while (st.step()) zeilen.push(st.get());
+    return { spalten:spalten, zeilen:zeilen };
+  } catch (e) {
+    // Verständliche Erklärung statt der rohen SQLite-Meldung — dieselbe wie in Teil A (sql-meldungen.js)
+    throw { fehler:SqlMeldungen.erklaere(text, e.message, { tabelle:kat.tabelle, spalten:kat.spalten, ort:'Hier' }) };
+  } finally {
+    if (st) st.free();
+  }
+}
+
+/* Ergebnis einordnen: Personen (→ Karten), eine Zahl (→ COUNT & Co.) oder eine allgemeine Tabelle */
+function ordneEin(roh){
+  var sp = roh.spalten.map(function(s){ return s.toLowerCase(); });
+  if (sp.length === 1 && roh.zeilen.length === 1 && typeof roh.zeilen[0][0] === 'number' && /^(count|sum|avg|min|max|total)\s*\(/.test(sp[0]))
+    return { art:'zahl', spalten:roh.spalten, wert:roh.zeilen[0][0], zeilen:[] };
+  var iId = sp.indexOf('id'), iTitel = sp.indexOf(kat.kartentitel);
+  if (iId < 0 && iTitel < 0) return { art:'tabelle', spalten:roh.spalten, zeilen:roh.zeilen };
+  var zeilen = roh.zeilen.map(function(r){
+    var voll = kat.zeilen.filter(function(z){ return iId >= 0 ? z.id === r[iId] : z[kat.kartentitel] === r[iTitel]; })[0] || {};
+    var o = Object.assign({}, voll);
+    roh.spalten.forEach(function(s, i){ o[s] = r[i]; });
+    return o;
+  });
+  var alle = kat.spalten.every(function(s){ return sp.indexOf(s) >= 0; });
+  return { art:'personen', spalten:roh.spalten, zeilen:zeilen, alle:alle };
+}
+
+/* ============================================================
+   NULL-FALLE — In SQL ist ein Vergleich mit einer fehlenden Angabe nie wahr.
+   „todesursache != 'Krankheit'“ verliert darum jede Zeile ohne Angabe, und
+   „todesjahr > 2000“ verliert die Lebenden, obwohl sie sachlich dazugehören.
+   Das Spiel verbietet das nicht — es ist echtes SQL — aber es sagt es.
+
+   Erkennung, ohne SQL zu parsen: Dieselbe Abfrage läuft zusätzlich in einer
+   Probe-Datenbank, in der die Lücken EINER Spalte durch einen erfundenen Wert
+   ersetzt sind. Erscheint eine Person dort, im echten Ergebnis aber nicht, dann
+   fehlt sie nur wegen der fehlenden Angabe. Das erfasst !=, <>, NOT, NOT IN,
+   NOT LIKE und NOT BETWEEN von allein.
+
+   Die Probe-Werte bilden ab, was über die Lücke bekannt ist:
+     „noch offen“ (lebt noch) → nächstes Jahr, trifft also nur „> …“
+     unbekannt                → einmal sehr tief, einmal sehr hoch
+   Grenze: Ein Bereich mitten im Feld (BETWEEN 1800 AND 1900) schlägt nicht an,
+   weil keiner der beiden Extremwerte hineinfällt. Dort wird aber auch niemand zu
+   Unrecht ausgeschlossen — die Auswahl ist nur unvollständig, nicht irreführend.
+   ============================================================ */
+var PROBE_TEXT = '\u0001ohne angabe\u0001';   // kommt in echten Daten nicht vor
+var PROBE_TIEF = -999999, PROBE_HOCH = 999999;
+var PROBE_OFFEN = new Date().getFullYear() + 1;
+
+function istZahlenspalte(k, spalte){
+  var werte = k.zeilen.map(function(z){ return z[spalte]; }).filter(function(v){ return !leer(v); });
+  return werte.length > 0 && werte.every(function(v){ return typeof v === 'number'; });
+}
+
+/* Probe-Datenbank für eine Spalte und eine Richtung — erst bei Bedarf gebaut und gemerkt. */
+function probeDatenbank(k, spalte, richtung){
+  k.proben = k.proben || {};
+  var schluessel = spalte + '|' + richtung;
+  if (!(schluessel in k.proben)) {
+    var zahl = istZahlenspalte(k, spalte);
+    k.proben[schluessel] = !k.sql ? null : baueDatenbank(k.sql, k, function(s, z){
+      if (s !== spalte) return null;
+      if (!zahl) return PROBE_TEXT;
+      if (k.offen && k.offen.spalte === spalte && k.offen.wenn(z)) return PROBE_OFFEN;
+      return richtung === 'hoch' ? PROBE_HOCH : PROBE_TIEF;
+    });
+  }
+  return k.proben[schluessel];
+}
+
+/* Spaltennamen, die in der Abfrage vorkommen. Texte vorher ausmaskieren, damit
+   'Krankheit' nicht als Spaltenname zählt — gleiche Maske wie in sqlAbfrage(). */
+function genannteSpalten(text){
+  var ohneTexte = text.replace(/'[^']*'/g, "''").replace(/--[^\n]*/g, '');
+  return kat.spalten.filter(function(s){
+    return s !== 'id' && new RegExp('(^|[^a-z_0-9])' + s + '([^a-z_0-9]|$)', 'i').test(ohneTexte);
+  });
+}
+
+function probeErgebnis(db, text){
+  var st = db.prepare(text), spalten = st.getColumnNames(), zeilen = [];
+  try { while (st.step()) zeilen.push(st.get()); } finally { st.free(); }
+  return ordneEin({ spalten:spalten, zeilen:zeilen });
+}
+
+/* Liefert eine Liste von Hinweisen ({ text, zusatz }) oder null. */
+function nullHinweis(text, r){
+  if (!r || (r.art !== 'personen' && r.art !== 'zahl')) return null;
+  var drin = {};
+  if (r.art === 'personen') r.zeilen.forEach(function(z){ drin[z.id] = true; });
+  var hinweise = [];
+  genannteSpalten(text).forEach(function(spalte){
+    if (!luecken(spalte)) return;
+    var fehlen = {}, fehlendeZahl = 0;
+    ['tief', 'hoch'].forEach(function(richtung){
+      var db = probeDatenbank(kat, spalte, richtung);
+      if (!db) return;
+      var p;
+      try { p = probeErgebnis(db, text); } catch (e) { return; }
+      if (p.art !== r.art) return;
+      if (r.art === 'zahl') fehlendeZahl = Math.max(fehlendeZahl, p.wert - r.wert);
+      else p.zeilen.forEach(function(z){ if (!drin[z.id]) fehlen[z.id] = true; });
+    });
+    var ids = Object.keys(fehlen);
+    var anzahl = r.art === 'zahl' ? fehlendeZahl : ids.length;
+    if (anzahl <= 0) return;
+    // Zwei Arten von Lücke auseinanderhalten: „noch offen“ (die Person lebt, ihr Todesjahr
+    // liegt sicher in der Zukunft — sie gehört also dazu) und „unbekannt“ (niemand weiss es,
+    // sie könnte dazugehören). Das erste braucht kein NULL, um gefragt zu werden.
+    var offen = kat.offen && kat.offen.spalte === spalte ? kat.offen : null;
+    var offeneAnzahl = 0;
+    if (offen && r.art === 'personen') {
+      var nachId = {};
+      kat.zeilen.forEach(function(z){ nachId[z.id] = z; });
+      ids.forEach(function(id){ if (nachId[id] && offen.wenn(nachId[id])) offeneAnzahl++; });
+    }
+    var rest = anzahl - offeneAnzahl;
+    if (offen && offeneAnzahl && !rest)
+      hinweise.push({ text: offen.text(offeneAnzahl) + ' Sie fehlen in diesem Ergebnis, obwohl sie dazugehören.',
+                      zusatz: offen.zusatz });
+    else if (offen && offeneAnzahl && rest)
+      hinweise.push({ text: offen.text(offeneAnzahl) + ' Sie gehören sicher dazu. Bei ' + rest +
+                            ' weiteren fehlt die Angabe in ' + spalte + ' — auch sie fallen heraus.',
+                      zusatz: spalte + ' IS NULL' });
+    else
+      hinweise.push({ text: 'Bei ' + anzahl + (anzahl === 1 ? ' Zeile' : ' Zeilen') + ' fehlt die Angabe in ' +
+                            spalte + '. In SQL ist ein Vergleich mit einer fehlenden Angabe nie wahr — ' +
+                            'darum fallen sie hier heraus.',
+                      zusatz: spalte + ' IS NULL' });
+  });
+  return hinweise.length ? hinweise : null;
+}
+
+function wert(v){ return leer(v) ? UNBEKANNT : v; }
+function el(tag, klasse, text){ var e = document.createElement(tag); if (klasse) e.className = klasse; if (text !== undefined) e.textContent = text; return e; }
+
+/* Karte: Titel + die eingeschalteten Angaben (oder die per SELECT gewählten Spalten) */
+function karte(z, tag, spalten){
+  var k = el(tag, 'karte');
+  if (tag === 'button') k.type = 'button';
+  k.appendChild(el('strong', 'titel', leer(z[kat.kartentitel]) ? '#' + z.id : z[kat.kartentitel]));
+  var zeilen = spalten
+    ? spalten.filter(function(s){ return s.toLowerCase() !== kat.kartentitel; }).map(function(s){ return s + ': ' + wert(z[s]); })
+    : kat.schalter.filter(function(s){ return sichtbar(s.id); })
+        .map(function(s){ return s.wert ? s.wert(z) : wert(z[s.id]); });
+  var angaben = el('div', 'angaben');
+  // Angaben nur als data-text, die CSS zeigt sie an (für Ctrl + F unsichtbar). Screenreader lesen
+  // stattdessen die Beschriftung der Karte vor — auch die durchsucht der Browser nicht.
+  zeilen.forEach(function(t){ var s = el('span'); s.setAttribute('data-text', String(t)); angaben.appendChild(s); });
+  k.appendChild(angaben);
+  if (tag !== 'button') k.setAttribute('role', 'group');
+  k.setAttribute('aria-label', [k.firstChild.textContent].concat(zeilen).join(', '));
+  k.title =kat.spalten.map(function(s){ return s + ': ' + wert(z[s]); }).join('\n');
+  return k;
+}
+/* Namen, die auch auf zwei Zeilen nicht passen, leicht verkleinern (höchstens auf TITEL_MIN = 85 %).
+   Erst alles messen, dann alles setzen — so bleibt es auch bei 300 Karten schnell. */
+var TITEL_MIN = 0.85;
+function passeTitelAn(){
+  var titel = [].slice.call(document.querySelectorAll('.karte strong.titel'))
+    .filter(function(s){ return s.offsetParent !== null; });           // nur sichtbare Karten
+  titel.forEach(function(s){ s.style.fontSize = ''; });
+  var zuLang = titel.filter(function(s){ return s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1; });
+  zuLang.forEach(function(s){ s.style.fontSize = TITEL_MIN + 'rem'; });   // rem: bezogen auf die normale Titelgrösse 1rem
+}
+var groesseTimer;
+function spaeterAnpassen(){ clearTimeout(groesseTimer); groesseTimer = setTimeout(passeTitelAn, 30); }
+// Neu anpassen, sobald sich die Breite der Kartenbereiche ändert (Fenster, Scrollleiste, Schalter …)
+if (window.ResizeObserver) {
+  var beobachter = new ResizeObserver(spaeterAnpassen);
+  ['ausgabe', 'auswahl'].forEach(function(id){ beobachter.observe(document.getElementById(id)); });
+} else {
+  window.addEventListener('resize', spaeterAnpassen);
+}
+
+function sichtbar(id){ return zustand.schalter ? zustand.schalter.indexOf(id) >= 0 : kat.standard.indexOf(id) >= 0; }
+
+/* Sätze mit dem Wort für einen Eintrag hängen am Artikel: „deine geheime Person“,
+   aber „dein geheimes Tier“, „deinen geheimen Ort“. */
+var ARTIKEL = {
+  die: { wahl:'deine geheime',   gesucht:'die gesuchte', ein:'eine', dein:'DEINE' },
+  das: { wahl:'dein geheimes',   gesucht:'das gesuchte', ein:'ein',  dein:'DEIN' },
+  der: { wahl:'deinen geheimen', gesucht:'der gesuchte', ein:'ein',  dein:'DEIN' }
+};
+function wort(k){ return ARTIKEL[(k && k.artikel) || 'die'] || ARTIKEL.die; }
+
+/* ---------- 1. Kategorie ---------- */
+function zeigeKategorien(){
+  var box = $('kategorien'); box.innerHTML = '';
+  KATEGORIEN.forEach(function(k){
+    var b = el('button', 'kategorie'); b.type = 'button';
+    b.appendChild(el('b', '', k.titel));
+    // Kein „Tabelle personen“ mehr (Entscheid 06.10.): Den Tabellennamen sehen die Schüler*innen
+    // im Eingabefeld (SELECT * FROM …), sobald das Spiel beginnt.
+    if (k.probe) b.appendChild(el('span', 'marke-eigen', 'ZUM AUSPROBIEREN · NUR IN DIESEM BROWSER'));
+    else if (k.eigen) b.appendChild(el('span', 'marke-eigen', 'EIGENE DATENBANK'));
+    b.onclick = function(){ kategorieWaehlen(k); };
+    box.appendChild(b);
+  });
+}
+zeigeKategorien();
+
+/* Joker-Beispiel passend zur Kategorie: eine Textspalte mit wenigen verschiedenen Werten */
+function jokerBeispiel(k){
+  var spalte = k.schalter.map(function(s){ return s.id; }).filter(function(s){
+    var werte = {}; k.zeilen.forEach(function(z){ if (typeof z[s] === 'string') werte[z[s]] = true; });
+    var n = Object.keys(werte).length;
+    return n >= 3 && n <= 12;
+  })[0];
+  return spalte ? 'z. B. SELECT ' + spalte + ', COUNT(*) FROM ' + k.tabelle + ' GROUP BY ' + spalte : 'z. B. SELECT COUNT(*) FROM ' + k.tabelle;
+}
+
+function kategorieWaehlen(k){
+  ladeKategorie(k, function(){
+    kat = k; zustand.kat = k.id;
+    zeigeKatName();
+    baueSpickzettel();
+    $('joker-eingabe').placeholder = jokerBeispiel(k);
+    zustand.wahl = 0;
+    $('auswahl-titel').textContent = auswahlTitel();
+    zeigeAuswahl();
+    zeige('s-auswahl');
+  });
+}
+
+/* ---------- 2. Zufällige Auswahl ---------- */
+function zeigeAuswahl(){
+  var pool = mische(kat.zeilen.slice());
+  var box = $('auswahl'); box.innerHTML = '';
+  markiert = null; $('bestaetigen').disabled = true;
+  pool.slice(0, AUSWAHL_ANZAHL).forEach(function(z, n){
+    var k = karte(z, 'button');
+    k.style.animationDelay = (n * 0.03) + 's';
+    k.onclick = function(){
+      box.querySelectorAll('.gewaehlt').forEach(function(x){ x.classList.remove('gewaehlt'); x.setAttribute('aria-pressed', 'false'); });
+      k.classList.add('gewaehlt'); k.setAttribute('aria-pressed', 'true');
+      markiert = z; $('bestaetigen').disabled = false;
+    };
+    box.appendChild(k);
+  });
+  spaeterAnpassen();
+}
+$('andere').onclick = zeigeAuswahl;
+$('bestaetigen').onclick = function(){
+  if (!markiert) return;
+  if (zustand.geteilt) return duellWahl(markiert);
+  zustand.id = markiert.id; zustand.abfragen = 0; zustand.protokoll = [];
+  zustand.menge = kat.zeilen.length; zustand.schalter = kat.standard.slice(); zustand.ende = false;
+  zustand.jokerEinsatz = null;                           // neue Runde = neuer Joker
+  $('joker-eingabe').value = '';                         // … mit frischem Gerüst (siehe oeffneJoker)
+  zustand.letzteTeile = [];                              // noch keine Vorgänger-Abfrage
+  zustand.zuletzt = null;                                // … und wieder der ganze Datensatz
+  zustand.eingabe = null;                                // … mit leerem Terminal
+  zustand.reihenfolge = null;                            // neues Duell = neu gemischt (in spielStarten)
+  speichern();
+  spielStarten();
+};
+
+/* ---------- 3. Spiel ---------- */
+function geheimePerson(){ return kat.zeilen.filter(function(z){ return z.id === zustand.id; })[0]; }
+
+/* Karten in zufälliger Reihenfolge zeigen: Sonst liegen sie nach id sortiert da, und man halbiert
+   einfach die id-Liste. Gemischt wird einmal pro Duell (im Zustand gemerkt, übersteht ein Neuladen),
+   damit jede Karte von Abfrage zu Abfrage am selben Platz bleibt. Die Datenbank bleibt unverändert;
+   mit ORDER BY gilt weiterhin die Reihenfolge aus SQL. */
+function mische(a){
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+function inAnzeigeReihenfolge(zeilen){
+  if (!zustand.reihenfolge) return zeilen;
+  var platz = {};
+  zustand.reihenfolge.forEach(function(id, i){ platz[id] = i; });
+  var rang = function(z){ return z.id in platz ? platz[z.id] : Infinity; };
+  return zeilen.slice().sort(function(a, b){ return rang(a) - rang(b); });
+}
+
+function spielStarten(){
+  if (!zustand.reihenfolge) { zustand.reihenfolge = mische(kat.zeilen.map(function(z){ return z.id; })); speichern(); }
+  zeigeGeheim();
+
+  $('chips').innerHTML = '';
+  kat.spalten.forEach(function(s){
+    var b = el('button', 'chip', s); b.type = 'button';
+    b.onclick = function(){ einfuegen(s); };
+    $('chips').appendChild(b);
+  });
+  baueBausteine();
+  zeigeZug();
+  zeige('s-spiel');
+  $('eingabe').focus();
+}
+
+/* Terminal, Schalter und Datensatz für den Spieler, der dran ist (ohne geteilten Bildschirm: der einzige) */
+function zeigeZug(){
+  baueSchalter();
+  $('zaehler').textContent = zustand.abfragen;
+  $('eingabe').value = zustand.eingabe || 'SELECT * FROM ' + kat.tabelle;   // angefangene Abfrage bleibt (auch nach dem Neuladen)
+  $('meldung').className = ''; $('meldung').textContent = '';
+  letztes = ergebnisVomZug();
+  aktualisiereJokerKnopf();
+  zeigeZugKnoepfe();
+  zeigeKatName();
+  zeigeErgebnis();
+}
+function ganzerDatensatz(){ return { art:'personen', alle:true, spalten:kat.spalten, zeilen:kat.zeilen, vorsatz:'GANZER DATENSATZ · ' }; }
+
+/* Oben rechts: die eigene geheime Figur — im geteilten Bildschirm zwei Kästchen, ohne Namen auf dem Knopf
+   (sonst sähe das Gegenüber ihn ständig). Ein Klick klappt die Angaben auf. */
+function personMit(id){ return kat.zeilen.filter(function(z){ return z.id === id; })[0]; }
+function zeigeGeheim(){
+  var g = zustand.geteilt;
+  $('geheim2-feld').hidden = !g;
+  (g ? [0, 1] : [0]).forEach(function(i){
+    var nr = i ? '2' : '', p = g ? personMit(zustand.spieler[i].id) : geheimePerson();
+    $('geheim' + nr + '-label').textContent = g ? kat.objekt.toUpperCase() + ' SPIELER ' + (i + 1) + ' 🔒'
+                                                 : wort(kat).dein + ' ' + kat.objekt.toUpperCase() + ' 🔒';
+    $('geheim' + nr + '-name').textContent = g ? 'nachschauen' : p[kat.kartentitel];
+    $('geheim' + nr + '-knopf').hidden = false;
+    var t = el('table');
+    kat.spalten.forEach(function(s){
+      var tr = el('tr'); tr.appendChild(el('td', '', s)); tr.appendChild(el('td', '', wert(p[s]))); t.appendChild(tr);
+    });
+    var d = $('geheim' + nr + '-details'); d.innerHTML = ''; d.appendChild(t);
+  });
+}
+
+/* ============================================================
+   GETEILT — zwei Spieler abwechselnd an einem Bildschirm
+   Alle Funktionen oben arbeiten mit zustand.protokoll, zustand.menge …
+   Darum liegen die Felder des Spielers, der dran ist, wie gewohnt in
+   „zustand“; beim Zugwechsel werden sie in zustand.spieler[am]
+   zurückgelegt (sichern) und die des anderen geholt (uebernehmen).
+   ============================================================ */
+var SPIELER_FELDER = ['id', 'abfragen', 'protokoll', 'menge', 'schalter', 'ende', 'gefunden',
+                      'jokerEinsatz', 'letzteTeile', 'eingabe', 'zuletzt'];
+var ergebnisse = [null, null];   // was jeder zuletzt auf dem Bildschirm hatte (nur im Speicher)
+
+function neuerSpieler(id){
+  return { id:id, abfragen:0, protokoll:[], menge:kat.zeilen.length, schalter:kat.standard.slice(), ende:false,
+           gefunden:null, jokerEinsatz:null, letzteTeile:[], eingabe:null, zuletzt:null };
+}
+function sichern(){
+  var s = zustand.spieler[zustand.am];
+  SPIELER_FELDER.forEach(function(f){ s[f] = zustand[f]; });
+  s.eingabe = $('eingabe').value;
+  ergebnisse[zustand.am] = letztes;
+}
+function uebernehmen(i){
+  zustand.am = i;
+  SPIELER_FELDER.forEach(function(f){ zustand[f] = zustand.spieler[i][f]; });
+}
+function gegner(){ return 1 - zustand.am; }
+
+/* Datensatz des Spielers, der dran ist (ohne geteilten Bildschirm: des einzigen). Nach dem Neuladen der Seite
+   ist er nicht mehr im Speicher — dann wird die letzte Abfrage still nochmals ausgeführt (zählt nicht). */
+function ergebnisVomZug(){
+  if (ergebnisse[zustand.am]) return ergebnisse[zustand.am];
+  if (!zustand.zuletzt) return ganzerDatensatz();
+  try {
+    var text = zustand.zuletzt, r = ordneEin(sqlAbfrage(text)), e = zustand.protokoll[zustand.protokoll.length - 1];
+    r.sortiert = /\bORDER\s+BY\b/.test(maskiere(text).toUpperCase());
+    try { r.nullHinweis = nullHinweis(text, r); } catch (x) { r.nullHinweis = null; }
+    r.falsch = !!(e && e.falsch); r.ohneMerkmal = !!(e && e.ohneMerkmal); r.vorrang = !!(e && e.vorrang);
+    r.gefunden = zustand.geteilt && zustand.ende && r.art === 'personen' && r.zeilen.length === 1;
+    return r;
+  } catch (x) { return ganzerDatensatz(); }
+}
+
+function auswahlTitel(){
+  var t = 'Wähle ' + wort(kat).wahl + ' ' + kat.objekt;
+  return zustand.geteilt ? 'Spieler ' + (zustand.wahl + 1) + ': ' + t : t;
+}
+function zeigeWechsel(titel, text, knopf, weiter){
+  $('wechsel-titel').textContent = titel;
+  $('wechsel-text').textContent = text;
+  $('wechsel-weiter').textContent = knopf;
+  $('wechsel-weiter').onclick = weiter;
+  zeige('s-wechsel');
+  $('wechsel-weiter').focus();
+}
+/* Geheime Auswahl: zuerst Spieler 1, dann (Spieler 1 schaut weg) Spieler 2 aus neuen Karten. Danach entscheidet das Los. */
+function duellWahl(z){
+  if (zustand.wahl === 0) {
+    zustand.spieler = [neuerSpieler(z.id), null];
+    zustand.wahl = 1;
+    return zeigeWechsel('Spieler 2 ist dran', 'Spieler 1, bitte wegschauen! Jetzt wählt Spieler 2.', 'Ich bin Spieler 2 — weiter', function(){
+      $('auswahl-titel').textContent = auswahlTitel();
+      zeigeAuswahl();
+      zeige('s-auswahl');
+    });
+  }
+  zustand.spieler[1] = neuerSpieler(z.id);
+  zustand.reihenfolge = null; zustand.zugFertig = false; zustand.duellEnde = false;
+  ergebnisse = [null, null];
+  $('joker-eingabe').value = '';
+  uebernehmen(Math.random() < 0.5 ? 0 : 1);
+  speichern();
+  zeigeWechsel('Spieler ' + (zustand.am + 1) + ' beginnt',
+    'Das Los hat entschieden.',
+    'Los geht’s', spielStarten);
+}
+
+/* Nach der Abfrage: Ausführen sperren, „Weiter“ zeigen. Ist das Gegenüber schon fertig, spielt man einfach weiter. */
+function zugAbschliessen(){
+  if (!zustand.spieler[gegner()].ende) {
+    zustand.zugFertig = true;
+    $('meldung').textContent = 'Abfrage ausgeführt. Schau dir das Ergebnis an und gib dann weiter.';
+  }
+  zeigeZugKnoepfe();
+}
+function weiterText(){
+  return zustand.ende && zustand.spieler[gegner()].ende ? 'Zur Auswertung ▶' : 'Weiter an Spieler ' + (gegner() + 1) + ' ▶';
+}
+function zeigeZugKnoepfe(){
+  var g = zustand.geteilt, fertig = g && (zustand.zugFertig || zustand.ende);
+  $('term-titel').textContent = g ? 'TERMINAL SPIELER ' + (zustand.am + 1) : 'TERMINAL';
+  $('los').hidden = fertig;
+  $('weiter').hidden = !fertig;
+  $('eingabe').readOnly = fertig;
+  if (fertig) $('weiter').textContent = weiterText();
+}
+function weiterGeben(){
+  sichern();
+  zustand.zugFertig = false;
+  if (zustand.spieler[0].ende && zustand.spieler[1].ende) {
+    zustand.duellEnde = true; speichern(); zeigeKatName();
+    return zeigeDuellAuswertung();
+  }
+  uebernehmen(zustand.spieler[gegner()].ende ? zustand.am : gegner());   // wer fertig ist, wird übersprungen
+  $('joker-eingabe').value = '';
+  speichern();
+  zeigeZug();
+  window.scrollTo(0, 0);
+  $('eingabe').focus();
+}
+$('weiter').onclick = weiterGeben;
+
+/* Nur noch eine Karte: Das Spiel kennt beide Figuren und prüft selbst */
+function einerKastenDuell(z){
+  var box = el('div', 'einer'), p = el('p'), nr = gegner() + 1;
+  p.appendChild(document.createTextNode('🎯 Nur noch ' + wort(kat).ein + ' ' + kat.objekt + ': '));
+  p.appendChild(el('b', '', z[kat.kartentitel]));
+  p.appendChild(document.createTextNode('. Ist das ' + wort(kat).gesucht + ' ' + kat.objekt + ' von Spieler ' + nr + '?'));
+  var pruefen = el('button', 'knopf voll', 'Prüfen'); pruefen.type = 'button';
+  pruefen.onclick = function(){
+    if (z.id === zustand.spieler[gegner()].id) {
+      zustand.ende = true; zustand.gefunden = z.id; zustand.zugFertig = true; letztes.gefunden = true;
+    } else {
+      var e = zustand.protokoll[zustand.protokoll.length - 1]; if (e) e.falsch = true;
+      letztes.falsch = true;
+    }
+    speichern(); zeigeZugKnoepfe(); zeigeKatName(); zeigeErgebnis();
+  };
+  box.appendChild(p); box.appendChild(pruefen);
+  return box;
+}
+function gefundenKasten(z){
+  var box = el('div', 'einer'), p = el('p'), n = zustand.abfragen;
+  p.appendChild(document.createTextNode('✓ Richtig! '));
+  p.appendChild(el('b', '', z[kat.kartentitel]));
+  p.appendChild(document.createTextNode(' ist ' + wort(kat).gesucht + ' ' + kat.objekt + ' von Spieler ' + (gegner() + 1) +
+    ' — gefunden mit ' + n + (n === 1 ? ' Abfrage.' : ' Abfragen.')));
+  var weiter = el('button', 'knopf voll', weiterText()); weiter.type = 'button';
+  weiter.onclick = weiterGeben;
+  box.appendChild(p); box.appendChild(weiter);
+  return box;
+}
+
+/* Auswertung: oben beide Spieler und wer gewinnt, darunter die gewohnte Auswertung des gewählten Spielers */
+function zeigeDuellAuswertung(wahl){
+  sichern();
+  var pr = [0, 1].map(function(i){ uebernehmen(i); return punkteRechnung(); });
+  var diff = pr[0].total - pr[1].total, abfragenDiff = pr[1].abfragen - pr[0].abfragen;
+  var vorne = diff || abfragenDiff, sieger = vorne > 0 ? 0 : vorne < 0 ? 1 : -1;
+  $('duell-titel').textContent = sieger < 0 ? 'Unentschieden!' : 'Spieler ' + (sieger + 1) + ' gewinnt!';
+  $('duell-notiz').textContent = !diff && sieger >= 0 ? 'Gleich viele Punkte — weniger Abfragen entscheiden.' : '';
+  var box = $('duell-zahlen'); box.innerHTML = '';
+  pr.forEach(function(p, i){
+    var k = el('div', 'kennzahl' + (i === sieger ? ' sieger' : ''));
+    k.appendChild(el('b', '', String(p.total)));
+    k.appendChild(el('span', '', 'SPIELER ' + (i + 1) + ' · ' + p.abfragen + (p.abfragen === 1 ? ' ABFRAGE' : ' ABFRAGEN')));
+    box.appendChild(k);
+  });
+  if (wahl === undefined) wahl = Math.max(sieger, 0);
+  document.querySelectorAll('#duell-wahl .stufe').forEach(function(b){
+    b.setAttribute('aria-checked', String(+b.getAttribute('data-spieler') === wahl));
+  });
+  uebernehmen(wahl);
+  zeigeAuswertung();
+}
+document.querySelectorAll('#duell-wahl .stufe').forEach(function(b){
+  b.onclick = function(){ zeigeDuellAuswertung(+b.getAttribute('data-spieler')); };
+});
+
+/* Modus-Knopf auf dem Startbildschirm */
+function setzeGeteilt(an){
+  zustand.geteilt = !!an;
+  var k = $('modus-knopf'), g = zustand.geteilt;
+  k.classList.toggle('geteilt', g);
+  k.setAttribute('aria-pressed', String(g));
+  k.title = g ? 'Geteilter Bildschirm: zwei Spieler abwechselnd an einem Gerät (klicken: ein Bildschirm pro Spieler)'
+              : 'Ein Bildschirm pro Spieler (klicken: geteilter Bildschirm für zwei Spieler an einem Gerät)';
+  k.setAttribute('aria-label', g ? 'Modus: geteilter Bildschirm' : 'Modus: ein Bildschirm pro Spieler');
+  $('start-text').textContent = (g ? 'Zwei Spieler, ein Bildschirm. ' : '') + 'Wähle zuerst die Einstellungen, dann eine Kategorie.';
+  $('anleitung-geteilt').hidden = !g;
+}
+$('modus-knopf').onclick = function(){ setzeGeteilt(!zustand.geteilt); };
+
+/* Spaltenname für die Anzeige: geburtsjahr -> Geburtsjahr, bekanntes_werk -> Bekanntes werk */
+function spaltenName(s){ return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' '); }
+
+/* Welche Spalten gehören zu einem Schalter? Normalerweise die gleichnamige;
+   „Alter“ deckt zwei Jahresspalten ab und nennt sie in „luecken“. */
+function schalterSpalten(s){
+  return (s.luecken || [s.id]).filter(function(c){ return kat.spalten.indexOf(c) >= 0; });
+}
+
+/* Wie viele Zeilen haben in dieser Spalte keine Angabe? Für die Zeile unter dem Schalter. */
+function luecken(spalte){
+  return kat.zeilen.filter(function(z){ return leer(z[spalte]); }).length;
+}
+
+function baueSchalter(){
+  var liste = $('schalter-liste'); liste.innerHTML = '';
+  kat.schalter.forEach(function(s){
+    var l = el('label'), cb = el('input'), r = el('span', 'regler'), bez = el('span', 'bez');
+    cb.type = 'checkbox'; cb.checked = sichtbar(s.id);
+    cb.onchange = function(){
+      zustand.schalter = kat.schalter.map(function(x){ return x.id; })
+        .filter(function(id){ return id === s.id ? cb.checked : sichtbar(id); });
+      speichern(); zeigeErgebnis();
+    };
+    bez.appendChild(el('span', '', s.label));
+    // Lücken sichtbar machen: Wer weiss, dass eine Spalte Löcher hat, fragt anders.
+    var spalten = schalterSpalten(s);
+    var mitLuecken = spalten.map(function(c){ return { spalte:c, anzahl:luecken(c) }; })
+      .filter(function(x){ return x.anzahl > 0; });
+    if (mitLuecken.length) {
+      var text = mitLuecken.length === 1 && spalten.length === 1
+        ? mitLuecken[0].anzahl + ' ohne Angabe'
+        : mitLuecken.map(function(x){ return x.anzahl + ' ohne ' + spaltenName(x.spalte); }).join(' · ');
+      bez.appendChild(el('small', 'luecken', text));
+      l.title = mitLuecken.map(function(x){
+        return 'Bei ' + x.anzahl + ' von ' + kat.zeilen.length + ' fehlt die Angabe in ' + x.spalte + ' (NULL).';
+      }).join('\n');
+    }
+    l.appendChild(bez); l.appendChild(cb); l.appendChild(r);
+    liste.appendChild(l);
+  });
+}
+
+/* ============================================================
+   SATZBAUSTEINE (Modus Leicht, Entscheid 08.10.) — wie bei Scratch:
+   Ein Klick fügt den Baustein an der Cursorposition ins Terminal ein.
+   text: was eingefügt wird; „|“ = dort steht danach der Cursor (die Lücke).
+   Werte gibt es bewusst nicht als Bausteine — die tippen die SuS selbst
+   (der Baustein '…' setzt nur die Anführungszeichen).
+   Neue Bausteine: eine Zeile in der passenden Gruppe ergänzen.
+   ============================================================ */
+var BAUSTEIN_GRUPPEN = [
+  { id:'geruest', titel:'Grundgerüst', farbe:'#d4af37', offen:true, bausteine:[
+    { anzeige:'SELECT * FROM {tabelle}', text:'SELECT * FROM {tabelle}', neu:true, titel:'Fängt die Abfrage von vorne an' },
+    { anzeige:'WHERE', text:'WHERE' } ] },
+  { id:'spalten', titel:'Spalten', farbe:'#5fa8e8', offen:true, spalten:true },
+  { id:'text', titel:'Text', farbe:'#9fe59f', offen:true, bausteine:[
+    { anzeige:"'…'", text:"'|'", wert:true, titel:"Anführungszeichen für Text — das Wort dazwischen selbst tippen" } ] },
+  { id:'vergleichen', titel:'Vergleichen', farbe:'#4fd1c5', offen:true, bausteine:[
+    { anzeige:'=', text:'=' }, { anzeige:'!=', text:'!=' }, { anzeige:'<', text:'<' },
+    { anzeige:'>', text:'>' }, { anzeige:'<=', text:'<=' }, { anzeige:'>=', text:'>=' } ] },
+  { id:'verknuepfen', titel:'Verknüpfen', farbe:'#f0a04b', offen:true, bausteine:[
+    { anzeige:'AND', text:'AND' }, { anzeige:'OR', text:'OR' }, { anzeige:'NOT', text:'NOT' },
+    { anzeige:'( )', text:'(|)' } ] },
+  { id:'listen', titel:'Listen & Bereiche', farbe:'#e88bc4', offen:false, bausteine:[
+    { anzeige:'IN ( )', text:'IN (|)' }, { anzeige:'NOT IN ( )', text:'NOT IN (|)' },
+    { anzeige:'BETWEEN … AND …', text:'BETWEEN | AND ' } ] },
+  { id:'luecken', titel:'Lücken', farbe:'#a9adc1', offen:false, bausteine:[
+    { anzeige:'IS NULL', text:'IS NULL' }, { anzeige:'IS NOT NULL', text:'IS NOT NULL' } ] },
+  { id:'muster', titel:'Muster', farbe:'#c3d96b', offen:false, bausteine:[
+    { anzeige:"LIKE '%…%'", text:"LIKE '%|%'" }, { anzeige:"NOT LIKE '%…%'", text:"NOT LIKE '%|%'" } ] }
+];
+
+function baueBausteine(){
+  var box = $('bausteine'); box.innerHTML = '';
+  if (!zustand.offen) zustand.offen = BAUSTEIN_GRUPPEN.filter(function(g){ return g.offen; }).map(function(g){ return g.id; });
+  var kopf = el('div', 'kopf'); kopf.appendChild(el('span', '', 'SATZBAUSTEINE')); box.appendChild(kopf);
+  var tipp = el('p', 'tipp');
+  tipp.appendChild(document.createTextNode('Text steht in Anführungszeichen ('));
+  tipp.appendChild(el('code', '', "'Text'")); tipp.appendChild(document.createTextNode('), Zahlen ohne ('));
+  tipp.appendChild(el('code', '', '1500')); tipp.appendChild(document.createTextNode(').'));
+  box.appendChild(tipp);
+  BAUSTEIN_GRUPPEN.forEach(function(g){
+    var d = el('details'), reihe = el('div', 'reihe');
+    d.style.setProperty('--farbe', g.farbe);
+    d.open = zustand.offen.indexOf(g.id) >= 0;
+    d.appendChild(el('summary', '', g.titel));
+    var liste = g.spalten ? kat.spalten.map(function(s){ return { anzeige:s, text:s }; }) : g.bausteine;
+    liste.forEach(function(b){
+      var text = b.text.replace('{tabelle}', kat.tabelle);
+      var k = el('button', 'baustein', b.anzeige.replace('{tabelle}', kat.tabelle)); k.type = 'button';
+      if (b.titel) k.title = b.titel;
+      k.onclick = function(){ einfuegen(text, b.neu ? 'neu' : b.wert ? 'wert' : ''); };
+      reihe.appendChild(k);
+    });
+    d.appendChild(reihe);
+    d.addEventListener('toggle', function(){
+      zustand.offen = zustand.offen.filter(function(id){ return id !== g.id; });
+      if (d.open) zustand.offen.push(g.id);
+      speichern();
+    });
+    box.appendChild(d);
+  });
+}
+
+/* Steht pos innerhalb eines Textes in '…'? (Ungerade Anzahl ' davor; '' im Text zählt doppelt → stimmt trotzdem) */
+function inText(s, pos){ return (s.slice(0, pos).match(/'/g) || []).length % 2 === 1; }
+
+/* Steht pos in der Klammer von IN ( … ) bzw. NOT IN ( … )? Dann { auf, zu } (Positionen der Klammern), sonst null.
+   Gruppierklammern ( … OR … ) zählen nicht. Klammern in '…' werden übersprungen. */
+function inInKlammer(s, pos){
+  var offen = [], text = false, i;
+  for (i = 0; i < pos; i++) {
+    if (s[i] === "'") text = !text;
+    else if (!text && s[i] === '(') offen.push(i);
+    else if (!text && s[i] === ')') offen.pop();
+  }
+  var auf = offen[offen.length - 1];
+  if (auf === undefined || !/\bIN\s*$/i.test(s.slice(0, auf))) return null;
+  for (i = pos, text = false; i < s.length; i++) {
+    if (s[i] === "'") text = !text;
+    else if (!text && s[i] === '(') offen.push(i);
+    else if (!text && s[i] === ')') { if (offen.pop() === auf) return { auf:auf, zu:i }; }
+  }
+  return null;
+}
+
+/* Fügt txt an der Cursorposition ins Terminal ein (Spalten-Chips und Satzbausteine).
+   art: ''     = normal
+        'wert' = der Baustein '…' — in einer IN-Klammer hinten an die Liste, mit Komma
+        'neu'  = ersetzt das ganze Terminal (Grundgerüst)
+   Leerzeichen setzt die Funktion selbst; „|“ in txt = Cursor danach.
+   Eingefügt wird per execCommand, damit Strg+Z rückgängig macht. */
+function einfuegen(txt, art){
+  var e = $('eingabe'), s = e.value, a = e.selectionStart, z = e.selectionEnd;
+  var lueckeBei = txt.indexOf('|');
+  if (lueckeBei >= 0) txt = txt.replace('|', ''); else lueckeBei = txt.length;
+  if (art === 'neu') { a = 0; z = s.length; }
+  else if (a === z) {
+    // Cursor steht noch im eben getippten Text ('weiblich|') → zuerst hinter das schliessende '
+    if (inText(s, a)) { var ende = s.indexOf("'", a); if (ende >= 0) a = z = ende + 1; }
+    var k = inInKlammer(s, a);
+    if (k && art === 'wert') {                          // ans Ende der Liste, mit Komma
+      a = z = k.zu;
+      while (a > k.auf + 1 && /\s/.test(s[a - 1])) a--;
+      if (/\S/.test(s.slice(k.auf + 1, a)) && s[a - 1] !== ',') { txt = ', ' + txt; lueckeBei += 2; }
+    } else if (k) a = z = k.zu + 1;                     // alles andere: zuerst aus der Klammer heraus
+  }
+  var vor = art === 'neu' ? '' : s.slice(0, a), nach = s.slice(z);
+  if (vor && !/[\s(]$/.test(vor) && !/^[,)]/.test(txt)) { txt = ' ' + txt; lueckeBei++; }
+  var hinten = nach && /^[^\s),]/.test(nach) ? ' ' : '';
+  if (hinten && lueckeBei === txt.length) lueckeBei++;   // Cursor hinter das angehängte Leerzeichen
+  txt += hinten;
+
+  e.focus();
+  e.setSelectionRange(a, z);
+  var ok = false;
+  try { ok = document.execCommand('insertText', false, txt); } catch (x) {}
+  if (!ok || e.value.slice(a, a + txt.length) !== txt) { e.value = s; e.setRangeText(txt, a, z, 'end'); }
+  e.selectionStart = e.selectionEnd = a + lueckeBei;
+}
+
+/* Hinweis auf Zeilen, die nur wegen einer fehlenden Angabe herausgefallen sind */
+function zeigeNullHinweis(aus, r){
+  (r.nullHinweis || []).forEach(function(h){
+    var p = el('p', 'hinweis-null');
+    p.appendChild(document.createTextNode(h.text + ' Hol sie dazu mit '));
+    p.appendChild(el('code', '', 'OR ' + h.zusatz));
+    p.appendChild(document.createTextNode('.'));
+    aus.appendChild(p);
+  });
+}
+
+/* Hinweise zur Abfrage selbst: AND vor OR, Eingrenzen nur über id / Anfangsbuchstaben (07.10.) */
+function zeigeSqlHinweise(aus, r){
+  if (r.vorrang) aus.appendChild(el('p', 'hinweis-null', 'Achtung: AND wird vor OR ausgewertet — a OR b AND c heisst ' +
+    'a OR (b AND c). Wolltest du (a OR b) AND c, brauchst du Klammern.'));
+  if (r.ohneMerkmal) aus.appendChild(el('p', 'hinweis-null', 'Die id und der Anfangsbuchstabe sagen nichts über ' +
+    wort(kat).gesucht + ' ' + kat.objekt + ' aus — darum gibt es für diese Abfrage keine Treffer-Medaille.'));
+}
+
+function zeigeErgebnis(){
+  var r = letztes, aus = $('ausgabe'); aus.innerHTML = '';
+  if (zustand.geteilt) aus.appendChild(el('div', 'spieler-kopf', 'DATENSATZ SPIELER ' + (zustand.am + 1)));
+  var eigeneSpalten = r.art === 'personen' && !r.alle;
+  var schalterAus = r.art !== 'personen' || eigeneSpalten;
+  $('schalter').classList.toggle('aus', schalterAus);
+  $('schalter-notiz').hidden = !schalterAus;
+  $('schalter').querySelectorAll('input').forEach(function(i){ i.disabled = schalterAus; });
+
+  if (r.art === 'zahl') {                                   // COUNT(*), AVG(…) usw.
+    zeigeNullHinweis(aus, r);
+    aus.appendChild(el('div', 'treffer', r.spalten[0].toUpperCase()));
+    var k = el('div', 'karte'); k.style.maxWidth = '14em';
+    var n = el('strong', '', String(Math.round(r.wert * 100) / 100)); n.style.fontSize = '2.4em';
+    k.appendChild(n); aus.appendChild(k);
+    return;
+  }
+  if (r.art === 'tabelle') {                                // z. B. GROUP BY — keine Personen mehr
+    aus.appendChild(el('div', 'treffer', r.zeilen.length + ' ZEILEN'));
+    var t = el('table', 'liste'), kopf = el('tr');
+    r.spalten.forEach(function(s){ kopf.appendChild(el('th', '', s)); });
+    var th = el('thead'); th.appendChild(kopf); t.appendChild(th);
+    var tb = el('tbody');
+    r.zeilen.forEach(function(z){ var tr = el('tr'); z.forEach(function(v){ tr.appendChild(el('td', '', wert(v))); }); tb.appendChild(tr); });
+    t.appendChild(tb); aus.appendChild(t);
+    return;
+  }
+  if (r.falsch) aus.appendChild(el('p', 'hinweis-falsch',
+    'Nicht ' + wort(kat).gesucht + ' ' + kat.objekt + '. Irgendwo hat eine Antwort nicht gestimmt — prüft zusammen eure Fragen und spielt weiter.'));
+  zeigeNullHinweis(aus, r);
+  zeigeSqlHinweise(aus, r);
+  if (r.gefunden) aus.appendChild(gefundenKasten(r.zeilen[0]));
+  else if (r.zeilen.length === 1 && !r.falsch && !r.vorsatz) aus.appendChild(einerKasten(r.zeilen[0]));
+
+  aus.appendChild(el('div', 'treffer', (r.vorsatz || '') + r.zeilen.length + ' TREFFER'));
+  if (!r.zeilen.length) {
+    aus.appendChild(el('p', 'leer', "Niemand passt. Prüfe die Schreibweise des Textes — Umlaute müssen genau stimmen ('Österreich', nicht 'österreich' oder 'Oesterreich')."));
+    return;
+  }
+  var raster = el('div', 'karten');
+  (r.sortiert ? r.zeilen : inAnzeigeReihenfolge(r.zeilen)).forEach(function(z, i){
+    var k = karte(z, 'div', eigeneSpalten ? r.spalten : null);
+    k.style.animationDelay = Math.min(i, 30) * 0.015 + 's';
+    raster.appendChild(k);
+  });
+  aus.appendChild(raster);
+  spaeterAnpassen();
+}
+
+/* Nur noch ein Treffer: das Gegenüber bestätigt oder verneint */
+function einerKasten(z){
+  if (zustand.geteilt) return einerKastenDuell(z);
+  var box = el('div', 'einer'), p = el('p');
+  p.appendChild(document.createTextNode('🎯 Nur noch ' + wort(kat).ein + ' ' + kat.objekt + ': '));
+  p.appendChild(el('b', '', z[kat.kartentitel]));
+  p.appendChild(document.createTextNode('. Frag dein Gegenüber: Ist das ' + wort(kat).gesucht + ' ' + kat.objekt + '?'));
+  var ja = el('button', 'knopf voll', 'Richtig'), nein = el('button', 'knopf', 'Falsch');
+  ja.type = nein.type = 'button';
+  ja.onclick = function(){ spielBeenden(z); };
+  nein.onclick = function(){
+    var e = zustand.protokoll[zustand.protokoll.length - 1]; if (e) e.falsch = true; speichern();
+    letztes.falsch = true; zeigeErgebnis();
+  };
+  box.appendChild(p); box.appendChild(ja); box.appendChild(nein);
+  return box;
+}
+
+function ausfuehren(){
+  if (zustand.geteilt && (zustand.zugFertig || zustand.ende)) return;   // eine Abfrage pro Zug
+  var m = $('meldung'), text = $('eingabe').value.trim();
+  try {
+    var r = ordneEin(sqlAbfrage(text));
+    r.sortiert = /\bORDER\s+BY\b/.test(maskiere(text).toUpperCase());   // dann nicht mischen
+    // Protokoll: jede ausgeführte Abfrage wird so festgehalten, wie sie abgeschickt wurde.
+    // Nur Personen-Ergebnisse verändern die aktuelle Auswahl und sind Vorgänger für „was ist neu?“.
+    var vorher = zustand.menge, e = einordnung(text, zustand.letzteTeile), eintrag;
+    if (r.art === 'personen') {
+      var nachher = r.zeilen.length;
+      var nichts = nachher === 0 || nachher >= vorher;          // grenzt nicht ein → „Nichts Neues“
+      eintrag = { text:text, vorher:vorher, nachher:nachher, neu:e.neu, ohneMerkmal: !nichts && e.ohneMerkmal,
+        sprache: nichts ? { stufe:'nichts', text:'' } : { stufe:e.stufe, text:e.text },
+        wirkung: nichts ? { stufe:'nichts', text: nachher === 0 ? 'keine Treffer' : 'Auswahl nicht kleiner' } : wirkung(vorher, nachher) };
+      // 0 Treffer = keine Personen geliefert → zählt nicht als Vorgänger, der alte Stand bleibt Vergleichsbasis
+      if (nachher > 0) { zustand.menge = nachher; zustand.letzteTeile = e.teile; }
+    } else {                                                   // COUNT, GROUP BY …: nur nachgeschaut
+      eintrag = { text:text, vorher:vorher, nachher:vorher, neu:[],
+        sprache:{ stufe:e.stufe, text:e.text }, wirkung:{ stufe:'nichts', text:'nur nachgeschaut' } };
+    }
+    eintrag.vorrang = e.vorrang;                            // für den Hinweis nach dem Neuladen
+    zustand.protokoll.push(eintrag);
+    zustand.zuletzt = text;                                 // Datensatz übersteht so ein Neuladen
+    zustand.abfragen++; $('zaehler').textContent = zustand.abfragen;
+    m.className = 'ok'; m.textContent = 'Abfrage ausgeführt.';
+    if (zustand.geteilt) zugAbschliessen();
+    speichern();
+    // Sicherheitsnetz: Scheitert die NULL-Prüfung, bleibt das Ergebnis trotzdem stehen.
+    try { r.nullHinweis = nullHinweis(text, r); } catch (e) { r.nullHinweis = null; }
+    r.ohneMerkmal = eintrag.ohneMerkmal; r.vorrang = e.vorrang;
+    letztes = r; zeigeErgebnis();
+  } catch (err) {
+    if (!err.fehler) throw err;
+    m.className = 'fehler'; m.textContent = '✗ ' + err.fehler;   // Fehler zählen nicht als Abfrage
+  }
+}
+$('los').onclick = ausfuehren;
+$('eingabe').addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ausfuehren(); } });
+// Was im Terminal steht, wird laufend mitgespeichert — ein Neuladen löscht die Abfrage nicht (02.11.).
+// pagehide fängt auch Eingaben über Spalten-Chips und Bausteine ab, die kein input-Ereignis auslösen.
+function eingabeMerken(){ if (zustand.id === null || zustand.ende) return; zustand.eingabe = $('eingabe').value; speichern(); }
+$('eingabe').addEventListener('input', eingabeMerken);
+window.addEventListener('pagehide', eingabeMerken);
+
+/* ---------- 4. Auswertung ---------- */
+function spielBeenden(gefunden){
+  zustand.ende = true; zustand.gefunden = gefunden.id; speichern();
+  zeigeAuswertung();
+}
+
+function marke(e){ return '<span class="marke ' + e.stufe + '">' + STUFE[e.stufe] + (e.text ? ' · ' + e.text : '') + '</span>'; }
+
+/* Medaillen in der Auswertung (Entscheid 21.09.):
+   Treffer:    Gold = ab 50 % weniger · Silber = 30–49 % · Bronze = unter 30 %
+   Einordnung: Gold = Speziell · Silber = Selten · Bronze = Gewöhnlich
+   „Nichts Neues“ → Strich, Joker-Abfragen → 🃏. Die Bedeutung steht im Tooltip. */
+var MEDAILLE = { gold:'Gold', silber:'Silber', bronze:'Bronze' };
+// Medaille als kleine Vektorgrafik: rotes Band (wie die Karteikarten) + Münze mit Rand und Stern
+var MEDAILLE_RAND = { gold:'#7d5e0a', silber:'#5f6570', bronze:'#5e3410' };
+function medailleSvg(art){
+  var r = MEDAILLE_RAND[art];
+  return '<svg viewBox="0 0 24 30" aria-hidden="true">' +
+    '<path d="M6.5 0.5h4.5l3.2 10.5h-4.5z" fill="#b0463a"/>' +
+    '<path d="M17.5 0.5h-4.5l-3.2 10.5h4.5z" fill="#8a2f25"/>' +
+    '<circle cx="12" cy="19.5" r="9.3" fill="url(#m-' + art + ')" stroke="' + r + '" stroke-width="1.2"/>' +
+    '<circle cx="12" cy="19.5" r="6.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".8"/>' +
+    '<path d="M12 15.6l.9 2.4 2.5.1-2 1.6.7 2.5-2.1-1.4-2.1 1.4.7-2.5-2-1.6 2.5-.1z" fill="' + r + '" fill-opacity=".75"/>' +
+    '</svg>';
+}
+function medaille(art, bedeutung){
+  var t = html(MEDAILLE[art] + ': ' + bedeutung);
+  return '<span class="medaille ' + art + '" title="' + t + '" role="img" aria-label="' + t + '">' + medailleSvg(art) + '</span>';
+}function ohneMedaille(zeichen, bedeutung){
+  return '<span class="medaille leer" title="' + html(bedeutung) + '" role="img" aria-label="' + html(bedeutung) + '">' + zeichen + '</span>';
+}
+// Was zeigt die Auswertung als Code? Nur das Neue (mehrere Teile mit AND verbunden);
+// COUNT/GROUP BY sind kein Zusatz zur Suche → ganze Abfrage
+function neuerCode(e){
+  if (e.sprache.stufe === 'joker') return e.text.replace(/\s+/g, ' ');
+  return e.neu && e.neu.length ? e.neu.join(' AND ') : null;
+}
+// Welche Medaille gibt es? (null = keine: „Nichts Neues“ oder Joker) — auch Grundlage der Punkte
+function trefferArt(e){
+  if (e.sprache.stufe === 'joker' || e.wirkung.stufe === 'nichts' || e.ohneMerkmal) return null;
+  var p = Math.round((1 - e.nachher / e.vorher) * 100);
+  return p >= 50 ? 'gold' : p >= 30 ? 'silber' : 'bronze';
+}
+function sprachArt(e){
+  return { speziell:'gold', selten:'silber', gewoehnlich:'bronze' }[e.sprache.stufe] || null;
+}
+function trefferMedaille(e){
+  if (e.sprache.stufe === 'joker') return ohneMedaille('🃏', 'Nur nachgeschaut — grenzt nicht ein');
+  if (e.wirkung.stufe === 'nichts') return ohneMedaille('–', 'Nichts Neues — ' + e.wirkung.text);
+  if (e.ohneMerkmal) return ohneMedaille('–', 'Keine Treffer-Medaille — nur über die id oder den Anfangsbuchstaben eingegrenzt');
+  return medaille(trefferArt(e), 'Auswahl um ' + Math.round((1 - e.nachher / e.vorher) * 100) + ' % verkleinert');
+}
+function sprachMedaille(e){
+  var s = e.sprache;
+  if (s.stufe === 'joker') return ohneMedaille('🃏', 'Joker — COUNT oder GROUP BY');
+  if (s.stufe === 'nichts') return ohneMedaille('–', 'Nichts Neues');
+  return medaille(sprachArt(e), STUFE[s.stufe] + ' · ' + s.text);
+}
+function html(t){ return String(t).replace(/[&<>"]/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; }); }
+
+function zeigeAuswertung(){
+  var g = kat.zeilen.filter(function(z){ return z.id === zustand.gefunden; })[0];
+  $('ende-titel').textContent = g ? g[kat.kartentitel] : '';
+  $('ende-duell').hidden = !zustand.geteilt;
+  $('ende-kicker').textContent = zustand.geteilt ? 'Gefunden von Spieler ' + (zustand.am + 1) : 'Gefunden';
+  var pr = punkteRechnung();
+  $('ende-punkte').textContent = pr.total;
+  $('ende-rechnung').textContent = PUNKTE.start + ' Start − ' + pr.abzug + ' für ' + pr.abfragen +
+    (pr.abfragen === 1 ? ' Abfrage' : ' Abfragen') + ' + ' + pr.treffer + ' für die Treffer + ' + pr.sql +
+    ' SQL-Bonus = ' + pr.total + ' Punkte' +
+    (pr.roh < PUNKTE.minimum ? ' (Minimum)' : '');
+  $('ende-abfragen').textContent = zustand.abfragen;
+  $('ende-stufe').textContent = { leicht:'Leicht', normal:'Normal', schwer:'Schwer' }[zustand.schwierigkeit] || 'Normal';
+  var ji = $('ende-joker'); ji.hidden = !zustand.joker; ji.innerHTML = '';
+  if (zustand.joker) ji.innerHTML = zustand.jokerEinsatz
+    ? '🃏 Joker eingesetzt (zählt nicht): <code>' + html(zustand.jokerEinsatz.text) + '</code>'
+    : '🃏 Joker nicht eingesetzt.';
+
+  // Zeile 0 = Ausgangslage; danach pro Abfrage nur der neu hinzugekommene Code (ganze Abfrage im Tooltip)
+  var liste = $('ende-liste'); liste.innerHTML = '';
+  var start = el('tr', 'start');
+  start.innerHTML = '<td class="zahl">0</td><td><code>SELECT * FROM ' + html(kat.tabelle) + '</code></td>' +
+    '<td class="zahl">Ganzer Datensatz ' + html(kat.tabelle) + ' · ' + kat.zeilen.length + '</td><td></td>';
+  liste.appendChild(start);
+  zustand.protokoll.forEach(function(e, i){
+    var tr = el('tr'), nc = neuerCode(e);
+    tr.innerHTML = '<td class="zahl">' + (i + 1) + '</td><td title="' + html(e.text) + '">' +
+      (nc ? '<code>' + html(nc) + '</code>' : '<span class="keine-neue">keine neue Bedingung</span>') +
+      (e.falsch ? '<br><small style="color:var(--rot)">danach: „Falsch“</small>' : '') + '</td>' +
+      '<td class="zahl">' + e.vorher + ' → ' + e.nachher + trefferMedaille(e) + '</td><td>' + sprachMedaille(e) + '</td>';
+    liste.appendChild(tr);
+  });
+
+  // Nützlichste Abfragen: grösste relative Verkleinerung der Auswahl
+  var beste = zustand.protokoll
+    .map(function(e, i){ return { e:e, nr:i + 1, nutzen:e.nachher > 0 && e.vorher > 0 ? 1 - e.nachher / e.vorher : 0 }; })
+    .filter(function(x){ return x.nutzen > 0; })
+    .sort(function(a, b){ return b.nutzen - a.nutzen; })
+    .slice(0, 3);
+  var box = $('ende-beste'); box.innerHTML = '';
+  if (!beste.length) box.appendChild(el('p', 'leer', 'Keine Abfrage hat die Auswahl verkleinert.'));
+  beste.forEach(function(x){
+    var d = el('div');
+    d.innerHTML = '<b>#' + x.nr + '</b> <code title="' + html(x.e.text) + '">' + html(neuerCode(x.e) || x.e.text) + '</code><br>' +
+      'hat die Auswahl von ' + x.e.vorher + ' auf ' + x.e.nachher + ' verkleinert (−' + Math.round(x.nutzen * 100) + ' %)' +
+      (x.e.wirkung.stufe === 'speziell' ? ' — <b>ungefähr halbiert: so arbeitet die binäre Suche.</b>' : '');
+    box.appendChild(d);
+  });
+  zeige('s-ende');
+}
+$('ende-neu').onclick = function(){ neuStarten(true); };
+$('ende-start').onclick = function(){ location.href = '../HBI.html'; };
+
+/* ---------- Kopfleiste: Menü und Details ---------- */
+function umschalten(knopf, feld, zu){
+  var offen = zu === undefined ? feld.hidden : !zu;
+  feld.hidden = !offen; knopf.setAttribute('aria-expanded', String(offen));
+}
+// Menü und Figuren-Kästchen: immer nur eines offen (GETEILT: zwei Kästchen)
+var KLAPPEN = [['menue-knopf', 'menue'], ['geheim-knopf', 'geheim-details'], ['geheim2-knopf', 'geheim2-details']];
+function schliesseKlappen(){ KLAPPEN.forEach(function(p){ umschalten($(p[0]), $(p[1]), true); }); }
+KLAPPEN.forEach(function(p){
+  $(p[0]).onclick = function(e){
+    e.stopPropagation();
+    var war = !$(p[1]).hidden;
+    schliesseKlappen();
+    if (!war) umschalten(this, $(p[1]), false);
+  };
+});
+document.addEventListener('click', schliesseKlappen);
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') document.dispatchEvent(new Event('click')); });
+
+function neuStarten(ohneFrage){
+  var vorbei = zustand.geteilt ? zustand.duellEnde : zustand.ende;
+  if (!ohneFrage && zustand.id !== null && !vorbei && !confirm('Wirklich neu starten? Deine eingeloggte Auswahl wird verworfen.')) return;
+  var stufe = zustand.schwierigkeit, joker = zustand.joker, offen = zustand.offen, geteilt = zustand.geteilt;   // gewählte Einstellungen bleiben stehen
+  vergessen(); zustand = neuerZustand(); zustand.offen = offen;
+  kat = null; $('geheim-knopf').hidden = true; $('geheim2-feld').hidden = true; ergebnisse = [null, null];
+  $('los').hidden = false; $('weiter').hidden = true; $('eingabe').readOnly = false;
+  setzeSchwierigkeit(stufe); setzeJoker(joker); setzeGeteilt(geteilt);
+  zeige('s-kategorie');
+}
+$('neustart').onclick = function(){ neuStarten(false); };
+
+/* ---------- Schwierigkeitsgrad: Leicht = Satzbausteine + Spickzettel, Normal = mit Spickzettel, Schwer = ohne ---------- */
+function setzeSchwierigkeit(s){
+  zustand.schwierigkeit = s;
+  document.querySelectorAll('[data-wahl=schwierigkeit] .stufe').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-stufe') === s)); });
+  var leicht = s === 'leicht', schwer = s === 'schwer';
+  document.body.classList.toggle('stufe-leicht', leicht);
+  $('bausteine').hidden = !leicht;                       // Leicht: Spalten stehen in der Palette …
+  document.querySelector('.terminal .schema').hidden = leicht;   // … statt in der Chip-Zeile oben
+  $('spick-knopf').parentElement.hidden = schwer;        // Menüeintrag verschwindet
+  if (schwer) $('spick').hidden = true;
+  zeigeKatName();
+}
+// Unter dem Seitentitel nur die Kategorie — Schwierigkeit und Joker zeigen schon die Schalter (07.10.)
+// GETEILT: Wer dran ist, steht im Terminal („TERMINAL SPIELER 2“) — hier nicht nochmals (02.11.)
+function zeigeKatName(){
+  $('kat-name').textContent = kat ? kat.titel : '';
+}
+document.querySelectorAll('[data-wahl=schwierigkeit] .stufe').forEach(function(b){
+  b.onclick = function(){ setzeSchwierigkeit(b.getAttribute('data-stufe')); };
+});
+
+/* ---------- Joker-Modus: vor dem Spiel ein-/ausschalten, dann 1× pro Runde ---------- */
+function setzeJoker(an){
+  zustand.joker = !!an;
+  document.querySelectorAll('[data-wahl=joker] .stufe').forEach(function(b){
+    b.setAttribute('aria-checked', String((b.getAttribute('data-joker') === 'an') === zustand.joker));
+  });
+  aktualisiereJokerKnopf(); zeigeKatName();
+}
+document.querySelectorAll('[data-wahl=joker] .stufe').forEach(function(b){
+  b.onclick = function(){ setzeJoker(b.getAttribute('data-joker') === 'an'); };
+});
+function aktualisiereJokerKnopf(){
+  var k = $('joker-knopf');
+  k.hidden = !zustand.joker;
+  k.textContent = zustand.jokerEinsatz ? '🃏 Joker verbraucht — ansehen' : '🃏 Joker (1×)';
+}
+
+/* Joker-Gerüst: Sinnvoll ist im Joker fast nur „zählen pro Wert“. Darum steht die Abfrage schon da,
+   und man ersetzt nur noch die ... (das erste ist beim Öffnen markiert, Tippen ersetzt es). */
+var JOKER_LUECKE = '...';
+function jokerGeruest(){ return 'SELECT ' + JOKER_LUECKE + ', COUNT(*) FROM ' + kat.tabelle + ' ' + JOKER_LUECKE + ' GROUP BY ' + JOKER_LUECKE; }
+
+function oeffneJoker(){
+  if (!zustand.joker) return;
+  var e = zustand.jokerEinsatz, feld = $('joker-eingabe'), m = $('joker-meldung');
+  $('joker').hidden = false;
+  feld.disabled = !!e; $('joker-los').hidden = !!e;
+  if (e) {
+    feld.value = e.text;
+    m.className = 'ok'; m.textContent = 'Joker verbraucht — das war deine Joker-Abfrage:';
+    zeigeJokerErgebnis(e);
+  } else {
+    m.className = ''; m.textContent = ''; $('joker-ergebnis').innerHTML = '';
+    if (!feld.value.trim()) feld.value = jokerGeruest();   // Angefangenes bleibt stehen
+    feld.focus();
+    var erste = feld.value.indexOf(JOKER_LUECKE);
+    if (erste >= 0) feld.setSelectionRange(erste, erste + JOKER_LUECKE.length);
+  }
+}
+function schliesseJoker(){ $('joker').hidden = true; $('eingabe').focus(); }
+
+function jokerAusfuehren(){
+  if (zustand.jokerEinsatz) return;
+  var text = $('joker-eingabe').value.trim(), m = $('joker-meldung');
+  try {
+    if (maskiere(text).indexOf(JOKER_LUECKE) >= 0)
+      throw { fehler:'Ersetze zuerst alle ... — vorne und hinten durch eine Spalte, in der Mitte durch eine Bedingung mit WHERE (oder lösch sie).' };
+    // Nur Zählen/Zusammenfassen ist erlaubt — sonst wäre der Joker eine Gratis-Abfrage zum Eingrenzen
+    if (text && sprachmittel(text).stufe !== 'joker')
+      throw { fehler:'Im Joker sind nur Abfragen mit COUNT(*) (bzw. SUM, AVG, MIN, MAX) oder GROUP BY erlaubt.' };
+    var roh = sqlAbfrage(text);
+    zustand.jokerEinsatz = { text:text, spalten:roh.spalten, zeilen:roh.zeilen.slice(0, 200) };
+    speichern(); aktualisiereJokerKnopf();
+    $('joker-eingabe').disabled = true; $('joker-los').hidden = true;
+    m.className = 'ok'; m.textContent = 'Joker eingesetzt — zählt nicht als Abfrage.';
+    zeigeJokerErgebnis(zustand.jokerEinsatz);
+  } catch (err) {
+    if (!err.fehler) throw err;
+    m.className = 'fehler'; m.textContent = '✗ ' + err.fehler + ' (Der Joker ist noch nicht verbraucht.)';
+  }
+}
+function zeigeJokerErgebnis(e){
+  var box = $('joker-ergebnis'); box.innerHTML = '';
+  if (e.spalten.length === 1 && e.zeilen.length === 1 && typeof e.zeilen[0][0] === 'number') {
+    box.appendChild(el('div', 'treffer', e.spalten[0].toUpperCase()));
+    box.appendChild(el('div', 'zahl', String(Math.round(e.zeilen[0][0] * 100) / 100)));
+    return;
+  }
+  var t = el('table', 'liste'), kopf = el('tr'), th = el('thead'), tb = el('tbody');
+  e.spalten.forEach(function(s){ kopf.appendChild(el('th', '', s)); });
+  th.appendChild(kopf); t.appendChild(th);
+  e.zeilen.forEach(function(z){ var tr = el('tr'); z.forEach(function(v){ tr.appendChild(el('td', '', wert(v))); }); tb.appendChild(tr); });
+  t.appendChild(tb); box.appendChild(t);
+}
+$('joker-knopf').onclick = oeffneJoker;
+$('joker-zu').onclick = schliesseJoker;
+$('joker-los').onclick = jokerAusfuehren;
+$('joker').addEventListener('click', function(e){ if (e.target === this) schliesseJoker(); });
+$('joker-eingabe').addEventListener('keydown', function(e){ if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); jokerAusfuehren(); } });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !$('joker').hidden) schliesseJoker(); });
+
+/* ---------- SQL-Spickzettel ---------- */
+// Die Einordnung auf jeder Karte kommt aus derselben Funktion wie in der Auswertung → passt immer zusammen
+/* Die Beispiele im Spickzettel gehören zu den Persönlichkeiten (WHERE herkunft = 'Schweiz').
+   Bei Tieren und eigenen Datenbanken werden sie ausgeblendet (Entscheid 06.10.), ebenso Hinweise,
+   die Spalten der Personen nennen. spickzettel.js bleibt unverändert — Teil A benutzt ihn auch. */
+var PERSONEN_WOERTER = /\b(Personen?|Geburts|geburtsjahr|todesjahr|todesursache|epoche|herkunft|kontinent|wirkungsbereich|taetigkeit|Tätigkeit)/i;
+function mitPersonenBeispielen(){ return !kat || kat.id === 'personen'; }
+
+function baueSpickzettel(){
+  var box = $('spick-inhalt'); box.innerHTML = '';
+  var beispiele = mitPersonenBeispielen();
+  var passt = function(t){ return beispiele || !PERSONEN_WOERTER.test(t); };
+  if (!beispiele) box.appendChild(el('p', 'spick-ohne', 'Die Beispiele gehören zur Kategorie „Persönlichkeiten“ und sind hier ausgeblendet. ' +
+    'Die Befehle funktionieren genauso — mit den Spalten von „' + kat.titel + '“.'));
+  SPICKZETTEL.forEach(function(g){
+    var kopf = el('div', 'gruppe', g.gruppe);
+    if (g.hinweis && passt(g.hinweis)) kopf.appendChild(el('small', '', g.hinweis));
+    box.appendChild(kopf);
+    g.eintraege.forEach(function(e){
+      var k = el('div', 'eintrag'), z = el('div', 'kopf'), stufe = sprachmittel(e.beispiel).stufe;
+      z.appendChild(el('code', '', e.befehl));
+      if (!e.ohneEinordnung) z.appendChild(el('span', 'marke papier ' + stufe, STUFE[stufe]));
+      k.appendChild(z);
+      k.appendChild(el('div', '', e.text));
+      if (beispiele) k.appendChild(el('pre', '', e.beispiel));
+      if (e.hinweis && passt(e.hinweis)) k.appendChild(el('div', 'hinweis', e.hinweis));
+      box.appendChild(k);
+    });
+  });
+}
+baueSpickzettel();
+$('spick-knopf').onclick = function(){ if (zustand.schwierigkeit === 'schwer') return; $('spick').hidden = false; $('spick-zu').focus(); };
+$('spick-zu').onclick = function(){ $('spick').hidden = true; };
+$('anleitung-knopf').onclick = function(){ $('anleitung').hidden = false; $('anleitung-zu').focus(); };
+$('anleitung-zu').onclick = function(){ $('anleitung').hidden = true; };
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') { $('spick').hidden = true; $('anleitung').hidden = true; $('eigen').hidden = true; }
+});
+$('zum-start').onclick = function(){ location.href = '../HBI.html'; };
+
+/* ============================================================
+   WEITERE KATEGORIEN — Tiere und eigene Datenbanken der Lehrperson
+   Offline kann das Spiel nicht nachsehen, welche Dateien in daten/
+   liegen. Darum probiert es feste Namen: tiere.js und
+   eigene_datenbank_1.js … _5.js (so benennt sie „Spiel für die Klasse
+   erstellen“). Fehlt eine, meldet <script> einen Ladefehler — in der
+   Konsole sichtbar, für das Spiel kein Problem.
+   Nacheinander statt gleichzeitig: so bleibt die Reihenfolge der Knöpfe gleich.
+   ============================================================ */
+var WEITERE_DATEIEN = ['../daten/tiere.js', '../daten/arten.js'];
+for (var platz = 1; platz <= 5; platz++) WEITERE_DATEIEN.push('../daten/eigene_datenbank_' + platz + '.js');
+
+/* Kategorie mit derselben Tabelle (ausser den Persönlichkeiten, die nicht aus Excel kommen) —
+   daran erkennt das Spiel, ob ein Excel eine bestehende Datenbank aktualisiert oder eine neue ist. */
+function gleicheTabelle(tabelle){
+  for (var i = 0; i < KATEGORIEN.length; i++) if (KATEGORIEN[i].tabelle === tabelle && KATEGORIEN[i].id !== 'personen') return i;
+  return -1;
+}
+/* Neue Kategorie einfügen; gibt es die Tabelle schon, ersetzt sie die alte am selben Platz
+   (gleicher Knopf, gleiche id → ein gespeichertes Spiel findet sie wieder). */
+function einsetzen(ds, art){
+  var i = gleicheTabelle(ds.tabelle);
+  if (i < 0) { var k = alsKategorie(ds, art); KATEGORIEN.push(k); return k; }
+  var alt = KATEGORIEN.splice(i, 1)[0];
+  var neu = alsKategorie(ds, art);
+  neu.id = alt.id;
+  // Beim Ausprobieren merken, welche Fassung in den Spieldateien steht (damit vergleicht der Prüfbericht)
+  if (art === 'probe') neu.ersetzt = alt.probe ? alt.ersetzt : alt;
+  KATEGORIEN.splice(i, 0, neu);
+  return neu;
+}
+
+function eindeutigeId(id){
+  var neu = id, n = 2;
+  while (KATEGORIEN.some(function(k){ return k.id === neu; })) neu = id + '_' + n++;
+  return neu;
+}
+
+/* Datensatz (Format aus datensatz.js) → Kategorie wie „personen“ oben. Ein Schalter pro Spalte,
+   die ersten vier sind beim Start an. art: 'mitgeliefert' | 'eigen' | 'probe' (nur in diesem Browser). */
+function alsKategorie(ds, art){
+  var schalter = ds.spalten.filter(function(s){ return s !== 'id' && s !== ds.kartentitel; }).map(function(s){
+    return { id:s, label:(ds.beschriftungen && ds.beschriftungen[s]) || spaltenName(s) };
+  });
+  return {
+    id: eindeutigeId(ds.id), titel: ds.titel, tabelle: ds.tabelle, objekt: ds.objekt, artikel: ds.artikel,
+    kartentitel: ds.kartentitel, schalter: schalter, standard: schalter.slice(0, 4).map(function(s){ return s.id; }),
+    spalten: ds.spalten.slice(), zeilen: ds.zeilen, eigen: art === 'eigen' || art === 'probe', probe: art === 'probe'
+  };
+}
+
+function ladeWeitereKategorien(fertig){
+  var liste = window.HBI_DATENSAETZE = window.HBI_DATENSAETZE || [];
+  (function naechste(i){
+    if (i >= WEITERE_DATEIEN.length) return fertig();
+    var vorher = liste.length, s = document.createElement('script');
+    s.src = WEITERE_DATEIEN[i]; s.charset = 'utf-8';
+    s.onload = function(){
+      liste.slice(vorher).forEach(function(ds){
+        try { einsetzen(ds, /eigene_datenbank/.test(WEITERE_DATEIEN[i]) ? 'eigen' : 'mitgeliefert'); }
+        catch (e) { console.warn('Datensatz in ' + WEITERE_DATEIEN[i] + ' liess sich nicht lesen:', e); }
+      });
+      naechste(i + 1);
+    };
+    s.onerror = function(){ naechste(i + 1); };
+    document.head.appendChild(s);
+  })(0);
+}
+
+/* ============================================================
+   EIGENE DATENBANK — Excel prüfen, ausprobieren, Spiel für die Klasse
+   Die Werkzeuge werden erst beim Öffnen des Fensters geladen
+   (xlsx.full.min.js ist knapp 1 MB) — die Klasse braucht sie nicht.
+   ============================================================ */
+var eigenDatensatz = null, werkzeug = null;
+
+function ladeSkript(datei){
+  return new Promise(function(ok, nein){
+    var s = document.createElement('script'); s.src = datei; s.charset = 'utf-8';
+    s.onload = ok; s.onerror = function(){ nein(new Error('Die Datei „' + datei + '“ fehlt im Ordner spiel.')); };
+    document.head.appendChild(s);
+  });
+}
+function eigenWerkzeug(){
+  if (!werkzeug) werkzeug = ladeSkript('xlsx.full.min.js')
+    .then(function(){ return ladeSkript('datensatz.js'); })
+    .then(function(){ return ladeSkript('zip.js'); });
+  return werkzeug;
+}
+function lesen(f){
+  if (f.arrayBuffer) return f.arrayBuffer().then(function(b){ return new Uint8Array(b); });
+  return new Promise(function(ok, nein){ var r = new FileReader(); r.onload = function(){ ok(new Uint8Array(r.result)); }; r.onerror = nein; r.readAsArrayBuffer(f); });
+}
+function berichtsZeile(liste, art, text){ liste.appendChild(el('li', art, text)); }
+function neueListe(ziel){ ziel.innerHTML = ''; var l = el('ul', 'bericht'); ziel.appendChild(l); return l; }
+
+/* Was ändert sich gegenüber der bestehenden Datenbank? Einträge werden über den Kartentitel
+   (meist „name“) zugeordnet, Gross-/Kleinschreibung egal. */
+function vergleiche(alt, neu){
+  var schluessel = function(z, k){ return String(z[k] === null || z[k] === undefined ? '' : z[k]).trim().toLowerCase(); };
+  var gemeinsam = neu.spalten.filter(function(s){ return s !== 'id' && alt.spalten.indexOf(s) >= 0; });
+  var vorher = {};
+  alt.zeilen.forEach(function(z){ vorher[schluessel(z, alt.kartentitel)] = z; });
+  var r = { vorher: alt.zeilen.length, nachher: neu.zeilen.length, neu: [], geaendert: [], entfernt: [],
+            neueSpalten: neu.spalten.filter(function(s){ return s !== 'id' && alt.spalten.indexOf(s) < 0; }),
+            alteSpalten: alt.spalten.filter(function(s){ return s !== 'id' && neu.spalten.indexOf(s) < 0; }) };
+  var gesehen = {};
+  neu.zeilen.forEach(function(z){
+    var s = schluessel(z, neu.kartentitel), a = vorher[s];
+    gesehen[s] = true;
+    if (!a) return r.neu.push(z[neu.kartentitel]);
+    var anders = gemeinsam.some(function(sp){ return schluessel(a, sp) !== schluessel(z, sp); });
+    if (anders) r.geaendert.push(z[neu.kartentitel]);
+  });
+  alt.zeilen.forEach(function(z){ if (!gesehen[schluessel(z, alt.kartentitel)]) r.entfernt.push(z[alt.kartentitel]); });
+  return r;
+}
+function aufzaehlen(namen){
+  var max = 6;
+  return namen.slice(0, max).join(', ') + (namen.length > max ? ' und ' + (namen.length - max) + ' weitere' : '');
+}
+function zeigeVergleich(liste, ds){
+  var i = gleicheTabelle(ds.tabelle);
+  var k = i >= 0 ? KATEGORIEN[i] : null, alt = k && (k.probe ? k.ersetzt : k);   // nur mit den Spieldateien vergleichen
+  if (!alt) {
+    berichtsZeile(liste, 'gut', '＋ Neue Datenbank — sie erscheint als eigener Knopf „' + ds.titel + '“.');
+    var gleicherTitel = KATEGORIEN.filter(function(x){ return x.tabelle !== ds.tabelle && x.titel.trim().toLowerCase() === ds.titel.trim().toLowerCase(); })[0];
+    if (gleicherTitel) berichtsZeile(liste, 'hinweis', '⚠ Es gibt schon eine Datenbank „' + gleicherTitel.titel + '“ (Tabelle ' +
+      gleicherTitel.tabelle + '). Soll diese aktualisiert werden, trage im Blatt „Einstellungen“ den Tabellennamen „' +
+      gleicherTitel.tabelle + '“ ein — sonst gibt es zwei Knöpfe mit demselben Titel.');
+    return;
+  }
+  var v = vergleiche(alt, ds);
+  berichtsZeile(liste, 'gut', '↻ Aktualisiert die bestehende Datenbank „' + alt.titel + '“ (Tabelle ' + ds.tabelle + '): ' +
+    v.vorher + ' → ' + v.nachher + ' Einträge.' + (alt.titel !== ds.titel ? ' Neuer Titel: „' + ds.titel + '“.' : ''));
+  if (v.neu.length) berichtsZeile(liste, '', 'Neu (' + v.neu.length + '): ' + aufzaehlen(v.neu));
+  if (v.geaendert.length) berichtsZeile(liste, '', 'Geändert (' + v.geaendert.length + '): ' + aufzaehlen(v.geaendert));
+  if (v.neueSpalten.length) berichtsZeile(liste, '', 'Neue Spalten: ' + v.neueSpalten.join(', '));
+  if (v.entfernt.length) berichtsZeile(liste, 'hinweis', '⚠ Nicht mehr im Excel (' + v.entfernt.length + '), fallen weg: ' + aufzaehlen(v.entfernt));
+  if (v.alteSpalten.length) berichtsZeile(liste, 'hinweis', '⚠ Diese Spalten fehlen im Excel und fallen weg: ' + v.alteSpalten.join(', '));
+  if (!v.neu.length && !v.geaendert.length && !v.entfernt.length && !v.neueSpalten.length && !v.alteSpalten.length)
+    berichtsZeile(liste, 'hinweis', '⚠ Gegenüber der bestehenden Datenbank hat sich nichts geändert.');
+}
+
+function zeigeBericht(r, dateiname){
+  var liste = neueListe($('eigen-bericht')), ds = r.datensatz;
+  if (ds) berichtsZeile(liste, 'gut', '✓ ' + dateiname + ': ' + ds.zeilen.length + ' Einträge, ' + (ds.spalten.length - 1) +
+    ' Spalten. Tabelle ' + ds.tabelle + ' — im Spiel heisst es „Wähle ' + wort(ds).wahl + ' ' + ds.objekt + '“.');
+  if (ds) zeigeVergleich(liste, ds);
+  else berichtsZeile(liste, 'fehler', '✗ ' + dateiname + ' lässt sich so noch nicht spielen. Bitte im Excel korrigieren, speichern und die Datei nochmals wählen:');
+  r.fehler.forEach(function(t){ berichtsZeile(liste, 'fehler', '✗ ' + t); });
+  r.hinweise.forEach(function(t){ berichtsZeile(liste, 'hinweis', '⚠ ' + t); });
+  var umbenannt = r.zuordnung.filter(function(z){ return z.geaendert; });
+  if (ds && umbenannt.length) berichtsZeile(liste, '', 'So heissen die Spalten in SQL: ' +
+    umbenannt.map(function(z){ return z.excel + ' → ' + z.spalte; }).join(' · '));
+  $('eigen-weiter').hidden = !ds;
+  $('eigen-zip-meldung').innerHTML = '';
+}
+
+$('eigen-knopf').onclick = function(){
+  $('eigen').hidden = false; $('eigen-zu').focus();
+  eigenWerkzeug().catch(function(e){ berichtsZeile(neueListe($('eigen-bericht')), 'fehler', '✗ ' + e.message); });
+};
+$('eigen-zu').onclick = function(){ $('eigen').hidden = true; };
+$('eigen-waehlen').onclick = function(){ $('eigen-datei').click(); };
+$('eigen-datei').onchange = function(){
+  var f = this.files && this.files[0];
+  this.value = '';                                  // dieselbe Datei nach dem Korrigieren nochmals wählbar
+  if (!f) return;
+  berichtsZeile(neueListe($('eigen-bericht')), '', 'Prüfe ' + f.name + ' …');
+  eigenWerkzeug().then(function(){ return lesen(f); }).then(function(puffer){
+    var r = Datensatz.ausExcel(puffer, f.name);
+    eigenDatensatz = r.datensatz;
+    zeigeBericht(r, f.name);
+  }).catch(function(e){ berichtsZeile(neueListe($('eigen-bericht')), 'fehler', '✗ Die Datei liess sich nicht lesen: ' + (e.message || e)); });
+};
+
+$('eigen-spielen').onclick = function(){
+  if (!eigenDatensatz) return;
+  if (zustand.id !== null && !zustand.ende && !confirm('Das laufende Spiel wird beendet. Weiter?')) return;
+  // Gibt es die Tabelle schon (mitgeliefert, eigene oder frühere Probe), ersetzt die neue Fassung sie am selben Platz
+  var k = einsetzen(eigenDatensatz, 'probe');
+  $('eigen').hidden = true;
+  neuStarten(true);
+  zeigeKategorien();
+  kategorieWaehlen(k);
+};
+
+$('eigen-zip').onclick = function(){ $('eigen-ordner').click(); };
+$('eigen-ordner').onchange = function(){
+  var dateien = Array.prototype.slice.call(this.files || []);
+  this.value = '';
+  if (!dateien.length || !eigenDatensatz) return;
+  var ds = eigenDatensatz, liste = neueListe($('eigen-zip-meldung'));
+  berichtsZeile(liste, '', 'Das Spiel wird zusammengestellt …');
+  SpielZip.ausOrdner(dateien, Datensatz.alsDatei(ds), ds.tabelle).then(function(r){
+    liste.innerHTML = '';
+    if (r.fehler) return berichtsZeile(liste, 'fehler', '✗ ' + r.fehler);
+    var name = 'HBI_mit_' + ds.tabelle + '.zip';
+    var url = URL.createObjectURL(new Blob([r.daten], { type:'application/zip' }));
+    var a = el('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    berichtsZeile(liste, 'gut', '✓ ' + name + ' liegt jetzt in deinem Download-Ordner: das ganze Spiel mit „' + ds.titel + '“' +
+      (r.ersetzt ? ' — die bisherige Fassung (' + r.pfad + ') ist darin aktualisiert' : '') + '.');
+    berichtsZeile(liste, '', 'Weitergeben: die ZIP verteilen (Teams, Lernplattform, USB-Stick). Die Klasse muss sie zuerst entpacken ' +
+      '(Rechtsklick → „Alle extrahieren“) und dann HBI.html öffnen. Direkt aus der ZIP heraus startet das Spiel nicht.');
+  }).catch(function(e){ liste.innerHTML = ''; berichtsZeile(liste, 'fehler', '✗ Die ZIP liess sich nicht erstellen: ' + (e.message || e)); });
+};
+
+/* ---------- Beim Öffnen: weitere Kategorien laden, dann laufendes Spiel fortsetzen ---------- */
+function fortsetzen(){
+  if (kat) return;                                  // schon selbst eine Kategorie gewählt
+  var alt = laden();
+  var k = alt && KATEGORIEN.filter(function(x){ return x.id === alt.kat; })[0];
+  if (!k || alt.id === null) return;
+  ladeKategorie(k, function(){
+    kat = k; zustand = Object.assign(neuerZustand(), alt);
+    if (zustand.menge === null) zustand.menge = k.zeilen.length;
+    setzeSchwierigkeit(zustand.schwierigkeit); setzeJoker(zustand.joker); setzeGeteilt(zustand.geteilt);
+    baueSpickzettel(); $('joker-eingabe').placeholder = jokerBeispiel(k);
+    if (!geheimePerson()) return vergessen();
+    spielStarten();
+    if (zustand.geteilt ? zustand.duellEnde : zustand.ende) zustand.geteilt ? zeigeDuellAuswertung() : zeigeAuswertung();
+  });
+}
+setzeSchwierigkeit('normal'); setzeJoker(false); setzeGeteilt(false);
+ladeWeitereKategorien(function(){ zeigeKategorien(); fortsetzen(); });
+</script>
+</body>
+</html>
