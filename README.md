@@ -43,7 +43,7 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 | `spiel/` | die Szenen und Stationen |
 | `daten/` | der Datensatz |
 | `media/` | Bilder, Audio, Filmausschnitte |
-| `anleitung/` | Spielanleitung (PDF + Video) |
+| `anleitung/` | Spielanleitung und Lösungen |
 
 ## Lizenz und Quellen
 
