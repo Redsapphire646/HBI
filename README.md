@@ -28,7 +28,9 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 ## Für Lehrpersonen
 
 - Spielanleitung: [anleitung/](anleitung/) *(folgt)*
+- - Videoanleitung (Ganzes Spiel in einem Video)
 - Eigenen Datensatz einsetzen: *(Anleitung folgt)*
+
 
 ## Inhalt dieses Ordners
 
@@ -37,7 +39,7 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 | `spiel/` | die Szenen und Stationen |
 | `daten/` | der Datensatz |
 | `media/` | Bilder, Audio, Filmausschnitte |
-| `anleitung/` | Spielanleitung, SQL-Referenzkarte |
+| `anleitung/` | Spielanleitung |
 
 ## Lizenz und Quellen
 
