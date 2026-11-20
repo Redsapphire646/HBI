@@ -31,8 +31,8 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 
 ## Für Lehrpersonen
 
-- Spielanleitung: [anleitung/](anleitung/) *(folgt)*
-- Videoanleitung (Ganzes Spiel in einem Video)
+- Spielanleitung + Lösungen: [Spielanleitung](Anleitung_Lösung HBI.pdf)
+- Videoanleitung (Ganzes Spiel in einem Video): [Videoanleitung](https://youtu.be/mtFaxBqXq2Y)
 - Eigenen Datensatz einsetzen: [Anleitung eigene Datensätze](anleitung/HBI-Anleitung-Eigene-Datenbank.pdf)
 
 
