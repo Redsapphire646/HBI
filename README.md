@@ -14,6 +14,9 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 - **Offline:** Oben rechts auf „Code“ → „Download ZIP“ klicken. Die ZIP-Datei entpacken und im Ordner auf `HBI.html` doppelklicken.
   Keine Installation und kein Internet nötig.
 
+- **Wichtig:** Die Datenbanken im Spiel sind selbst mit Hilfe von KI erstellt. Die Informationen zu den Persönlichkeiten der Geschichte
+  und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber Fehler enthalten. 
+
 ## Überblick
 
 | | |
@@ -28,7 +31,7 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 ## Für Lehrpersonen
 
 - Spielanleitung: [anleitung/](anleitung/) *(folgt)*
-- - Videoanleitung (Ganzes Spiel in einem Video)
+- Videoanleitung (Ganzes Spiel in einem Video)
 - Eigenen Datensatz einsetzen: *(Anleitung folgt)*
 
 
