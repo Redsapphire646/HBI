@@ -19,11 +19,11 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 | | |
 |---|---|
 | **Zielgruppe** | Sek I, Zyklus 3 |
-| **Dauer** | *(folgt)* |
+| **Dauer** | *ca. 5 Lektionen* |
 | **Geräte** | ein Laptop/PC mit Tastatur pro Person |
-| **Teil A** | Story-Kampagne: SQL lernen (Einzelarbeit) |
-| **Teil B** | „Wer bin ich?“ mit SQL: Duell zu zweit, wird nach Teil A freigeschaltet |
-| **Lehrplan 21** | MI.2.1.i · MI.2.1.j · MI.2.2.i |
+| **Teil A** | Storymodus: SQL lernen (Einzel-/Partnerarbeit) |
+| **Teil B** | „Wer bin ich?“ mit SQL: Duell zu zweit |
+| **Lehrplan 21** | MI.2.1.i, MI.2.1.j, MI.2.2.i |
 
 ## Für Lehrpersonen
 
