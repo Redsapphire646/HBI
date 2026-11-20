@@ -11,7 +11,7 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 ## Spielen
 
 - **Online:** [Link zur Browserversion](https://redsapphire646.github.io/HBI/)
-- **Offline:** Oben rechts auf „Code“ → „Download ZIP“, entpacken, `HBI.html` doppelklicken.
+- **Offline:** Oben rechts auf „Code“ → „Download ZIP“ klicken. Die ZIP-Datei entpacken und im Ordner auf `HBI.html` doppelklicken.
   Keine Installation und kein Internet nötig.
 
 ## Überblick
