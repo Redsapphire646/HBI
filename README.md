@@ -33,7 +33,7 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 
 - Spielanleitung: [anleitung/](anleitung/) *(folgt)*
 - Videoanleitung (Ganzes Spiel in einem Video)
-- Eigenen Datensatz einsetzen: *(Anleitung folgt)*
+- Eigenen Datensatz einsetzen: [Anleitung eigene Datensätze](anleitung/HBI-Anleitung-Eigene-Datenbank.pdf)
 
 
 ## Inhalt dieses Ordners
