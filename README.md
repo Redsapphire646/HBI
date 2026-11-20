@@ -5,7 +5,7 @@ Ein Escape Game für die Sekundarstufe I (Zyklus 3), in dem die Schüler\*innen 
 Im Storymodus finden die Schüler*innen als Historiker\*in beim HBI Persönlichkeiten der Weltgeschichte, indem sie
 Abfragen an eine Datenbank stellen.
 
-Im "Wer bin ich?" (Übungsmodus) können die Schüler\*innen ihre SQL-Kenntnisse unter Beweise stellen, indem sie durch SQL-Abfragen 
+Im "Wer bin ich?" (Übungsmodus) können die Schüler\*innen ihre SQL-Kenntnisse unter Beweis stellen, indem sie durch SQL-Abfragen 
 das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 
 ## Spielen
