@@ -39,7 +39,7 @@ das klassische Spiel "Wer bin ich?" gegen Kolleg\*innen spielen.
 | `spiel/` | die Szenen und Stationen |
 | `daten/` | der Datensatz |
 | `media/` | Bilder, Audio, Filmausschnitte |
-| `anleitung/` | Spielanleitung |
+| `anleitung/` | Spielanleitung (PDF + Video) |
 
 ## Lizenz und Quellen
 
