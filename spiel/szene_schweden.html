@@ -171,6 +171,12 @@
   .vollbild .klick{color:var(--gold);font-size:max(12px,1.2cqw);animation:puls 1.6s infinite;margin-top:1.5cqw;}
   .titelkarte{cursor:default;transition:opacity .8s ease;}
   .titelkarte.weg{opacity:0;}
+  /* Szenenbild hinter der Titelkarte: weisse, verblasste Linienzeichnung auf dem Blau */
+  .titelkarte > *{position:relative;}
+  .titelkarte > .titelbild{position:absolute;inset:0;background:center/cover no-repeat;opacity:.14;pointer-events:none;
+    filter:grayscale(1) invert(1) contrast(1.4);mix-blend-mode:screen;
+    -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,transparent 80%);
+    mask-image:radial-gradient(ellipse at center,#000 35%,transparent 80%);}
   .vollbild button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:1cqw;}
 
   @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;} #denkblase{transition:none;} }
@@ -480,6 +486,7 @@
 
   <!-- Titelkarte der Szene: erscheint kurz und blendet dann von selbst aus -->
   <div id="start" class="vollbild titelkarte">
+    <div class="titelbild" aria-hidden="true" style="background-image:url('../media/Bilder/Stockholm.png')"></div>
     <div class="kicker">SZENE 5 · VIERTE ZEITREISE</div>
     <h1>Die Vermittlung</h1>
     <p>Schweden · Stockholm · 2026</p>

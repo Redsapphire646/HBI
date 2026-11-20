@@ -171,6 +171,12 @@
   .vollbild .klick{color:var(--gold);font-size:max(12px,1.2cqw);animation:puls 1.6s infinite;margin-top:1.5cqw;}
   .titelkarte{cursor:default;transition:opacity .8s ease;}
   .titelkarte.weg{opacity:0;}
+  /* Szenenbild hinter der Titelkarte: weisse, verblasste Linienzeichnung auf dem Blau */
+  .titelkarte > *{position:relative;}
+  .titelkarte > .titelbild{position:absolute;inset:0;background:center/cover no-repeat;opacity:.14;pointer-events:none;
+    filter:grayscale(1) invert(1) contrast(1.4);mix-blend-mode:screen;
+    -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,transparent 80%);
+    mask-image:radial-gradient(ellipse at center,#000 35%,transparent 80%);}
   .vollbild button{font-family:var(--serif);font-size:max(13px,1.3cqw);background:none;color:var(--gold);border:1px solid var(--gold);padding:.6cqw 1.6cqw;cursor:pointer;margin-top:1cqw;}
 
   @media (prefers-reduced-motion: reduce){ *{animation-duration:0s !important;} #denkblase{transition:none;} }
@@ -500,7 +506,13 @@
   <div id="blende"></div>
 
   <!-- Titelkarte der Szene: erscheint kurz und blendet dann von selbst aus -->
+  <!-- Film: Cutszene 6 (Zentrale -> Burghof 1111) spielt ../media/cutszene_burghof.mp4 — fehlt die Datei, gibt es nur die Blende -->
+  <div id="film" hidden>
+    <video id="video" playsinline></video>
+  </div>
+
   <div id="start" class="vollbild titelkarte">
+    <div class="titelbild" aria-hidden="true" style="background-image:url('../media/Bilder/Zentrale_für Cutszene nach Stockholm.png')"></div>
     <div class="kicker">SZENE 6 · FINALE</div>
     <h1>Die Zeitverbrecher</h1>
     <p>HBI-Zentrale · Gegenwart</p>
@@ -988,10 +1000,25 @@ function reise(){
   klang('geschafft');
   sage([{ wer:'du', text:'Das Jahr ' + JAHR_AGENTEN + '. Halt durch, Zeit – ich komme.' }], function(){
     klang('riss');
-    blende(wechselZuTeil2, function(){
+    function burghofKarte(){
+      $('start').querySelector('.titelbild').style.backgroundImage = "url('../media/Bilder/Burghof.png')";
       karteZeigen('SZENE 6 · TEIL 2', 'Burghof', 'Im Jahr ' + JAHR_AGENTEN, teil2Dialog);
+    }
+    filmZeigen('../media/cutszene_burghof.mp4', function(gespielt){
+      if (gespielt) { wechselZuTeil2(); burghofKarte(); $('film').hidden = true; }
+      else { $('film').hidden = true; blende(wechselZuTeil2, burghofKarte); }
     });
   });
+}
+/* Cutszene bildschirmfüllend abspielen; danach(true) nach dem Film, danach(false) wenn die Datei fehlt */
+function filmZeigen(quelle, danach){
+  var f = $('film'), v = $('video'), fertig = false;
+  f.hidden = false;
+  function ende(gespielt){ if (fertig) return; fertig = true; v.pause(); danach(gespielt); }
+  v.onended = function(){ ende(true); };
+  v.onerror = function(){ ende(false); };
+  v.src = quelle;
+  v.play().catch(function(){ if (v.error) ende(false); });
 }
 function wechselZuTeil2(){
   teil = 2; schrittNr = 0; befehlOk = false;   // neues Rätsel: wieder mindestens eine gültige Abfrage nötig

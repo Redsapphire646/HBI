@@ -1,5 +1,5 @@
 /* HBI — Datensatz „Fauna & Flora Schweiz“ für Teil B („Wer bin ich?“).
-   Erzeugt aus anleitung/Fauna-Flora-Schweiz.xlsx — nicht von Hand ändern, sondern das Excel
+   Erzeugt aus daten/Fauna-Flora-Schweiz.xlsx — nicht von Hand ändern, sondern das Excel
    anpassen und mit Innovation/Datenbank_FaunaFlora/erstelle_arten.js neu erzeugen. */
 (window.HBI_DATENSAETZE = window.HBI_DATENSAETZE || []).push({
   "id": "arten",

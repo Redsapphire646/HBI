@@ -55,6 +55,7 @@
   .geheim-feld > button{
     background:rgba(212,175,55,.08);border:1px solid var(--gold);color:var(--fg);padding:0.375rem 0.875rem;cursor:pointer;text-align:right;
   }
+  .geheim-feld > button:disabled{opacity:.35;cursor:not-allowed;border-style:dashed;}
   .geheim small{display:block;font-size:.65rem;letter-spacing:.2em;color:var(--gold-dim);white-space:nowrap;}
   .geheim strong{color:var(--gold);}
   .geheim .details{position:absolute;right:0;top:calc(100% + 0.375rem);width:min(21.25rem,90vw);padding:0.875rem 1rem;text-align:left;
@@ -337,7 +338,7 @@
     <ul id="menue" hidden>
       <li><button type="button" id="neustart">Neu starten</button></li>
       <li><button type="button" id="spick-knopf">📇 SQL-Spickzettel</button></li>
-      <li><button type="button" id="anleitung-knopf">📖 Spielanleitung</button></li>
+      <li><button type="button" id="anleitung-knopf">📖 Spielprinzip</button></li>
       <li><button type="button" id="eigen-knopf">📂 Eigene Datenbank</button></li>
       <li><button type="button" id="zum-start">Zum Startbildschirm</button></li>
     </ul>
@@ -497,16 +498,14 @@
   <div class="inhalt" id="spick-inhalt"></div>
 </aside>
 
-<!-- Spielanleitung — bewusst im Menü und nicht im Terminal, damit beim Spielen
+<!-- Spielprinzip — bewusst im Menü und nicht im Terminal, damit beim Spielen
      möglichst wenig Text ablenkt. Nutzt dieselbe Seitenleiste wie der Spickzettel. -->
-<aside class="spick" id="anleitung" hidden role="dialog" aria-label="Spielanleitung">
-  <header><span>📖 SPIELANLEITUNG</span><button type="button" id="anleitung-zu" aria-label="Spielanleitung schliessen">✕</button></header>
+<aside class="spick" id="anleitung" hidden role="dialog" aria-label="Spielprinzip">
+  <header><span>📖 SPIELPRINZIP</span><button type="button" id="anleitung-zu" aria-label="Spielprinzip schliessen">✕</button></header>
   <div class="inhalt">
     <p>Grenze mit deinen Abfragen die geheime Auswahl deines Gegenübers ein.
       Jede Abfrage kostet 10 Punkte — grenzt du gut ein, bekommst du sie zurück.
       Besonderes SQL gibt Extrapunkte.</p>
-    <p>Mit <b>Strg + Enter</b> führst du eine Abfrage aus. Die Spaltennamen über dem
-      Eingabefeld kannst du anklicken, dann werden sie eingefügt.</p>
     <p id="anleitung-geteilt" hidden><b>Geteilter Bildschirm:</b> Ihr spielt abwechselnd an einem Gerät. Das Los
       bestimmt, wer beginnt. Wer dran ist, stellt dem Gegenüber eine Frage, schreibt die passende Abfrage
       und gibt danach mit <b>Weiter</b> ab. Bleibt nur noch eine Karte übrig, prüft das Spiel, ob sie stimmt.
@@ -1298,6 +1297,20 @@ function zeigeGeheim(){
     });
     var d = $('geheim' + nr + '-details'); d.innerHTML = ''; d.appendChild(t);
   });
+  sperreGeheim();
+}
+/* GETEILT (20.11.): Nachschauen darf nur, wer gerade NICHT im Terminal schreibt — also wer gefragt wird.
+   Das Kästchen der Person am Terminal ist gesperrt, damit man beim Nachschauen nicht das falsche erwischt.
+   Nach dem Duell sind beide wieder frei. */
+function sperreGeheim(){
+  [0, 1].forEach(function(i){
+    var nr = i ? '2' : '', k = $('geheim' + nr + '-knopf');
+    var zu = zustand.geteilt && !zustand.duellEnde && i === zustand.am;
+    k.disabled = zu;
+    k.title = zu ? 'Gesperrt: Spieler ' + (i + 1) + ' schreibt gerade im Terminal' : 'Angaben anzeigen';
+    $('geheim' + nr + '-name').textContent = zustand.geteilt ? (zu ? 'am Terminal' : 'nachschauen') : $('geheim' + nr + '-name').textContent;
+    if (zu) umschalten(k, $('geheim' + nr + '-details'), true);
+  });
 }
 
 /* ============================================================
@@ -1394,6 +1407,7 @@ function zeigeZugKnoepfe(){
   $('weiter').hidden = !fertig;
   $('eingabe').readOnly = fertig;
   if (fertig) $('weiter').textContent = weiterText();
+  if (kat) sperreGeheim();
 }
 function weiterGeben(){
   sichern();
@@ -1445,6 +1459,7 @@ function gefundenKasten(z){
 /* Auswertung: oben beide Spieler und wer gewinnt, darunter die gewohnte Auswertung des gewählten Spielers */
 function zeigeDuellAuswertung(wahl){
   sichern();
+  sperreGeheim();
   var pr = [0, 1].map(function(i){ uebernehmen(i); return punkteRechnung(); });
   var diff = pr[0].total - pr[1].total, abfragenDiff = pr[1].abfragen - pr[0].abfragen;
   var vorne = diff || abfragenDiff, sieger = vorne > 0 ? 0 : vorne < 0 ? 1 : -1;
@@ -2034,7 +2049,7 @@ function baueSpickzettel(){
   var beispiele = mitPersonenBeispielen();
   var passt = function(t){ return beispiele || !PERSONEN_WOERTER.test(t); };
   if (!beispiele) box.appendChild(el('p', 'spick-ohne', 'Die Beispiele gehören zur Kategorie „Persönlichkeiten“ und sind hier ausgeblendet. ' +
-    'Die Befehle funktionieren genauso — mit den Spalten von „' + kat.titel + '“.'));
+    'Die Befehle funktionieren genauso.'));
   SPICKZETTEL.forEach(function(g){
     var kopf = el('div', 'gruppe', g.gruppe);
     if (g.hinweis && passt(g.hinweis)) kopf.appendChild(el('small', '', g.hinweis));

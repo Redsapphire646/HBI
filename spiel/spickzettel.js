@@ -92,18 +92,10 @@ var SPICKZETTEL = [
   {
     gruppe: 'Zählen & Übersicht',
     stufe: 'joker',
-    hinweis: 'Joker-Befehle: grenzen nicht ein. Im Terminal zählen sie als normale Abfrage — mit eingeschaltetem Joker einmal pro Runde gratis über den Knopf „🃏 Joker“.',
     eintraege: [
       { befehl: 'COUNT(*)   GROUP BY …',
         text: 'Zählt, wie viele Zeilen passen — mit GROUP BY für jeden Wert einzeln.',
         beispiel: 'SELECT kontinent, COUNT(*) FROM personen\nGROUP BY kontinent' }
     ]
-  },
-  {
-    gruppe: 'Gut zu wissen',
-    nurTeilB: true,
-    hinweis: "Grenzt du nur über die id oder alphabetisch über den Namen ein (id < 100, name < 'M'), "
-           + 'gibt es keine Treffer-Medaille — das sagt nichts über die Karte aus.',
-    eintraege: []
   }
 ];
