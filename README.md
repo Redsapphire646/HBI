@@ -1,10 +1,10 @@
 # Das HBI — Historical Bureau of Investigation
 
 Ein Escape Game für die Sekundarstufe I (Zyklus 3), in dem die Schüler\*innen SQL lernen:
-Als Historiker\*in beim HBI finden sie Persönlichkeiten der Weltgeschichte, indem sie
+Im Storymodus finden die Schüler*innen als Historiker\*in beim HBI Persönlichkeiten der Weltgeschichte, indem sie
 Abfragen an eine Datenbank stellen.
-
-> 🚧 **In Arbeit.** Diese Seite wird bis zur Fertigstellung laufend ergänzt.
+Im "Wer bin ich?" (Übungsmodus) können die Schüler*innen ihre SQL-Kenntnisse unter Beweise stellen, indem sie durch SQL-Abfragen 
+das klassische Spiel "Wer bin ich?" gegen Kolleg*innen spielen.
 
 ## Spielen
 
