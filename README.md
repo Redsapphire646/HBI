@@ -3,12 +3,12 @@
 Ein Escape Game für die Sekundarstufe I (Zyklus 3), in dem die Schüler\*innen SQL lernen:
 Im Storymodus finden die Schüler*innen als Historiker\*in beim HBI Persönlichkeiten der Weltgeschichte, indem sie
 Abfragen an eine Datenbank stellen.
-Im "Wer bin ich?" (Übungsmodus) können die Schüler*innen ihre SQL-Kenntnisse unter Beweise stellen, indem sie durch SQL-Abfragen 
+\Im "Wer bin ich?" (Übungsmodus) können die Schüler*innen ihre SQL-Kenntnisse unter Beweise stellen, indem sie durch SQL-Abfragen 
 das klassische Spiel "Wer bin ich?" gegen Kolleg*innen spielen.
 
 ## Spielen
 
-- **Online:** *(Link zu GitHub Pages folgt)*
+- **Online:** [Link zur Browserversion](https://redsapphire646.github.io/HBI/)
 - **Offline:** Oben rechts auf „Code“ → „Download ZIP“, entpacken, `HBI.html` doppelklicken.
   Keine Installation und kein Internet nötig.
 
