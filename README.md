@@ -31,7 +31,7 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 
 ## Für Lehrpersonen
 
-- Spielanleitung + Lösungen: [Spielanleitung](anleitung/Anleitung_Loesungen_HBI.pdf)
+- Spielanleitung + Lösungen: [Spielanleitung](Anleitung_Loesungen_HBI.pdf)
 - Videoanleitung (Ganzes Spiel in einem Video): [Videoanleitung](https://youtu.be/mtFaxBqXq2Y)
 - Eigenen Datensatz einsetzen: [Anleitung eigene Datensätze](anleitung/HBI-Anleitung-Eigene-Datenbank.pdf)
 
