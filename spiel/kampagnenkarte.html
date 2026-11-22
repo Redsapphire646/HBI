@@ -188,8 +188,8 @@
 <script>
 /* ============================================================
    STATIONEN — ein Eintrag pro Szene (x/y auf der 1600x900-Karte).
-   Neue Szene: hier einen Eintrag anhaengen. Pro Station gibt es SQ_ANZAHL (Standard SQ_PRO_SZENE) Sidequests (Platzhalter,
-   sidequest.html); sie werden frei, sobald die Szene geschafft ist.
+   Neue Szene: hier einen Eintrag anhaengen. Pro Station gibt es SQ_ANZAHL (Standard SQ_PRO_SZENE) Sidequests (eigene Seiten,
+   siehe SQ_DATEI); sie werden frei, sobald die Szene geschafft ist.
    ============================================================ */
 var STATIONEN = [
   { nr:1, titel:'Die Aufnahmeprüfung', ort:'HBI-Empfangshalle',   datei:'szene_aufnahmepruefung.html', x:170,  y:660 },
@@ -211,7 +211,7 @@ var SQ_POSITIONEN = {
    Provisorisch für alle Szenen nach Position; mit SQ_SYMBOL[id] lässt sich eine einzelne Sidequest abweichend festlegen. */
 var SQ_SYMBOL_STANDARD = [ 'i', '↻', '★' ];
 var SQ_SYMBOL = {};
-/* Fertige Sidequests: eigene Seite und Name. Alle übrigen sind noch Platzhalter (sidequest.html). */
+/* Sidequests: eigene Seite und Name. Neue Sidequest: Seite anlegen (Vorlage z. B. sidequest_1_2.html) und hier eintragen. */
 var SQ_DATEI  = { '1.1': 'sidequest_1_1.html', '1.2': 'sidequest_1_2.html', '2.1': 'sidequest_2_1.html', '2.2': 'sidequest_2_2.html', '2.3': 'sidequest_2_3.html',
   '3.1': 'sidequest_3_1.html', '3.2': 'sidequest_3_2.html', '3.3': 'sidequest_3_3.html',
   '4.1': 'sidequest_4_1.html', '4.2': 'sidequest_4_2.html', '4.3': 'sidequest_4_3.html',
@@ -273,7 +273,7 @@ function svg(tag, attr, eltern){ var e = document.createElementNS(NS, tag); for 
 })();
 
 function geheZuSzene(s){ klang('klick'); location.href = Spiel.url(s.datei); }
-function geheZuSidequest(id){ klang('klick'); location.href = Spiel.url(SQ_DATEI[id] || 'sidequest.html', { q:id }); }
+function geheZuSidequest(id){ if (!SQ_DATEI[id]) return; klang('klick'); location.href = Spiel.url(SQ_DATEI[id], { q:id }); }
 function klickbar(el, aktion, beschriftung){
   el.setAttribute('role', 'button'); el.setAttribute('tabindex', '0'); el.setAttribute('aria-label', beschriftung);
   el.addEventListener('click', function(e){ e.stopPropagation(); aktion(); });
