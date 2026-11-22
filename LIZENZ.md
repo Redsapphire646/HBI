@@ -4,7 +4,7 @@ Dieses Projekt steht unter zwei offenen Lizenzen (OER):
 
 | Was | Lizenz |
 |---|---|
-| **Inhalte:** Story, Texte, Rätsel, Bilder, Audio, Video, Spielanleitung, Referenzkarte | **CC BY-SA 4.0** |
+| **Inhalte:** Story, Texte, Rätsel, Bilder, Video, Spielanleitung | **CC BY-SA 4.0** |
 | **Code:** HTML, CSS, JavaScript | **MIT** |
 
 Ausgenommen sind Medien und Daten Dritter. Deren Herkunft und Lizenz steht in
