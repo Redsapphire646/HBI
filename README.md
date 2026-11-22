@@ -42,7 +42,7 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 |---|---|
 | `spiel/` | die Szenen und Stationen |
 | `daten/` | der Datensatz |
-| `media/` | Bilder, Audio, Filmausschnitte |
+| `media/` | Bilder, Filmausschnitte |
 | `anleitung/` | Spielanleitung und Lösungen |
 
 ## Lizenz und Quellen
