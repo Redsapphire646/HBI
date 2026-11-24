@@ -481,8 +481,7 @@
   <div class="joker-fenster" role="dialog" aria-label="Joker">
     <header><span>🃏 JOKER · EINMAL PRO RUNDE</span><button type="button" id="joker-zu" aria-label="Joker schliessen">✕</button></header>
     <p class="joker-text">Eine Abfrage mit <code>COUNT(*)</code> oder <code>GROUP BY</code>, die <b>nicht als Abfrage zählt</b>
-      und die Auswahl nicht verändert. Nutze sie, um zu prüfen, ob sich eine Frage lohnt.
-      Ersetze die <code>...</code>: vorne und hinten dieselbe Spalte, in der Mitte eine Bedingung mit <code>WHERE</code> — oder lösche sie.</p>
+      und die Auswahl nicht verändert. Nutze sie, um zu prüfen, ob sich eine Frage lohnt.</p>
     <textarea id="joker-eingabe" spellcheck="false" aria-label="Joker-Abfrage"
       placeholder="z. B. SELECT kontinent, COUNT(*) FROM personen GROUP BY kontinent"></textarea>
     <div><button type="button" class="knopf joker-los" id="joker-los">🃏 Joker einsetzen</button></div>
@@ -1583,7 +1582,8 @@ function baueBausteine(){
     d.style.setProperty('--farbe', g.farbe);
     d.open = zustand.offen.indexOf(g.id) >= 0;
     d.appendChild(el('summary', '', g.titel));
-    var liste = g.spalten ? kat.spalten.map(function(s){ return { anzeige:s, text:s }; }) : g.bausteine;
+    // Spalte id bewusst ohne Baustein: Wer die id halbiert, verliert Punkte (siehe Treffer-Regeln)
+    var liste = g.spalten ? kat.spalten.filter(function(s){ return s !== 'id'; }).map(function(s){ return { anzeige:s, text:s }; }) : g.bausteine;
     liste.forEach(function(b){
       var text = b.text.replace('{tabelle}', kat.tabelle);
       var k = el('button', 'baustein', b.anzeige.replace('{tabelle}', kat.tabelle)); k.type = 'button';
