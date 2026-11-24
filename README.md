@@ -35,6 +35,7 @@ und zu den weiteren Datensätzen wurden bestmöglich überprüft, können aber F
 - Videoanleitung (Ganzes Spiel in einem Video): [Videoanleitung](https://youtu.be/mtFaxBqXq2Y)
 - Eigenen Datensatz einsetzen: [Anleitung eigene Datensätze](anleitung/HBI-Anleitung-Eigene-Datenbank.pdf)
 - Die Personen-Datenbank aus dem Storymodus als Excel-Tabelle (z. B. zum Anschauen mit der Klasse): [personen.xlsx](daten/personen.xlsx)
+  **Tipp**: F11 drücken um in den Vollbildmodus zu gelangen ;)
 
 
 ## Inhalt dieses Ordners
